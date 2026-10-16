@@ -1,0 +1,23 @@
+{
+  "wav": {
+    "original_preserved": true,
+    "sample_rate": 16000,
+    "channels": 1,
+    "frames": 217440,
+    "duration_seconds": 13.59
+  },
+  "mp3": {
+    "original_preserved": true,
+    "sample_rate": 16000,
+    "channels": 1,
+    "frames": 217440,
+    "duration_seconds": 13.59
+  },
+  "m4a": {
+    "original_preserved": true,
+    "sample_rate": 16000,
+    "channels": 1,
+    "frames": 218112,
+    "duration_seconds": 13.632
+  }
+}

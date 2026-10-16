@@ -1,0 +1,115 @@
+{
+  "environment": "developer PC; system Python paths removed; not clean Windows; host not disconnected",
+  "tested_at_utc": "2026-10-16T09:17:21.883383+00:00",
+  "executables_sha256": {
+    "NoteTaker.exe": "c928f927fc273c39af0112c4f3f6928463ce0102b85fc13fe372aca7c9d46333",
+    "NoteTaker-worker.exe": "c15f9e120a5615dd94269dd04ccb8ca7d669ccde5a3f1494a1b3221a820862a4"
+  },
+  "workers": {
+    "asr": {
+      "exit_code": 0,
+      "seconds": 8.034,
+      "response": {
+        "status": "completed",
+        "engine": "asr",
+        "result": {
+          "language": "fr",
+          "duration_seconds": 13.59,
+          "segments": [
+            {
+              "id": "s0",
+              "start": 0.0,
+              "end": 2.78,
+              "text": " La s�ance du Conseil municipal est ouverte.",
+              "avg_logprob": -0.19481353174176133,
+              "no_speech_prob": 0.0037359537091106176
+            },
+            {
+              "id": "s1",
+              "start": 3.56,
+              "end": 6.14,
+              "text": " Nous examinons les travaux de la biblioth�que.",
+              "avg_logprob": -0.19481353174176133,
+              "no_speech_prob": 0.0037359537091106176
+            },
+            {
+              "id": "s2",
+              "start": 6.94,
+              "end": 9.42,
+              "text": " Le montant annonc� est de 12 000 euros.",
+              "avg_logprob": -0.19481353174176133,
+              "no_speech_prob": 0.0037359537091106176
+            },
+            {
+              "id": "s3",
+              "start": 10.38,
+              "end": 12.68,
+              "text": " Le r�sultat du vote reste � compl�ter.",
+              "avg_logprob": -0.19481353174176133,
+              "no_speech_prob": 0.0037359537091106176
+            }
+          ]
+        },
+        "elapsed_seconds": 7.633,
+        "python_network_attempts": 0
+      }
+    },
+    "diarization-sherpa": {
+      "exit_code": 0,
+      "seconds": 1.77,
+      "response": {
+        "status": "completed",
+        "engine": "diarization-sherpa",
+        "result": {
+          "turns": [
+            {
+              "start": 0.03096874989569187,
+              "end": 2.865968704223633,
+              "speaker": "speaker_0"
+            },
+            {
+              "start": 3.6590938568115234,
+              "end": 6.190343856811523,
+              "speaker": "speaker_0"
+            },
+            {
+              "start": 7.017219066619873,
+              "end": 9.615968704223633,
+              "speaker": "speaker_0"
+            },
+            {
+              "start": 10.409093856811523,
+              "end": 12.97409439086914,
+              "speaker": "speaker_0"
+            }
+          ],
+          "clustering": "automatic-threshold-0.5",
+          "device": "cpu",
+          "possible_overlaps": []
+        },
+        "elapsed_seconds": 1.517,
+        "python_network_attempts": 0
+      }
+    },
+    "llm": {
+      "exit_code": 0,
+      "seconds": 7.286,
+      "response": {
+        "status": "completed",
+        "engine": "llm",
+        "result": {
+          "selections": {
+            "0": [
+              "s0"
+            ]
+          },
+          "strategy": "source-selection-only",
+          "device": "cpu"
+        },
+        "elapsed_seconds": 7.056,
+        "python_network_attempts": 0
+      }
+    }
+  },
+  "bundle_size_bytes": 3532708750
+}

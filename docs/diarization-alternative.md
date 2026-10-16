@@ -60,3 +60,25 @@ Aucune identité de personne n'est reconnue ; les noms seront saisis par
 l'opérateur. Les vecteurs de regroupement restent limités à la séance et ne
 doivent pas constituer des profils vocaux permanents. La qualité de diarisation
 n'est pas établie par ce seul essai et aucun DER de terrain n'est annoncé.
+
+## Intégration dans la version 0.1
+
+Le parcours applicatif utilise cette candidate en CPU dans un worker séparé.
+Les tours sont rapprochés des passages Whisper ; faible couverture, plusieurs
+voix candidates et chevauchement possible restent visibles comme incertitudes.
+Un masque supplémentaire emploie les classes powerset du même modèle de
+segmentation ONNX pour signaler des intervalles de parole simultanée possibles.
+Ce mécanisme n'est pas une séparation de sources et ne reconstruit pas les
+paroles que Whisper aurait manquées.
+
+L'opérateur peut écouter le passage, changer/confirmer la voix, saisir les
+noms, scinder un passage et fusionner des groupes. L'ancienne attribution et
+les corrections sont tracées ; aucun profil vocal permanent n'est créé.
+Si sherpa échoue, la transcription Whisper est conservée avec attributions
+incertaines et l'audio original reste disponible.
+
+La chaîne des trois moteurs a été exécutée sur la fixture synthétique existante
+et le worker sherpa compilé a exécuté l'inférence CPU. La panne de diarisation
+et la conservation de l'ASR/audio sont vérifiées par injection de faute.
+**Voix naturelles françaises à trois intervenants, chevauchements réels,
+bruit et DER restent NON VALIDÉS.** La procédure est dans `field-test.md`.

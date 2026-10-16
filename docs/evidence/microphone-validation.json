@@ -1,0 +1,17 @@
+{
+  "device": {
+    "id": 33,
+    "name": "Microphone (Logitech PRO X Gaming Headset)",
+    "api": "Windows WASAPI",
+    "channels": 1,
+    "rate": 48000
+  },
+  "requested_seconds": 3,
+  "captured_frames": 141312,
+  "sample_rate": 48000,
+  "seconds": 2.944,
+  "error_code": null,
+  "raw_directory": "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\output\\microphone-validation\\b4777029-3f3a-4a8d-a589-53a657e24e14",
+  "normalized": "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\output\\microphone-validation\\b4777029-3f3a-4a8d-a589-53a657e24e14.wav",
+  "scope": "real microphone I/O only; not a natural French meeting or speech-quality evaluation"
+}

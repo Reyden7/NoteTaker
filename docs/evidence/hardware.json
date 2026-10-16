@@ -5,5 +5,5 @@
   "logical_cpus": 20,
   "gpu_inventory_only": "NVIDIA GeForce RTX 5070, 616.92, 12227 MiB",
   "gpu_command_exit": 0,
-  "free_disk_bytes": 11705937920
+  "free_disk_bytes": 6566494208
 }

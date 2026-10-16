@@ -17,7 +17,7 @@ def transcribe(request):
                           compute_type="int8" if device == "cpu" else "float16",
                           cpu_threads=4, num_workers=1, local_files_only=True)
     segments, info = engine.transcribe(str(audio), language="fr", beam_size=5,
-                                       vad_filter=False, word_timestamps=True)
+                                       vad_filter=True, word_timestamps=True)
     return {"language": info.language, "duration_seconds": info.duration,
             "segments": [{"id": f"s{i}", "start": s.start, "end": s.end, "text": s.text,
                            "avg_logprob": s.avg_logprob, "no_speech_prob": s.no_speech_prob}
@@ -65,15 +65,18 @@ def diarize_sherpa(request):
             raise ValueError("PCM16_MONO_16000_REQUIRED")
         samples = np.frombuffer(stream.readframes(stream.getnframes()), dtype="<i2").astype(np.float32) / 32768
     output = engine.process(samples).sort_by_start_time()
+    from notetaker.engines.overlap import possible_overlaps
     return {"turns": [{"start": t.start, "end": t.end, "speaker": f"speaker_{t.speaker}"} for t in output],
-            "clustering": "automatic-threshold-0.5", "device": "cpu"}
+            "clustering": "automatic-threshold-0.5", "device": "cpu",
+            "possible_overlaps": possible_overlaps(samples, segmentation) if request.get("overlap", False) else []}
 
 def main():
     start = time.perf_counter()
     try:
         request = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
         kind = request["engine"]
-        result = {"asr": transcribe, "diarization": diarize, "diarization-sherpa": diarize_sherpa}[kind](request)
+        from notetaker.engines.llama_adapter import select_sources
+        result = {"asr": transcribe, "diarization": diarize, "diarization-sherpa": diarize_sherpa, "llm": select_sources}[kind](request)
         response = {"status": "completed", "engine": kind, "result": result}
     except Exception as exc:
         response = {"status": "failed", "error_code": type(exc).__name__}

@@ -1,109 +1,131 @@
-# Avancement de NoteTaker
+# Avancement de NoteTaker 0.1
 
-Date : 16 octobre 2026. **Phase 0 en cours ; sortie de phase non validée.**
-Le cahier des charges a été lu intégralement et copié dans `reference` sans
-modification (SHA-256 : `0e910b83ce8a724d1bef1f0cb00738be20885f1e54ddd3629d6c5fa5fce3ee40`).
-La demande directe de l'utilisateur fixe le nom NoteTaker et demande de commencer
-par la faisabilité ; les recommandations et prompts inclus dans le document
-sont des exigences de référence, pas une autorisation de sauter les validations.
+16 octobre 2026 — **chaîne CPU utilisable en développement ; produit commercial non qualifié**.
+Les quatre documents demandés ont été relus. À la demande de l’utilisateur,
+l’interface et le parcours complet ont été développés sans attendre un fichier
+terrain. Les essais naturels français à trois voix restent **non validés**.
+L’état initial est conservé dans `history/progress-phase0.md`.
 
-## Fonctionne et a été exécuté
+## Fonctionne et a été implémenté
 
-- Environnement Python 3.11 x64 isolé et dépendances verrouillées avec hashes.
-- Transcription française réelle par Whisper small int8 CPU sur audio synthétique
-  local ; quatre segments horodatés et aucun téléchargement pendant la tâche.
-- Génération réelle Qwen3 4B Q4_K_M dans llama.cpp CPU ; JSON conforme au schéma,
-  source s0, vote absent laissé à vérifier dans cet exemple.
-- À la demande de l'utilisateur, alternative Community-1 étudiée et exécutée :
-  sherpa-onnx + segmentation MIT + ERes2Net Apache-2.0 retrouve deux voix
-  synthétiques alternées sans nombre de locuteurs imposé.
-- Tentative ASR GPU réelle : crash du worker faute de cuDNN 9 ; le routeur
-  conserve son parent et réussit une nouvelle tentative CPU.
-- Exports techniques DOCX/PDF locaux sur données fictives ; fichiers relus par
-  python-docx/pypdf et pages contrôlées visuellement. PDF rendu par Poppler ;
-  DOCX rendu par Word installé, en lecture seule, fichier source inchangé.
-- SQLite WAL, première migration, rollback d'une migration échouée,
-  réouverture, état des jobs interrompus et backup SQLite incluant le WAL validé.
-- Écriture et contrôle d'intégrité de segments PCM, conservation d'orphelins et
-  fichiers partiels après un véritable arrêt de processus et une erreur de manifeste.
+| Fonction | État actuel |
+|---|---|
+| Séances | Création, titre, commune, date, lieu, participants/présences en texte, ordre du jour et notes |
+| Historique | Recherche, archivage/réactivation et réouverture SQLite |
+| Interface | PySide6 6.8.3, cinq onglets, traitements en arrière-plan, annulation et messages en français |
+| Microphone | Sélection, préférence WASAPI, niveau, durée, pause/reprise et arrêt |
+| Sauvegarde audio | PCM16 segmenté toutes les 60 s ; flush/fsync et journal atomique environ chaque seconde ; hashes des segments clos et du préfixe actif |
+| Récupération | Prises interrompues détectées à la réouverture ; trames existantes récupérables sans réécrire les originaux |
+| Import | Copies vérifiées SHA-256 de WAV, MP3 et M4A ; normalisation dérivée mono 16 kHz |
+| Choix des prises | Inclusion/exclusion sans supprimer les prises brutes |
+| ASR | faster-whisper CPU int8 réel, VAD Silero local, horodatages, recherche, corrections autosauvegardées et écoute du passage |
+| Voix | sherpa-onnx CPU, attribution manuelle des noms, confirmation, scission de passages et fusion de voix |
+| Incertitude | Faible couverture/plusieurs voix signalées ; masque de chevauchement possible implémenté mais qualité terrain non validée |
+| Qwen3 | llama.cpp CPU réel ; sélection JSON d’identifiants de sources par ordre du jour sur portions bornées |
+| Projet de PV | Extraits sourcés éditables, points, titres, références, décisions manuelles et votes structurés |
+| Relecture | Nom et confirmation explicite ; empreinte du contenu et du contexte, invalidée après modification pertinente |
+| Exports | DOCX/PDF réels, projet non officiel, copies et instantanés conservés distinctement des brouillons |
+| Isolation | Workers distincts, délais, annulation et Job Objects Windows pour fermer l’arbre de processus ; capture indépendante |
+| Distribution de travail | Dossier PyInstaller autonome avec modèles et moteur CPU ; stratégie Inno préparée |
+
+Le brouillon est **extractif** : Qwen choisit les identifiants des passages ;
+l’application reprend leurs textes et les noms corrigés. Le modèle ne peut
+ajouter de texte libre ou de comptes de votes. Les passages relatifs aux votes
+sont réservés à la vérification et à la saisie structurée. Une synthèse narrative
+libre du débat reste à qualifier. Les votes exportés proviennent exclusivement
+des quatre nombres et de la source saisis par l’opérateur.
 
 ## Tests réellement exécutés
 
-**25 tests automatisés réussis**, aucun ignoré, rapport JUnit dans
-`evidence/pytest.xml`. Commande de référence : `scripts/test.ps1`.
-Les tests de routage injectent des fautes explicitement et ne sont pas des
-preuves d'inférence ; les trois moteurs sont mesurés séparément par leurs sondes.
+**50 tests automatisés réussis, aucun ignoré sur ce Windows.** Rapport JUnit :
+`docs/evidence/pytest-workflow.xml`.
 
-| Vérification | Preuve |
+- Migration de la base phase 0 vers le schéma 3, rollback, backup SQLite,
+  réouverture, historique et archivage.
+- Journal PCM, rotation, véritable arrêt forcé de processus, récupération du
+  fichier actif, erreur de manifeste et détection de fichier altéré.
+- Import préservant les originaux et normalisation stéréo 48 kHz → mono 16 kHz.
+- Attribution incertaine, corrections, fusion et scission ; découpage des
+  transcriptions longues sans perte de caractères/références.
+- Rejet de votes incomplets et de votes inconnus chiffrés ; absence de résultat
+  créé par le LLM ; export refusé avant relecture et après modification.
+- Parcours Qt de création, sauvegarde, archivage, réouverture, confirmation
+  refusée/acceptée et export depuis les widgets.
+- Panne de diarisation injectée : ASR conservé, original inchangé, job en échec.
+  Annulation et fermeture réelle de descendants via Job Object Windows.
+
+Les tests de fautes injectées sont identifiés comme tels et ne remplacent pas
+les inférences réelles ci-dessous.
+
+### Chaîne réelle sur la fixture existante
+
+`scripts/validate_chain.py` a exécuté import → Whisper → sherpa et masque
+d’incertitude → Qwen → brouillon → refus d’export non relu → test de la barrière
+d’export sur données fictives → DOCX/PDF → réouverture. Pour l’audio synthétique
+existant de 13,59 s : dernière analyse 8,993 s, Qwen 11,315 s, quatre passages et
+une voix. Original inchangé. Preuve : `docs/evidence/application-chain.json`.
+
+La confirmation du test est étiquetée **AUTOMATED TEST — NOT A HUMAN REVIEW**
+dans un dossier isolé. Elle ne constitue pas une relecture d’une vraie séance.
+L’interface ne confirme jamais automatiquement une révision utilisateur.
+
+Les PDF et DOCX issus de la chaîne ont été rendus avec Poppler et Word en
+lecture seule, puis inspectés : une page chacun, sources, décisions et comptes
+fictifs lisibles. Word n’est pas une dépendance du produit. Les widgets réels
+ont été inspectés avec le moteur Windows de Qt ; le rendu offscreen ne chargeait
+pas correctement les polices de ce poste.
+
+### Microphone et formats
+
+- Logitech PRO X Gaming Headset, WASAPI, mono 48 kHz : **141 312 trames, 2,944 s**,
+  aucun incident signalé, conversion WAV réussie. Ce contrôle ne juge pas la parole.
+  Preuve : `docs/evidence/microphone-validation.json`.
+- WAV, MP3 et M4A réellement importés/décodés depuis un encodage de la fixture :
+  13,590 / 13,590 / 13,632 s, sources inchangées. Preuve :
+  `docs/evidence/codec-validation.json`. Tous les codecs possibles de ces conteneurs
+  ne sont pas pour autant qualifiés.
+
+### Exécutables autonomes
+
+PyInstaller 6.16.0 produit `dist/NoteTaker` : `NoteTaker.exe`,
+`NoteTaker-worker.exe`, `_internal`, modèles et llama CPU. Volume mesuré environ
+**3,53 Go décimaux** avant compression d’installateur. Les trois workers compilés
+ont réussi ASR, sherpa et Qwen avec PYTHONPATH retiré et PATH limité à System32.
+Preuve : `docs/evidence/bundle-validation.json`. Le poste possède déjà des runtimes
+système et n’était pas déconnecté : ce n’est pas la recette Windows vierge.
+
+L’interface compilée a ouvert une fenêtre Windows réactive, initialisé une base
+isolée et accepté une fermeture normale (WM_CLOSE), code de sortie 0. Preuve :
+`docs/evidence/desktop-validation.json`, avec hash de l’exécutable testé. Ce
+contrôle de démarrage ne remplace pas un parcours complet de réunion dans le
+bundle ni les essais des widgets effectués séparément depuis les sources.
+
+Le premier worker compilé échouait dans `pkg_resources` faute de
+`backports.tarfile`. Dépendance ajoutée, verrouillée, collectée explicitement ;
+les essais compilés suivants réussissent. Le dossier reste marqué development_only.
+Le script Inno est un scaffold non compilé et la publication commerciale est bloquée.
+
+## Non validé ou restant
+
+| Point | État |
 |---|---|
-| ASR CPU et crash CUDA, puis repli | `evidence/phase0-probes.json` et sorties locales `output/phase0/asr-*` |
-| GGUF CPU et schéma JSON | Même rapport, `llm_cpu.schema_valid=true`, sortie locale `llm-draft.json` |
-| Deux voix distinctes, regroupement automatique | `evidence/diarization-alternative-probe.json` |
-| Intégrité et provenance modèles | `models_manifest.json`, `diarization_models_manifest.json` |
-| Versions et licences empaquetées initiales | `evidence/dependencies-*.json`, `third_party` |
-| Rendu documentaire | `output/phase0/export-fixture-pdf.png` et `export-fixture-word.png` inspectés |
-| Fichiers récupérables après arrêt du processus | Tests `test_segment_survives_a_real_child_process_crash` et `test_failure_between_wav_commit_and_manifest_preserves_orphan` |
-| Aucun socket Python autorisé | Crochet d'audit des workers et test de blocage avant DNS |
-| Texte français conservé par le lanceur | Encodage UTF-8 imposé et test du résultat accentué |
+| Réunion naturelle française 10–20 min, ≥3 voix | **NON VALIDÉ** — aucun fichier disponible |
+| Chevauchements réels, bruit, voix proches et interruptions | **NON VALIDÉ** — indicateur implémenté, qualité inconnue |
+| WER/DER et coût de correction terrain | Non mesurés |
+| Capture continue de 10–20 min et plusieurs heures | Procédure fournie, essai microphone court seulement |
+| Coupure électrique et panne de stockage | Non qualifiées ; crash de processus et erreurs d’écriture testés |
+| GPU | Non qualifié ; Whisper a échoué sans cuDNN en phase 0, UI 0.1 en CPU |
+| Windows 10, 8/16 Go RAM et Windows vierge déconnecté | **NON VALIDÉ** — développement sur Windows 11, environ 32 Go RAM |
+| Audit réseau système | Non effectué ; sockets Python gardées et chemins locaux, sockets natives non capturées |
+| Synthèse narrative libre et délibérations complètes | À développer/qualifier ; brouillon actuel par extraits |
+| Présences/procurations normalisées et votes avancés | Texte et votes de base disponibles ; métier détaillé à compléter |
+| Sauvegarde/restauration produit et chiffrement | Backup SQLite initial et copie du dossier fermé ; assistant portable à développer |
+| Limites mémoire matérielles | Traitements séquentiels, budgets imposés non qualifiés |
+| Setup unique signé | Non produit ; script Inno non compilé, essais d’installation/mise à jour/désinstallation à réaliser |
+| Redistribution finale | Qt, codecs, VC++, notices et signature du lot exact encore à approuver |
 
-La machine possède environ 32 Go RAM, 20 processeurs logiques et une RTX 5070
-de 12 Go (pilote 616.92). Le détail matériel et l'espace disponible sont dans
-`evidence/hardware.json`. Les durées exactes et RSS agrégées échantillonnées sont
-dans les rapports de sondes ; elles ne sont pas extrapolables à un PC de mairie.
-Les RSS du premier essai ASR sont invalides car seul le trampoline était suivi ;
-le dernier rapport mesure l'arbre de processus et remplace ces valeurs.
-
-## Reste à valider en phase 0
-
-- Corpus français naturel et annoté à deux puis trois voix, chevauchements,
-  attribution incertaine, WER/DER et coût de correction humaine.
-- Capture microphone réelle, normalisation multicanal, import MP3/M4A et durée longue.
-- Constitution des DLL GPU compatibles, autorisées et isolées ; tâche accélérée
-  réelle par moteur et tests mémoire/DLL. Sherpa est pour l'instant CPU uniquement.
-- Pipeline continu ASR → attribution corrigée → LLM → validation humaine → export.
-  Les sondes actuelles sont indépendantes et sur entrées courtes.
-- Vérification système du fonctionnement sans réseau : les crochets Python et
-  le mode offline llama ne capturent pas les sockets natives ni l'installation.
-- Minima 8/16 Go RAM, Windows 10 x64 et véritables Windows vierges déconnectés.
-- Notices finales, SBOM natif, droits exacts FFmpeg/Qt/runtimes et recette de build.
-- Volume réel compressé du lot et faisabilité prouvée du Setup unique.
-
-## Risques et incidents observés
-
-Community-1 retourne HTTP 401. Ses conditions n'ont pas été acceptées ; il n'est
-pas acquis. L'utilisateur préfère une alternative : la candidate sherpa est
-documentée et testée, son adoption définitive attend les critères qualité.
-
-CTranslate2 4.6 requiert `pkg_resources`, absent de setuptools 84 installé lors
-du premier essai. La version 80.9.0 est figée pour l'environnement technique.
-Un futur choix CT2 plus récent pourra supprimer cette dette après qualification.
-CUDA ne trouve pas `cudnn_ops64_9.dll` et provoque un arrêt natif Windows : aucun
-support GPU ne doit être annoncé à partir du seul inventaire matériel.
-
-La piste pyannote/PyTorch s'importe en CPU mais TorchCodec ne charge pas ses
-DLL FFmpeg ici. Elle reste un essai documenté séparé ; la candidate sherpa n'en
-dépend pas. Les métadonnées FFmpeg de la roue PyAV demandent encore un audit
-des codecs et de la compilation exacte avant redistribution.
-
-Inno Setup exige plusieurs fichiers au-delà de 4 200 000 000 octets compressés.
-Les modèles ASR/LLM occupent environ 2,98 Go avant runtimes. La réduction de la
-pile de diarisation aide, mais ne garantit pas le volume avec CUDA/cuDNN.
-
-Les échecs initiaux de tests dus au répertoire temporaire du bac à sable ont
-été résolus par un répertoire de test sous `.cache`. Un appel fsync sur un
-descripteur ouvert en lecture seule échouait sous Windows ; il a été corrigé
-et les exports sont maintenant testés. Le rendu LibreOffice demandé par l'outil
-DOCX était indisponible ; le contrôle réel a été effectué avec Word + Poppler.
-
-## Phases suivantes
-
-| Phase | État |
-|---|---|
-| 0 — Faisabilité | En cours, preuves CPU et audit initial disponibles |
-| 1 — Séances, DB complète et UI | Non développée ; seule première migration technique existe |
-| 2 — Capture robuste | Expérience de durabilité seulement, pas de recorder utilisateur |
-| 3 — ASR, diarisation et correction | Sondes réelles ; pipeline produit non développé |
-| 4 — PV et exports | Schéma et exports techniques ; éditeur, contrôles factuels et workflow humain à développer |
-| 5 — Matériel et backends | Routage testé ; inventaire complet et GPU à qualifier |
-| 6 — Installation hors ligne | Non réalisée, aucun `NoteTaker-Setup.exe` produit |
-| 7 — Recette terrain et commercialisation | Non réalisée |
+La phase 0 reste ouverte ; les phases UI/audio/pipeline/édition disposent d’une
+première chaîne fonctionnelle, sans recette complète de toutes les exigences.
+Le produit ne doit pas être déclaré terminé avant la qualification Windows
+propre déconnecté. La prochaine recette est décrite dans `operator-guide.md`
+et `field-test.md`.

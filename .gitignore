@@ -12,3 +12,5 @@ models/**
 runtimes/**
 !runtimes/README.md
 *.part
+build-pyinstaller.log
+build-pyinstaller-stderr.log

@@ -147,8 +147,8 @@ def test_database_restart_and_recovery(tmp_path):
 def test_failed_migration_rolls_back_every_statement(tmp_path):
     connection = open_database(tmp_path / "test.sqlite3")
     with pytest.raises(sqlite3.OperationalError):
-        migrate(connection, {1: [], 2: ["CREATE TABLE should_rollback(id TEXT)", "INVALID SQL"]})
-    assert connection.execute("PRAGMA user_version").fetchone()[0] == 1
+        migrate(connection, {1: [], 2: [], 3: [], 4: ["CREATE TABLE should_rollback(id TEXT)", "INVALID SQL"]})
+    assert connection.execute("PRAGMA user_version").fetchone()[0] == 3
     assert connection.execute("SELECT name FROM sqlite_master WHERE name='should_rollback'").fetchall() == []
     connection.close()
 

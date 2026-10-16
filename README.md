@@ -1,19 +1,30 @@
 # NoteTaker
 
-Application Windows locale de préparation des procès-verbaux municipaux.
-**État : phase 0 en cours, critère de sortie non atteint. Aucun installateur commercial disponible.**
+Application Windows locale de transcription et de préparation des procès-verbaux
+municipaux. **Version de développement 0.1 : chaîne CPU implémentée, qualification
+commerciale non terminée.** Aucun `NoteTaker-Setup.exe` approuvé n'est disponible.
 
-Le cahier des charges ConseilNote a été lu intégralement. Le nom produit retenu
-par la demande est NoteTaker et le livrable futur sera `NoteTaker-Setup.exe`.
-Voir [le bilan réel](docs/progress.md), [la faisabilité](docs/feasibility.md),
-[l'architecture](docs/architecture.md), [les versions](docs/compatibility.md)
-et [l'audit des licences](docs/licenses.md).
+## Utiliser la version de travail
 
-## Reproduire les tests de développement
+Sur cette machine, lancer `dist\NoteTaker\NoteTaker.exe`. Conserver tout le
+dossier `dist\NoteTaker` : exécutables, `_internal`, modèles et runtimes.
+Aucun téléchargement n'est prévu au lancement. Ce dossier est généré et exclu de Git.
 
-Les commandes d'acquisition et d'installation ci-dessous concernent uniquement
-la machine de développement connectée. Elles ne font pas partie du logiciel livré.
-Python 3.11 x64 et uv sont nécessaires pour développer, puis seront embarqués au packaging.
+Le [guide opérateur](docs/operator-guide.md) décrit la création d'une séance,
+le microphone, les imports **WAV/MP3/M4A**, les corrections et les exports.
+Les données sont conservées dans `%LOCALAPPDATA%\NoteTaker` par défaut.
+
+Le parcours comprend l'enregistrement avec journal et récupération, Whisper,
+sherpa-onnx, les noms corrigés manuellement, un brouillon Qwen3 sourcé, l'édition,
+la saisie des décisions/votes et l'export PDF/DOCX après confirmation humaine.
+Le brouillon actuel reprend des extraits : Qwen classe les références des
+passages ; les résultats de vote sont exclusivement saisis par l'opérateur.
+
+## Développer et vérifier
+
+Python 3.11 x64 et uv sont nécessaires sur la machine de build. L'installation
+des dépendances et l'acquisition explicite des modèles nécessitent Internet
+uniquement pendant la préparation du build.
 
 ```powershell
 $env:UV_CACHE_DIR = Join-Path $PWD '.cache\uv'
@@ -21,44 +32,45 @@ $env:UV_PYTHON_INSTALL_DIR = Join-Path $PWD '.tools\python'
 uv python install 3.11.16
 uv venv --python 3.11.16 .venv
 uv pip sync --python .venv\Scripts\python.exe --require-hashes requirements.lock
-.venv\Scripts\python.exe -m pytest --basetemp=.cache/pytest-local --junitxml=docs/evidence/pytest.xml
+$env:PYTHONPATH = Join-Path $PWD 'src'
+.venv\Scripts\python.exe -m pytest --basetemp=.cache/pytest-local --junitxml=docs/evidence/pytest-workflow.xml
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\run.ps1
 ```
 
-Les tests de fondation n'ont besoin ni de modèles ni de GPU, ni d'accès réseau.
-Ils génèrent des données fictives explicites, provoquent un véritable arrêt de
-processus et relisent des fichiers DOCX/PDF réels.
-
-## Sondes IA réelles
+Modèles et moteur CPU présents sur ce poste, vérifiables par :
 
 ```powershell
-.venv\Scripts\python.exe scripts\acquire_phase0.py
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\create_speech_fixture.ps1
-.venv\Scripts\python.exe scripts\run_phase0_probes.py
-$env:PYTHONPATH = Join-Path $PWD 'src'
 .venv\Scripts\python.exe -m notetaker.main verify-models
 ```
 
-L'acquisition est explicite, limitée aux révisions publiques déjà auditées,
-et vérifie les gros fichiers contre les SHA-256 amont. Elle consomme environ
-3 Go pour les modèles. La voix française SAPI doit être installée pour la fixture.
-Le script PowerShell possède un BOM UTF-8 pour PowerShell 5.1.
+Les acquisitions explicites restent dans `scripts/acquire_phase0.py` et
+`scripts/acquire_diarization_alternative.py`. Elles ne sont jamais appelées par
+l'application. Les révisions et hashes sont dans les deux manifestes de modèles.
+L'ancien environnement PyTorch n'est pas nécessaire au produit sherpa CPU.
 
-Les sondes mesurent Whisper small en CPU et une tentative CUDA, puis Qwen3 4B
-Q4_K_M dans llama.cpp CPU. Community-1 est absent et renvoie une erreur explicite.
-À la demande de l'utilisateur, la candidate sherpa-onnx a été étudiée et testée :
+## État des validations
 
-```powershell
-.venv\Scripts\python.exe scripts\acquire_diarization_alternative.py
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\create_diarization_fixture.ps1
-.venv\Scripts\python.exe scripts\run_diarization_alternative.py
-```
+**50 tests automatisés réussis.** Chaîne réelle des trois moteurs sur fixture
+synthétique, capture microphone courte et imports des trois formats exécutés.
+Les workers du bundle PyInstaller ont également exécuté les trois moteurs.
+Les rapports et limites sont dans [docs/progress.md](docs/progress.md).
 
-Deux voix synthétiques sont correctement regroupées en CPU sans nombre imposé.
-Voir [l'étude de cette alternative](docs/diarization-alternative.md) pour les
-preuves de licence et les limites de cet essai.
-Les résultats JSON versionnés sont dans `docs/evidence/phase0-probes.json` ; les
-poids, environnements et artefacts temporaires restent exclus de Git.
+**Non validés :** réunion naturelle française de 10–20 minutes à au moins trois
+voix, chevauchements réels, capture longue, GPU et Windows vierge déconnecté.
+La [procédure terrain](docs/field-test.md) permet d'enregistrer ou d'importer
+la réunion dès qu'elle est disponible. Ces absences ne sont pas assimilées à
+des tests réussis.
 
-Les échantillons d'export sont des fixtures techniques, sans séance réelle ni
-validation par un opérateur. Word n'a servi qu'à contrôler visuellement le DOCX
-sur la machine de développement ; il ne sera pas une dépendance client.
+## Architecture et livraison
+
+- [Architecture actuelle](docs/architecture.md)
+- [Versions et compatibilité](docs/compatibility.md)
+- [Licences et réserves de redistribution](docs/licenses.md)
+- [Diarisation sherpa et limites](docs/diarization-alternative.md)
+- [Reproduction des validations](docs/testing.md)
+- [Build PyInstaller et stratégie Inno Setup](packaging/README.md)
+
+Le lot de développement représente environ 3,53 Go avant compression. Les
+notices natives, runtimes, signature et recette propre hors ligne restent à
+qualifier avant le livrable commercial unique `NoteTaker-Setup.exe`.
+L'état de phase 0 antérieur est conservé dans `docs/history`.

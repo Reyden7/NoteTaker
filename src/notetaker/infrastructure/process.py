@@ -6,19 +6,68 @@ import sys
 from pathlib import Path
 from .offline import OFFLINE_ENV
 
-def run_worker(request: Path, *, python: Path | None = None, timeout: float = 120) -> dict:
+class JobCancelled(Exception):
+    pass
+
+def stop_tree(process):
+    import psutil
+    try:
+        parent = psutil.Process(process.pid)
+        children = parent.children(recursive=True)
+        for child in reversed(children):
+            try:
+                child.kill()
+            except psutil.NoSuchProcess:
+                pass
+        parent.kill()
+        psutil.wait_procs(children, timeout=3)
+    except psutil.NoSuchProcess:
+        pass
+    process.wait(timeout=5)
+
+def run_worker(request: Path, *, python: Path | None = None, timeout: float = 120, cancel=None) -> dict:
     env = dict(os.environ)
     env.update(OFFLINE_ENV)
     env["PYTHONIOENCODING"] = "utf-8"
     # Development path; frozen worker entry points will be built during phase 6.
     env["PYTHONPATH"] = str(Path(__file__).resolve().parents[2])
+    command = ([str(python or sys.executable), "-m", "notetaker.workers.probe", str(request.resolve(strict=True))]
+               if not getattr(sys, "frozen", False) else [str(Path(sys.executable).with_name("NoteTaker-worker.exe")), str(request.resolve(strict=True))])
     try:
-        completed = subprocess.run(
-            [str(python or sys.executable), "-m", "notetaker.workers.probe", str(request.resolve(strict=True))],
-            env=env, capture_output=True, timeout=timeout, text=True, encoding="utf-8", errors="replace",
-            creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
-            check=False,
-        )
+        if cancel is not None:
+            import time
+            started = time.monotonic()
+            child = subprocess.Popen(command, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                     text=True, encoding="utf-8", errors="replace", creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+            from .windows_job import WindowsJob
+            try:
+                job = WindowsJob(child)
+            except OSError:
+                stop_tree(child)
+                raise
+            try:
+                while True:
+                    if cancel.is_set() or time.monotonic() - started > timeout:
+                        job.close()
+                        stop_tree(child)
+                        if cancel.is_set():
+                            raise JobCancelled("JOB_CANCELLED")
+                        raise TimeoutError("WORKER_TIMEOUT")
+                    try:
+                        stdout, stderr = child.communicate(timeout=0.2)
+                        completed = subprocess.CompletedProcess(command, child.returncode, stdout, stderr)
+                        break
+                    except subprocess.TimeoutExpired:
+                        continue
+            finally:
+                job.close()
+        else:
+            completed = subprocess.run(
+                command,
+                env=env, capture_output=True, timeout=timeout, text=True, encoding="utf-8", errors="replace",
+                creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
+                check=False,
+            )
     except subprocess.TimeoutExpired as exc:
         raise TimeoutError("WORKER_TIMEOUT") from exc
     if completed.returncode:

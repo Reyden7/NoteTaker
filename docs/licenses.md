@@ -74,7 +74,8 @@ chaîne de licence retournée. Les métadonnées natives sont conservées dans
 seuls codecs audio nécessaires est l'alternative à qualifier. Respecter la
 mise à disposition des sources et les obligations de remplacement/recombinaison
 LGPL ; examiner les éventuels droits de codecs selon les territoires concernés.
-MP3/M4A n'ont pas encore été testés.
+Les imports MP3/M4A ont ensuite été réellement décodés dans la version 0.1 ;
+cette réussite technique ne lève pas les réserves de redistribution.
 
 PyTorch/TorchAudio sont sous licences de type BSD et TorchCodec BSD-3-Clause,
 avec de nombreux composants tiers et FFmpeg séparé. Ces composants sont dans
@@ -146,3 +147,29 @@ et composants exacts. Les manifestes restent `development-only` / `pending-notic
 L'audit technique initial n'est pas une approbation juridique de l'EULA finale.
 Le lot sera bloqué si un fichier n'a pas une provenance, un hash, une licence
 et les obligations de redistribution documentées.
+
+## Delta du lot de développement 0.1
+
+PySide6 6.8.3, ses paquets Essentials/Addons et shiboken6 sont maintenant
+installés et collectés par PyInstaller. La lecture audio utilise QtMultimedia :
+ses plugins et son backend FFmpeg doivent aussi figurer dans l'audit natif,
+en plus de FFmpeg privé de PyAV. Le choix `onedir` permet l'accès aux DLL ;
+les notices collectées ne constituent ni un dossier de sources complet ni
+une validation du remplacement effectif des bibliothèques LGPL.
+
+Whisper emploie désormais le VAD Silero ONNX déjà inclus dans la roue
+faster-whisper. Le dépôt amont Silero annonce MIT ; inclure sa provenance,
+la licence et l'empreinte du fichier effectivement embarqué dans le SBOM final.
+Source : [licence Silero VAD](https://github.com/snakers4/silero-vad/blob/master/LICENSE).
+
+Le build utilise PyInstaller 6.16.0, hooks-contrib 2026.8 et backports.tarfile
+1.2.0. Ce dernier est nécessaire à la chaîne setuptools/pkg_resources du worker
+compilé et fait partie du verrou. L'inventaire Python a été régénéré avec
+52 distributions ; les textes fournis par les paquets sont copiés dans
+`third_party/asr`. Cet inventaire ne recense pas encore toutes les DLL et leurs
+composants tiers. La DLL PortAudio ASIO est filtrée du bundle.
+
+Le dossier CPU de développement ne contient ni la pile PyTorch étudiée
+antérieurement ni un lot CUDA/cuDNN. Les trois modèles locaux et llama CPU
+sont copiés avec leurs manifestes, dont le statut reste `development-only` /
+`pending-notices`. Aucun résultat de test fonctionnel ne change ce statut.

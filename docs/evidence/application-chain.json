@@ -1,0 +1,21 @@
+{
+  "fixture": true,
+  "session_id": "b90a2b39-fd7c-4ef9-a554-633b516ee964",
+  "input_sha256": "a4aab86e7366801a417f37b4a2b04620fdd7a8e6da982f3643f36097dbee7c2f",
+  "data_directory": "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\output\\chain-validation-02",
+  "natural_french_three_speakers": "not-validated",
+  "analysis": {
+    "utterances": 4,
+    "speakers": 1,
+    "device": "cpu"
+  },
+  "analysis_seconds": 8.993,
+  "minutes": {
+    "points": 2
+  },
+  "generation_seconds": 11.315,
+  "unreviewed_export_blocked": true,
+  "export_gate_test": "automated-fixture-only",
+  "original_intact": true,
+  "reopened": true
+}

@@ -3,6 +3,14 @@
   "platform": "Windows-10-10.0.26300-SP0",
   "components": [
     {
+      "name": "altgraph",
+      "version": "0.17.5",
+      "license": "MIT",
+      "packaged_notices": [
+        "third_party/asr/altgraph/LICENSE"
+      ]
+    },
+    {
       "name": "attrs",
       "version": "26.1.0",
       "license": "MIT",
@@ -18,6 +26,14 @@
         "third_party/asr/av/licenses/AUTHORS.py",
         "third_party/asr/av/licenses/AUTHORS.rst",
         "third_party/asr/av/licenses/LICENSE.txt"
+      ]
+    },
+    {
+      "name": "backports.tarfile",
+      "version": "1.2.0",
+      "license": null,
+      "packaged_notices": [
+        "third_party/asr/backports.tarfile/LICENSE"
       ]
     },
     {
@@ -162,6 +178,14 @@
       ]
     },
     {
+      "name": "pefile",
+      "version": "2023.2.7",
+      "license": "MIT",
+      "packaged_notices": [
+        "third_party/asr/pefile/LICENSE"
+      ]
+    },
+    {
       "name": "pillow",
       "version": "12.3.0",
       "license": "MIT-CMU",
@@ -211,11 +235,51 @@
       ]
     },
     {
+      "name": "pyinstaller",
+      "version": "6.16.0",
+      "license": "GPLv2-or-later with a special exception which allows to use PyInstaller to build and distribute non-free programs (including commercial ones)",
+      "packaged_notices": [
+        "third_party/asr/pyinstaller/licenses/COPYING.txt"
+      ]
+    },
+    {
+      "name": "pyinstaller-hooks-contrib",
+      "version": "2026.8",
+      "license": null,
+      "packaged_notices": [
+        "third_party/asr/pyinstaller-hooks-contrib/licenses/LICENSE"
+      ]
+    },
+    {
       "name": "pypdf",
       "version": "6.1.1",
       "license": "BSD-3-Clause",
       "packaged_notices": [
         "third_party/asr/pypdf/licenses/LICENSE"
+      ]
+    },
+    {
+      "name": "PySide6",
+      "version": "6.8.3",
+      "license": "LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only",
+      "packaged_notices": [
+        "third_party/asr/PySide6/LicenseRef-Qt-Commercial.txt"
+      ]
+    },
+    {
+      "name": "PySide6_Addons",
+      "version": "6.8.3",
+      "license": "LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only",
+      "packaged_notices": [
+        "third_party/asr/PySide6_Addons/LicenseRef-Qt-Commercial.txt"
+      ]
+    },
+    {
+      "name": "PySide6_Essentials",
+      "version": "6.8.3",
+      "license": "LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only",
+      "packaged_notices": [
+        "third_party/asr/PySide6_Essentials/LicenseRef-Qt-Commercial.txt"
       ]
     },
     {
@@ -233,6 +297,14 @@
       "license": "MIT",
       "packaged_notices": [
         "third_party/asr/python-docx/licenses/LICENSE"
+      ]
+    },
+    {
+      "name": "pywin32-ctypes",
+      "version": "0.2.3",
+      "license": "BSD-3-Clause",
+      "packaged_notices": [
+        "third_party/asr/pywin32-ctypes/LICENSE.txt"
       ]
     },
     {
@@ -315,6 +387,14 @@
       "version": "1.13.8",
       "license": "Apache-2.0",
       "packaged_notices": []
+    },
+    {
+      "name": "shiboken6",
+      "version": "6.8.3",
+      "license": "LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only",
+      "packaged_notices": [
+        "third_party/asr/shiboken6/LicenseRef-Qt-Commercial.txt"
+      ]
     },
     {
       "name": "sounddevice",
