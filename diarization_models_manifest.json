@@ -1,0 +1,104 @@
+{
+  "status": "development-only",
+  "archives": [
+    {
+      "path": "models/diarization/sherpa/sherpa-onnx-pyannote-segmentation-3-0.tar.bz2",
+      "sha256": "24615ee884c897d9d2ba09bb4d30da6bb1b15e685065962db5b02e76e4996488",
+      "upstream_sha256": null,
+      "asset_id": 197666131,
+      "size_bytes": 6958444,
+      "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-segmentation-models/sherpa-onnx-pyannote-segmentation-3-0.tar.bz2",
+      "updated_at": "2024-10-08T12:54:10Z"
+    },
+    {
+      "path": "models/diarization/sherpa/3dspeaker_speech_eres2net_base_sv_zh-cn_3dspeaker_16k.onnx",
+      "sha256": "1a331345f04805badbb495c775a6ddffcdd1a732567d5ec8b3d5749e3c7a5e4b",
+      "upstream_sha256": null,
+      "asset_id": 198893098,
+      "size_bytes": 39593761,
+      "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/3dspeaker_speech_eres2net_base_sv_zh-cn_3dspeaker_16k.onnx",
+      "updated_at": "2024-10-14T03:41:16Z"
+    }
+  ],
+  "assets": [
+    {
+      "path": "models/diarization/sherpa/3dspeaker_speech_eres2net_base_sv_zh-cn_3dspeaker_16k.onnx",
+      "sha256": "1a331345f04805badbb495c775a6ddffcdd1a732567d5ec8b3d5749e3c7a5e4b",
+      "size_bytes": 39593761,
+      "redistribution": "pending-notices"
+    },
+    {
+      "path": "models/diarization/sherpa/sherpa-onnx-pyannote-segmentation-3-0/export-onnx.py",
+      "sha256": "21df426fc6ca2ad54b5c9e114729990e0a669d602ea4e052f38287f99d32c0b0",
+      "size_bytes": 3953,
+      "redistribution": "pending-notices"
+    },
+    {
+      "path": "models/diarization/sherpa/sherpa-onnx-pyannote-segmentation-3-0/LICENSE",
+      "sha256": "14d7016ad68e7394d6e6b78d96cc2ae431c905287b89674cfdf021e79e62b8ba",
+      "size_bytes": 1061,
+      "redistribution": "pending-notices"
+    },
+    {
+      "path": "models/diarization/sherpa/sherpa-onnx-pyannote-segmentation-3-0/model.int8.onnx",
+      "sha256": "d582f4b4c6b48205de7e0643c57df0df5615a3c176189be3fc461e9d18827b5d",
+      "size_bytes": 1540506,
+      "redistribution": "pending-notices"
+    },
+    {
+      "path": "models/diarization/sherpa/sherpa-onnx-pyannote-segmentation-3-0/model.onnx",
+      "sha256": "220ad67ca923bef2fa91f2390c786097bf305bceb5e261d4af67b38e938e1079",
+      "size_bytes": 5992913,
+      "redistribution": "pending-notices"
+    },
+    {
+      "path": "models/diarization/sherpa/sherpa-onnx-pyannote-segmentation-3-0/README.md",
+      "sha256": "0380ed76a50efcc421dc62f251ed06e8349688466beac3177bee6e00dc336bfc",
+      "size_bytes": 115,
+      "redistribution": "pending-notices"
+    },
+    {
+      "path": "models/diarization/sherpa/sherpa-onnx-pyannote-segmentation-3-0/run.sh",
+      "sha256": "5844c56ec90b29d0f01056f81e3f66f84ed4ef598bfc8705f86cd290d73138b3",
+      "size_bytes": 1985,
+      "redistribution": "pending-notices"
+    },
+    {
+      "path": "models/diarization/sherpa/sherpa-onnx-pyannote-segmentation-3-0/show-onnx.py",
+      "sha256": "ace74dd3749e345cfac03a2d869830a99e7425ebc100545d7e8b2b95568ee575",
+      "size_bytes": 857,
+      "redistribution": "pending-notices"
+    },
+    {
+      "path": "models/diarization/sherpa/sherpa-onnx-pyannote-segmentation-3-0/speaker-diarization-onnx.py",
+      "sha256": "51e301c2d02c87351a22582e51e883d4f18e4755d193587e69e1fd7f357132e7",
+      "size_bytes": 15204,
+      "redistribution": "pending-notices"
+    },
+    {
+      "path": "models/diarization/sherpa/sherpa-onnx-pyannote-segmentation-3-0/speaker-diarization-torch.py",
+      "sha256": "72f9fa5dd9f4966869acf79ef3b1328398434c70373f462d373895757aa0fae7",
+      "size_bytes": 2306,
+      "redistribution": "pending-notices"
+    },
+    {
+      "path": "models/diarization/sherpa/sherpa-onnx-pyannote-segmentation-3-0/vad-onnx.py",
+      "sha256": "4fbd5d74faf7bb34133f3268d1f184f9a43bfa3e3220acf1dbec7e9bef41e848",
+      "size_bytes": 6883,
+      "redistribution": "pending-notices"
+    },
+    {
+      "path": "models/diarization/sherpa/sherpa-onnx-pyannote-segmentation-3-0/vad-torch.py",
+      "sha256": "ecd6d40be0229624b7a312a1e2a3cffddeaf432706395df26c76fe588bf8dc66",
+      "size_bytes": 1029,
+      "redistribution": "pending-notices"
+    },
+    {
+      "path": "models/diarization/sherpa/sherpa-onnx-pyannote-segmentation-3-0.tar.bz2",
+      "sha256": "24615ee884c897d9d2ba09bb4d30da6bb1b15e685065962db5b02e76e4996488",
+      "size_bytes": 6958444,
+      "redistribution": "pending-notices"
+    }
+  ],
+  "embedding_license_source": "https://modelscope.cn/models/iic/speech_eres2net_base_sv_zh-cn_3dspeaker_16k/resolve/master/README.md"
+}

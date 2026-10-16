@@ -1,0 +1,113 @@
+{
+  "fixture": "four alternating turns, two installed synthetic voices, no overlap",
+  "duration_seconds": 49.59,
+  "truth": [
+    {
+      "start": 0,
+      "end": 11.44,
+      "synthetic_voice": 0
+    },
+    {
+      "start": 12.44,
+      "end": 23.795,
+      "synthetic_voice": 1
+    },
+    {
+      "start": 24.795,
+      "end": 36.235,
+      "synthetic_voice": 0
+    },
+    {
+      "start": 37.235,
+      "end": 48.59,
+      "synthetic_voice": 1
+    }
+  ],
+  "attempts": {
+    "cuda": {
+      "returncode": 2,
+      "timeout": false,
+      "wall_seconds": 0.156,
+      "peak_aggregate_rss_bytes": 18862080,
+      "stdout": "output/phase0/sherpa-cuda.stdout.txt",
+      "stderr": "output/phase0/sherpa-cuda.stderr.txt",
+      "response": {
+        "status": "failed",
+        "error_code": "RuntimeError",
+        "elapsed_seconds": 0.009,
+        "python_network_attempts": 0
+      }
+    },
+    "cpu": {
+      "returncode": 0,
+      "timeout": false,
+      "wall_seconds": 6.266,
+      "peak_aggregate_rss_bytes": 252854272,
+      "stdout": "output/phase0/sherpa-cpu.stdout.txt",
+      "stderr": "output/phase0/sherpa-cpu.stderr.txt",
+      "response": {
+        "status": "completed",
+        "engine": "diarization-sherpa",
+        "result": {
+          "turns": [
+            {
+              "start": 0.03096874989569187,
+              "end": 4.097843647003174,
+              "speaker": "speaker_0"
+            },
+            {
+              "start": 4.874094009399414,
+              "end": 10.712843894958496,
+              "speaker": "speaker_0"
+            },
+            {
+              "start": 12.501594543457031,
+              "end": 16.365970611572266,
+              "speaker": "speaker_1"
+            },
+            {
+              "start": 17.02409553527832,
+              "end": 23.132844924926758,
+              "speaker": "speaker_1"
+            },
+            {
+              "start": 24.887845993041992,
+              "end": 28.88722038269043,
+              "speaker": "speaker_0"
+            },
+            {
+              "start": 29.663471221923828,
+              "end": 35.502220153808594,
+              "speaker": "speaker_0"
+            },
+            {
+              "start": 37.30784606933594,
+              "end": 41.15534591674805,
+              "speaker": "speaker_1"
+            },
+            {
+              "start": 41.830345153808594,
+              "end": 47.88846969604492,
+              "speaker": "speaker_1"
+            }
+          ],
+          "clustering": "automatic-threshold-0.5",
+          "device": "cpu"
+        },
+        "elapsed_seconds": 6.125,
+        "python_network_attempts": 0
+      }
+    }
+  },
+  "quality_scope": "Smoke test only; not French field DER; embeddings trained on Chinese speech",
+  "network_validation": "Python socket audit guard only; native network not captured",
+  "selected_device": "cpu",
+  "detected_speakers": 2,
+  "majority_speaker_per_turn": [
+    "speaker_0",
+    "speaker_1",
+    "speaker_0",
+    "speaker_1"
+  ],
+  "two_voice_smoke_passed": true
+}

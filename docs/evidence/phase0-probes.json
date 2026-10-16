@@ -1,0 +1,118 @@
+{
+  "fixture_kind": "synthetic-french-speech",
+  "cpu_threads": 4,
+  "network_validation": "Python audit hook for ASR only; native traffic not audited; host not disconnected",
+  "hardware": {
+    "ram_bytes": 34138931200,
+    "logical_cpus": 20,
+    "free_disk_bytes": 11756478464
+  },
+  "asr": {
+    "cuda": {
+      "returncode": 3221226505,
+      "timeout": false,
+      "wall_seconds": 3.76,
+      "peak_aggregate_rss_bytes": 681611264,
+      "stdout": "output/phase0/asr-cuda.stdout.txt",
+      "stderr": "output/phase0/asr-cuda.stderr.txt",
+      "response": {
+        "status": "native-crash-or-invalid-output"
+      }
+    },
+    "cpu": {
+      "returncode": 0,
+      "timeout": false,
+      "wall_seconds": 4.232,
+      "peak_aggregate_rss_bytes": 602189824,
+      "stdout": "output/phase0/asr-cpu.stdout.txt",
+      "stderr": "output/phase0/asr-cpu.stderr.txt",
+      "response": {
+        "status": "completed",
+        "engine": "asr",
+        "result": {
+          "language": "fr",
+          "duration_seconds": 13.59,
+          "segments": [
+            {
+              "id": "s0",
+              "start": 0.0,
+              "end": 2.78,
+              "text": " La séance du Conseil municipal est ouverte.",
+              "avg_logprob": -0.19481353174176133,
+              "no_speech_prob": 0.0037359537091106176
+            },
+            {
+              "id": "s1",
+              "start": 3.56,
+              "end": 6.14,
+              "text": " Nous examinons les travaux de la bibliothèque.",
+              "avg_logprob": -0.19481353174176133,
+              "no_speech_prob": 0.0037359537091106176
+            },
+            {
+              "id": "s2",
+              "start": 6.94,
+              "end": 9.42,
+              "text": " Le montant annoncé est de 12 000 euros.",
+              "avg_logprob": -0.19481353174176133,
+              "no_speech_prob": 0.0037359537091106176
+            },
+            {
+              "id": "s3",
+              "start": 10.38,
+              "end": 12.68,
+              "text": " Le résultat du vote reste à compléter.",
+              "avg_logprob": -0.19481353174176133,
+              "no_speech_prob": 0.0037359537091106176
+            }
+          ]
+        },
+        "elapsed_seconds": 4.077,
+        "python_network_attempts": 0
+      }
+    }
+  },
+  "asr_selected_device": "cpu",
+  "asr_routing_attempts": [
+    {
+      "device": "cuda",
+      "ok": false,
+      "error_code": "RuntimeError"
+    },
+    {
+      "device": "cpu",
+      "ok": true,
+      "error_code": null
+    }
+  ],
+  "llm_cpu": {
+    "returncode": 0,
+    "timeout": false,
+    "wall_seconds": 13.814,
+    "peak_aggregate_rss_bytes": 4975992832,
+    "stdout": "output/phase0/llm-cpu.stdout.txt",
+    "stderr": "output/phase0/llm-cpu.stderr.txt",
+    "schema_valid": true,
+    "result": {
+      "points": [
+        {
+          "title": "Travaux de la bibliothèque",
+          "summary": "Nous examinons les travaux de la bibliothèque. Le montant annoncé est de douze mille euros. Le résultat du vote reste à compléter.",
+          "sources": [
+            "s0"
+          ],
+          "vote_id": null
+        }
+      ],
+      "to_verify": [
+        "Résultat du vote pour les travaux de la bibliothèque"
+      ]
+    },
+    "trailing_output": "[end of text]"
+  },
+  "diarization": {
+    "status": "community-1-not-acquired",
+    "reason": "HTTP 401; alternative requested by user",
+    "alternative_report": "docs/evidence/diarization-alternative-probe.json"
+  }
+}

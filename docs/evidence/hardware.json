@@ -1,0 +1,9 @@
+{
+  "platform": "Windows-10-10.0.26300-SP0",
+  "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+  "ram_bytes": 34138931200,
+  "logical_cpus": 20,
+  "gpu_inventory_only": "NVIDIA GeForce RTX 5070, 616.92, 12227 MiB",
+  "gpu_command_exit": 0,
+  "free_disk_bytes": 11705937920
+}

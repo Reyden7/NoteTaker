@@ -1,0 +1,89 @@
+{
+  "fixture_kind": "synthetic-french-speech",
+  "cpu_threads": 4,
+  "network_validation": "Python audit hook for ASR only; native traffic not audited; host not disconnected",
+  "hardware": {
+    "ram_bytes": 34138931200,
+    "logical_cpus": 20,
+    "free_disk_bytes": 11862519808
+  },
+  "asr": {
+    "cuda": {
+      "returncode": 3221226505,
+      "timeout": false,
+      "wall_seconds": 4.681,
+      "peak_rss_bytes": 5373952,
+      "stdout": "output/phase0/asr-cuda.stdout.txt",
+      "stderr": "output/phase0/asr-cuda.stderr.txt",
+      "response": {
+        "status": "native-crash-or-invalid-output"
+      }
+    },
+    "cpu": {
+      "returncode": 0,
+      "timeout": false,
+      "wall_seconds": 5.499,
+      "peak_rss_bytes": 5373952,
+      "stdout": "output/phase0/asr-cpu.stdout.txt",
+      "stderr": "output/phase0/asr-cpu.stderr.txt",
+      "response": {
+        "status": "completed",
+        "engine": "asr",
+        "result": {
+          "language": "fr",
+          "duration_seconds": 18.135,
+          "segments": [
+            {
+              "id": "s0",
+              "start": 0.0,
+              "end": 3.86,
+              "text": " La salle à symbole copyrightance du Conseil municipal est ouverte.",
+              "avg_logprob": -0.3269057214995961,
+              "no_speech_prob": 0.01826329156756401
+            },
+            {
+              "id": "s1",
+              "start": 4.74,
+              "end": 7.24,
+              "text": " Nous examinons les travaux de la bibliothèque.",
+              "avg_logprob": -0.3269057214995961,
+              "no_speech_prob": 0.01826329156756401
+            },
+            {
+              "id": "s2",
+              "start": 8.2,
+              "end": 11.56,
+              "text": " Le montant à non cas symbole copyright est de 12 000 euros.",
+              "avg_logprob": -0.3269057214995961,
+              "no_speech_prob": 0.01826329156756401
+            },
+            {
+              "id": "s3",
+              "start": 12.5,
+              "end": 17.44,
+              "text": " L'aura symbole copyright sur le tas du vote reste à complat symbole copyright terre.",
+              "avg_logprob": -0.3269057214995961,
+              "no_speech_prob": 0.01826329156756401
+            }
+          ]
+        },
+        "elapsed_seconds": 5.342,
+        "python_network_attempts": 0
+      }
+    }
+  },
+  "llm_cpu": {
+    "returncode": 0,
+    "timeout": false,
+    "wall_seconds": 14.578,
+    "peak_rss_bytes": 4976947200,
+    "stdout": "output/phase0/llm-cpu.stdout.txt",
+    "stderr": "output/phase0/llm-cpu.stderr.txt",
+    "schema_valid": false,
+    "validation_error": "JSONDecodeError"
+  },
+  "diarization": {
+    "status": "blocked",
+    "reason": "Community-1 not acquired: HTTP 401"
+  }
+}
