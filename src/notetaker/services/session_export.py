@@ -12,9 +12,17 @@ def export_session(store, sid, destination: Path):
     directory = session_directory(store.root, sid) / "exports"
     directory.mkdir(exist_ok=True)
     internal = directory / (str(uuid.uuid4()) + destination.suffix.lower())
+    from .directory import participant_lines
+    details = {**state['metadata'], 'title': state['title'], 'secretary': state['draft']['review'].get('reviewer', '')}
+    if state['participants']:
+        structured = '\n'.join(participant_lines(state['participants']))
+        legacy = state['metadata'].get('participants', '')
+        details['participants'] = structured + ('\nNotes de présence : ' + legacy if legacy else '')
     export_draft(state["draft"]["content"], review, internal, session_id=sid, municipality=state["metadata"].get("municipality", ""),
-                 session_date=state["metadata"].get("date", ""), votes=state["votes"], decisions=state["decisions"])
-    atomic_json(internal.with_suffix(".snapshot.json"), {k: state[k] for k in ("title", "metadata", "speakers", "utterances", "votes", "decisions", "draft")})
+                 session_date=state["metadata"].get("date", ""), votes=state["votes"], decisions=state["decisions"],
+                 details=details,
+                 reviewer_role=state["draft"]["review"].get("reviewer_role"))
+    atomic_json(internal.with_suffix(".snapshot.json"), {k: state[k] for k in ("title", "metadata", "participants", "speakers", "utterances", "votes", "decisions", "draft")})
     digest = sha256_file(internal)
     store.record_export(sid, state["draft"]["id"], internal, digest)
     destination.parent.mkdir(parents=True, exist_ok=True)

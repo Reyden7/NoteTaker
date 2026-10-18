@@ -26,3 +26,23 @@ une offre de sources LGPL complète ni une autorisation du lot commercial.
 Community-1 n'a pas été acquis. PyTorch et pyannote.audio ont servi à une étude
 de compatibilité ; leur présence dans un environnement de développement ne
 signifie pas leur inclusion dans le produit retenu.
+
+Étude qualité 0.2 : WeSpeaker VoxCeleb ResNet34 (fiche de poids officielle
+Apache-2.0 ; adaptation des métadonnées tracée), Noto Sans Regular/Bold et
+The Noto Project Authors (SIL OFL 1.1). La licence complète des polices est
+livrée avec les TTF dans les ressources de l'application ; provenance et
+empreintes dans `docs/evidence/quality-assets.json`. Le registre commercial
+complet reste à finaliser, notamment l'attribution du modèle WeSpeaker.
+
+Synthèse du lot 0.2 sélectionné : Qwen3-4B-Instruct-2507, Qwen Team /
+Alibaba Cloud, sous Apache-2.0 ; quantification Q4_K_M par Unsloth, également
+déclarée Apache-2.0. Révision de base `cdbee75f17c01a7cc42f958dc650907174af0554`,
+révision GGUF `a06e946bb6b655725eafa393f4a9745d460374c9`. LICENSE et fiches
+de provenance sont dans `models/llm/qwen3-4b-instruct-2507` et figurent au
+manifeste avec leurs empreintes. L'ancien modèle Qwen est conservé hors du
+nouveau payload. Cette sélection de développement n'approuve pas le lot commercial.
+
+Le lot natif contient encore le frontal NVIDIA cuDNN 9.1.0.70 provenant de
+CTranslate2. Sa redistribution pour la cible CPU générale reste bloquée dans
+l'audit ; ne pas annoncer un lot CPU déjà dépourvu de composant NVIDIA.
+Qt Virtual Keyboard et PortAudio ASIO sont exclus du nouveau bundle vérifié.

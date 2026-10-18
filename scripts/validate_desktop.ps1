@@ -1,3 +1,4 @@
+param([string]$BundleDirectory = 'dist\NoteTaker', [string]$ReportFile = 'docs\evidence\desktop-validation.json')
 # Compiled UI startup smoke test on this developer PC, not clean Windows acceptance.
 $ErrorActionPreference = 'Stop'
 Add-Type -TypeDefinition @'
@@ -37,7 +38,7 @@ public static class NoteTakerWindowProbe {
 }
 '@
 $notetakerRoot = Split-Path -Parent $PSScriptRoot
-$notetakerExe = Join-Path $notetakerRoot 'dist\NoteTaker\NoteTaker.exe'
+$notetakerExe = Join-Path (Join-Path $notetakerRoot $BundleDirectory) 'NoteTaker.exe'
 $notetakerData = Join-Path $notetakerRoot ('output\desktop-validation\' + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Force -Path $notetakerData | Out-Null
 $notetakerProcess = Start-Process -FilePath $notetakerExe -ArgumentList @('--data-dir', $notetakerData) -WorkingDirectory $notetakerData -WindowStyle Hidden -PassThru
@@ -72,7 +73,7 @@ try {
         isolated_data_directory=$notetakerData
         scope='compiled UI startup and normal shutdown only; no meeting or quality acceptance'
     }
-    $notetakerReport | ConvertTo-Json | Set-Content -Encoding UTF8 -LiteralPath (Join-Path $notetakerRoot 'docs\evidence\desktop-validation.json')
+    $notetakerReport | ConvertTo-Json | Set-Content -Encoding UTF8 -LiteralPath (Join-Path $notetakerRoot $ReportFile)
     Write-Output 'Compiled UI opened a responsive main window, created its database and closed normally.'
 } finally {
     $notetakerProcess.Refresh()

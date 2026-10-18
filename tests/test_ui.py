@@ -70,3 +70,22 @@ def test_ui_export_requires_explicit_review_action(window, tmp_path, monkeypatch
     window.approve()
     window.export("pdf")
     assert target.is_file()
+
+
+def test_municipal_ui_requires_secretary_confirmation(window, monkeypatch):
+    from notetaker.services.pipeline import integral_transcript
+    sid = window.store.create("PV test")
+    window.store.save_analysis(sid, [{"id": "s0", "start_ms": 0, "end_ms": 1000, "text": "Texte fictif", "speaker_id": "a", "uncertain": False}], {"a": "Voix test"}, 0)
+    draft = integral_transcript(window.store.get(sid))
+    draft["document_mode"] = "municipal"
+    window.store.save_draft(sid, draft)
+    window.sid = sid
+    window.load_session()
+    monkeypatch.setattr(QInputDialog, "getText", lambda *a, **k: ("Test fixture secretary", True))
+    answers = iter([QMessageBox.Yes, QMessageBox.No])
+    monkeypatch.setattr(QMessageBox, "question", lambda *a, **k: next(answers))
+    window.approve()
+    assert window.store.get(sid)["draft"]["review"] is None
+    monkeypatch.setattr(QMessageBox, "question", lambda *a, **k: QMessageBox.Yes)
+    window.approve()
+    assert window.store.get(sid)["draft"]["review"]["reviewer_role"] == "secretary"

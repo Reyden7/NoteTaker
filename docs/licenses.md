@@ -1,6 +1,6 @@
 # Audit des licences et de la redistribution
 
-État au 16 octobre 2026. Cet audit distingue le code, les poids, les bibliothèques
+État mis à jour le 18 octobre 2026. Cet audit distingue le code, les poids, les bibliothèques
 natives et les conditions d'acquisition. Une licence permissive du moteur ne
 vaut pas autorisation de redistribuer toutes ses dépendances. Aucun lot final
 de distribution n'est approuvé aujourd'hui.
@@ -53,12 +53,27 @@ est une autre voie, pas une autorisation supposée acquise.
 
 python-docx est MIT ; ReportLab est BSD. lxml et ses bibliothèques XML,
 Pillow et les polices utilisées doivent aussi figurer dans le lot de notices.
-Les PDF d'essai utilisent les polices de base ; la couverture Unicode complète
-(noms propres, symboles, alphabets supplémentaires) devra employer une police
-embarquée avec licence vérifiée. Le logiciel exporte sans Word ni LibreOffice.
+La version 0.2 embarque Noto Sans OFL et refuse les glyphes absents dans les
+deux formats. Elle ne revendique pas tous les alphabets. Le logiciel exporte
+sans Word ni LibreOffice.
 Word installé a uniquement servi à la QA du DOCX sur le poste de développement.
 
 ## Audio et bibliothèques natives
+
+### Contrôle du contenu Qt du bundle 0.2
+
+L'inventaire réel a trouvé `Qt6VirtualKeyboard.dll` et
+`platforminputcontexts/qtvirtualkeyboardplugin.dll`, collectés automatiquement.
+Ce module optionnel n'offre pas la voie LGPL :
+[Qt 6.8 le publie sous GPLv3 ou licence commerciale](https://doc.qt.io/qt-6.8/qtvirtualkeyboard-index.html#licenses-and-attributions).
+L'application Widgets ne l'emploie pas ; l'examen PE des imports de Core/Gui,
+Widgets et Multimedia ne montre aucune dépendance directe à ce module.
+La spec l'exclut désormais, plugin compris, et `validate_bundle.py` refuse sa
+présence dans le lot reconstruit, ainsi que la variante ASIO déjà écartée.
+L'inventaire du dernier bundle confirme l'absence de ces fichiers et d'ASIO ;
+le démarrage et l'arrêt réels réussissent le 18 octobre.
+Cette correction ne constitue pas un audit exhaustif ni une approbation des
+autres composants Qt et des deux piles FFmpeg distinctes.
 
 sounddevice et PortAudio sont sous licences permissives (MIT pour sounddevice,
 licence permissive PortAudio). La roue Windows contient aussi une variante ASIO :
@@ -89,6 +104,25 @@ DLL sous les conditions de distribution. Figer chaque nom, version, hash et
 EULA, conserver les notices tierces et adapter les conditions produit.
 Les pilotes restent un prérequis système ; NoteTaker ne les installe pas.
 Aucune DLL NVIDIA n'a encore été constituée en lot redistribuable validé.
+
+**Constat binaire 0.2 : le profil CPU n'est pas dépourvu de composant NVIDIA.**
+La roue Windows CTranslate2 4.6.0 fournit `cudnn64_9.dll` (438 840 octets,
+version 9.1.0.70, NVIDIA Corporation). `ctranslate2.dll` l'importe directement,
+sans chargement différé ; l'enlever casserait aussi l'import du moteur CPU.
+Les DLL de calcul cuDNN manquantes empêchent toujours la voie GPU testée.
+Le frontal doit donc entrer dans l'audit de redistribution du lot CPU, ou être
+remplacé par un build CTranslate2 contrôlé avec CUDA désactivé, à requalifier.
+Ne pas appliquer à ce binaire ancien l'EULA d'une version récente sans vérifier
+la licence exacte. Le [supplément cuDNN 9.1.0, section 4.1](https://docs.nvidia.com/deeplearning/cudnn/backend/v9.1.0/reference/eula.html)
+limite le développement aux applications destinées aux systèmes avec GPU NVIDIA ;
+sa section Distribution autorise les fichiers runtime sous les autres conditions
+de l'accord. Le lot actuel n'est donc pas approuvé pour la cible commerciale
+CPU générale incluant les PC sans GPU NVIDIA. Un build CTranslate2 CPU sans
+cette dépendance, ou un droit distinct vérifié, reste nécessaire.
+Inventaire PE et hashes :
+`evidence/native-payload-quality02-before-filter.json` et inventaire final
+`evidence/native-payload-quality02.json`. Ce constat ne vaut pas
+autorisation de redistribution et ne justifie pas un faux frontal de remplacement.
 
 ## Python et outils de livraison
 
@@ -169,7 +203,70 @@ compilé et fait partie du verrou. L'inventaire Python a été régénéré avec
 `third_party/asr`. Cet inventaire ne recense pas encore toutes les DLL et leurs
 composants tiers. La DLL PortAudio ASIO est filtrée du bundle.
 
-Le dossier CPU de développement ne contient ni la pile PyTorch étudiée
-antérieurement ni un lot CUDA/cuDNN. Les trois modèles locaux et llama CPU
+Le dossier CPU de développement ne contient pas la pile PyTorch étudiée
+antérieurement. Il contient toutefois le frontal cuDNN de la roue CTranslate2,
+sans lot de calcul GPU complet, comme décrit plus haut. Les modèles locaux et llama CPU
 sont copiés avec leurs manifestes, dont le statut reste `development-only` /
 `pending-notices`. Aucun résultat de test fonctionnel ne change ce statut.
+
+## Étude qualité 0.2 — WeSpeaker et polices
+
+Le modèle officiel `Wespeaker/wespeaker-voxceleb-resnet34` annonce Apache-2.0
+dans la fiche des poids (révision `ff1ac5bca8ef11e90662b879aa923979e0bd277b`).
+Le fichier ONNX original est vérifié contre le SHA-256 LFS amont. La copie
+`voxceleb_resnet34-sherpa.onnx` ajoute les métadonnées décrites par sherpa 1.13.8
+(échelle des échantillons, framework, dimensions), sans changer les poids.
+Les deux hashes et cette modification sont consignés dans
+`evidence/quality-assets.json`. L'original reste conservé ; seule la copie
+adaptée nécessaire figure au manifeste de distribution de développement.
+La fiche ne fournit qu'un en-tête de licence : l'attribution complète et les
+obligations du lot exact restent à intégrer au dossier commercial.
+
+Noto Sans Regular/Bold est acquis depuis le dépôt officiel Noto, révision
+`ffebf8c1ee449e544955a7e813c54f9b73848eac`, sous SIL OFL 1.1. Les TTF non
+modifiés et le texte de licence sont dans `src/notetaker/assets/fonts` et
+embarqués dans l'application. La police est incorporée au PDF et au DOCX ;
+l'OFL autorise l'incorporation et la redistribution avec le logiciel sous ses
+conditions, notamment conservation des notices et absence de vente isolée.
+Le logiciel n'emprunte pas une police système Windows pour ces exports.
+
+ONNX 1.19.1 et ml-dtypes servent seulement à l'adaptation pendant le build.
+Le module ONNX est exclu de PyInstaller ; l'inférence reste ONNX Runtime/sherpa.
+Ces ajouts ne lèvent pas les réserves FFmpeg, Qt, VC++ et Windows propre.
+
+Sources : [poids officiels WeSpeaker](https://huggingface.co/Wespeaker/wespeaker-voxceleb-resnet34),
+[adaptation officielle sherpa](https://github.com/k2-fsa/sherpa-onnx/blob/v1.13.8/scripts/wespeaker/add_meta_data.py),
+[licence Noto OFL](https://github.com/notofonts/noto-fonts/blob/ffebf8c1ee449e544955a7e813c54f9b73848eac/LICENSE),
+[incorporation TrueType dans Word](https://learn.microsoft.com/en-us/openspecs/office_standards/ms-oi29500/ea097c57-5794-4624-b08e-017b47051b1d).
+
+### Modèle de synthèse Instruct 2507 sélectionné pour le développement
+
+Les erreurs sémantiques persistantes du Qwen3-4B initial justifient une
+comparaison locale de Qwen3-4B-Instruct-2507. Après cette exécution complète,
+il est sélectionné dans le manifeste du nouveau lot de développement ; aucune
+acceptation humaine de qualité n'en découle. La [fiche officielle du modèle de base](https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507)
+annonce Apache-2.0 et un fonctionnement exclusivement sans raisonnement séparé.
+La quantification Q4_K_M est produite par
+[Unsloth](https://huggingface.co/unsloth/Qwen3-4B-Instruct-2507-GGUF), également
+déclarée Apache-2.0 ; cette provenance de conversion doit figurer dans les notices.
+Révision quantifiée `a06e946bb6b655725eafa393f4a9745d460374c9`, SHA-256
+`3605803b982cb64aead44f6c1b2ae36e3acdb41d8e46c8a94c6533bc4c67e597`.
+Les poids, licence complète du modèle de base et fiches sont acquis explicitement
+par `scripts/acquire_summary_candidate.py`. Les preuves et révisions sont dans
+`evidence/qwen-instruct-candidate.json` et `qwen-instruct-upstream.json`.
+Ce modèle n'est pas téléchargé par l'application. Il remplace l'ancien modèle
+dans le payload et son manifeste ; les anciens poids sont conservés hors de ce
+nouveau lot, qui ne livre donc pas les deux fichiers de 2,5 Go. Les notices
+exactes, l'attribution de la conversion et le lot natif restent à approuver.
+
+### Étude d'un runtime CTranslate2 CPU sans NVIDIA
+
+CTranslate2 v4.6.0, révision `617405f4b050e994e829d527da6caa0e0030afe7`,
+a été compilé réellement avec Ruy, sans MKL/OpenMP/CUDA/cuDNN et options UTF-8.
+La DLL de 7 082 496 octets n'importe que les bibliothèques Windows/Visual C++
+inventoriées dans `evidence/ctranslate2-cpu-build.json`. Elle n'est pas injectée
+dans l'environnement actif ni dans le bundle ; l'import de son paquet Python
+isolé réussit, mais l'essai de transcription naturelle de 30 secondes dépasse
+le délai de 600 secondes (`evidence/ctranslate2-cpu-smoke.json`). La variante
+n'est donc pas qualifiée ni intégrée. Cette compilation ne lève pas les obligations MIT/tiers du code,
+la redistribution Visual C++ ni les autres réserves FFmpeg/Qt.

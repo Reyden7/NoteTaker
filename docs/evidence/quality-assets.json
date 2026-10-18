@@ -1,0 +1,41 @@
+{
+  "assets": [
+    {
+      "path": "models/diarization/wespeaker/voxceleb_resnet34.onnx",
+      "sha256": "9fea6516d7ad6bf0a76c7689f5a49b65d330fad6dde96c91bb4435ffbfe056a1",
+      "revision": "ff1ac5bca8ef11e90662b879aa923979e0bd277b",
+      "url": "https://huggingface.co/Wespeaker/wespeaker-voxceleb-resnet34/resolve/ff1ac5bca8ef11e90662b879aa923979e0bd277b/voxceleb_resnet34.onnx",
+      "license": "Apache-2.0",
+      "redistribution": "pending-notices"
+    },
+    {
+      "path": "models/diarization/wespeaker/voxceleb_resnet34-sherpa.onnx",
+      "sha256": "38622d7a9b6f72f612f3371f49e2edb00cb60bdb3c24aa27535ad4a70a88e9a2",
+      "derived_from_sha256": "9fea6516d7ad6bf0a76c7689f5a49b65d330fad6dde96c91bb4435ffbfe056a1",
+      "modification": "sherpa-compatible metadata only; weights unchanged",
+      "license": "Apache-2.0",
+      "redistribution": "pending-notices"
+    },
+    {
+      "path": "src/notetaker/assets/fonts/NotoSans-Regular.ttf",
+      "sha256": "b85c38ecea8a7cfb39c24e395a4007474fa5a4fc864f6ee33309eb4948d232d5",
+      "revision": "ffebf8c1ee449e544955a7e813c54f9b73848eac",
+      "url": "https://raw.githubusercontent.com/notofonts/noto-fonts/ffebf8c1ee449e544955a7e813c54f9b73848eac/hinted/ttf/NotoSans/NotoSans-Regular.ttf",
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "src/notetaker/assets/fonts/NotoSans-Bold.ttf",
+      "sha256": "c976e4b1b99edc88775377fcc21692ca4bfa46b6d6ca6522bfda505b28ff9d6a",
+      "revision": "ffebf8c1ee449e544955a7e813c54f9b73848eac",
+      "url": "https://raw.githubusercontent.com/notofonts/noto-fonts/ffebf8c1ee449e544955a7e813c54f9b73848eac/hinted/ttf/NotoSans/NotoSans-Bold.ttf",
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "src/notetaker/assets/fonts/LICENSE",
+      "sha256": "0dab92d0544f7b233403f14b84a663bdbfa746982eda629e7f4f9ffe1b036feb",
+      "revision": "ffebf8c1ee449e544955a7e813c54f9b73848eac",
+      "url": "https://raw.githubusercontent.com/notofonts/noto-fonts/ffebf8c1ee449e544955a7e813c54f9b73848eac/LICENSE",
+      "license": "OFL-1.1"
+    }
+  ]
+}

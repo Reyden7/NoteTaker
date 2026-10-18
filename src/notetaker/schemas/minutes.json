@@ -4,6 +4,8 @@
   "additionalProperties": false,
   "required": ["points", "to_verify"],
   "properties": {
+    "document_mode": {"type": "string", "enum": ["summary", "transcript", "municipal"]},
+    "generation_diagnostics": {"type": "object"},
     "points": {
       "type": "array",
       "items": {
@@ -15,6 +17,7 @@
           "summary": {"type": "string", "minLength": 1, "maxLength": 10000},
           "sources": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
           "vote_id": {"type": ["string", "null"]}
+          ,"claims": {"type": "array", "items": {"type": "object"}}
         }
       }
     },

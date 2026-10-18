@@ -1,0 +1,190 @@
+{
+  "status": "comparative_test_not_human_acceptance",
+  "quality_acceptance": false,
+  "baseline": {
+    "speakers": 195,
+    "utterances": 1485,
+    "uncertain_utterances": 506,
+    "draft_characters": 88404,
+    "verification_alerts": 29,
+    "pdfs": [
+      {
+        "sha256": "32faa7a6e25c97c2423533970ac66b2c7d4486c61d59a67d78cad44770ba0230",
+        "pages": 54,
+        "bytes": 89199
+      }
+    ]
+  },
+  "corrected": {
+    "speakers": 9,
+    "utterances": 1822,
+    "uncertain_utterances": 894,
+    "replacement_characters": 0,
+    "summary_characters": 6844,
+    "topics": 8,
+    "pdf_preview_pages": 4,
+    "pdf_replacement_characters": 0,
+    "claims": {
+      "blocks": 18,
+      "source_units": 644,
+      "generated_claims": 46,
+      "supported_claims": 36,
+      "rejected_claims": 33,
+      "topic_assignment_repair": true,
+      "human_factual_validation": "required_not_performed"
+    },
+    "verification_alerts": 2,
+    "selected_claims": 36,
+    "unselected_claims": 0,
+    "selected_source_time_extent_ms": {
+      "start": 78460,
+      "end": 2968180,
+      "not_a_semantic_coverage_score": true
+    }
+  },
+  "original_mp3_sha256": "2083569d042c0f53b93a9fa383485dbe9edf6346a2fd8b64f0eddc9de0f88323",
+  "original_mp3_unchanged": true,
+  "original_import_unchanged": true,
+  "unreviewed_export_blocked": true,
+  "review_created": false,
+  "review_session_directory": "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\output\\quality-02\\instruct-2507\\review-session",
+  "review_session_id": "1ce95a6e-c912-4171-8baf-8199493f9db5",
+  "human_reference": "not-available",
+  "human_metrics": null,
+  "topic_coverage": null,
+  "hallucination_rate": null,
+  "source_file_sha256": {
+    "src\\notetaker\\engines\\hierarchical_summary.py": "d3fb2bdbac648f0b7df3ba9acd096f820f7ba5f8748629cf61f470e86c3e41a1",
+    "src\\notetaker\\engines\\speaker_refinement.py": "3e8bf122534ae8be36e0b47e6a7b633fc7d6f7b2435c383ae15c8236f680684a",
+    "src\\notetaker\\workers\\probe.py": "94f3bfac067db32e0cdd9b0484b690da7e94f5b4d25055780d5301ceb71469f8",
+    "src\\notetaker\\services\\pipeline.py": "7bdf035b0ae493306f9e6d37717bc37f7b59f415a8e19fbfbe326d38dde57367",
+    "src\\notetaker\\services\\export.py": "f65b3e0c729940435ff9d9cb7f3201d9def80a6aebd33d76725b193d3ac60f41"
+  },
+  "automatic_source_check": {
+    "selected_claims": 36,
+    "claims_without_exact_citations": 0,
+    "not_a_semantic_fidelity_measure": true
+  },
+  "operator_vote_records": 0,
+  "unreviewed_export_error": "HUMAN_REVIEW_REQUIRED_FOR_CURRENT_SESSION",
+  "source_hash_scope": "working_tree_at_report_time; executed source hashes provided separately when captured",
+  "summary_execution": {
+    "started_at_utc": "2026-10-16T17:41:35.865676+00:00",
+    "source_sha256": {
+      "src\\notetaker\\engines\\hierarchical_summary.py": "d3fb2bdbac648f0b7df3ba9acd096f820f7ba5f8748629cf61f470e86c3e41a1",
+      "src\\notetaker\\workers\\probe.py": "94f3bfac067db32e0cdd9b0484b690da7e94f5b4d25055780d5301ceb71469f8",
+      "src\\notetaker\\services\\pipeline.py": "7bdf035b0ae493306f9e6d37717bc37f7b59f415a8e19fbfbe326d38dde57367"
+    },
+    "model_sha256": "3605803b982cb64aead44f6c1b2ae36e3acdb41d8e46c8a94c6533bc4c67e597",
+    "binary_sha256": "8154608e1e7ecaf7dd200f8c36080d1b3d60226f7fa555928f4b0080455ced8a",
+    "audio_sha256": "3e38e6f1e744e07d2250aacca8cc3fe4c81f0a5f913a57549b96bdddde3bb8f9",
+    "aligned_transcript_sha256": "5d5dfdf67639b998b6697d6f9abdcbb14be21a5708c95a891305ec3bc2ba8ea0",
+    "run_label": "instruct-2507"
+  },
+  "model_manifest_sha256": {
+    "models_manifest.json": "a9ffb40038459703720b89e4149ff4f255cd0f6007b227f41c7c9f38f248a0e4",
+    "diarization_models_manifest.json": "99c7b17de78f628a067aeb3c8cc791ca51859da8c54d51790ad8fad26ecd8bf0"
+  },
+  "asr_timing": {
+    "cpu_seconds_wall": 1369.168,
+    "audio_sha256": "3e38e6f1e744e07d2250aacca8cc3fe4c81f0a5f913a57549b96bdddde3bb8f9",
+    "human_reference_accuracy": "not-measured",
+    "human_review": "not-performed"
+  },
+  "diarization_timing": {
+    "cpu_seconds_wall": 573.678,
+    "audio_sha256": "3e38e6f1e744e07d2250aacca8cc3fe4c81f0a5f913a57549b96bdddde3bb8f9",
+    "human_reference_accuracy": "not-measured",
+    "human_review": "not-performed"
+  },
+  "summary_timing": {
+    "cpu_seconds_wall": 90.011,
+    "audio_sha256": "3e38e6f1e744e07d2250aacca8cc3fe4c81f0a5f913a57549b96bdddde3bb8f9",
+    "human_reference_accuracy": "not-measured",
+    "human_review": "not-performed",
+    "cached_result_candidates_before_resume": 39,
+    "cumulative_native_call_wall_seconds": 3056.834,
+    "native_call_wall_seconds": {
+      "block-000": 87.81,
+      "block-001": 50.581,
+      "block-002": 97.133,
+      "block-003": 75.398,
+      "block-004": 106.209,
+      "block-005": 90.135,
+      "block-006": 87.866,
+      "block-007": 73.65,
+      "block-008": 58.413,
+      "block-009": 91.34,
+      "block-010": 67.595,
+      "block-011": 66.927,
+      "block-012": 97.843,
+      "block-013": 86.135,
+      "block-014": 69.1,
+      "block-015": 53.026,
+      "block-016": 74.516,
+      "block-017": 111.644,
+      "global-assignment-repair": 89.435,
+      "global-topics": 88.606,
+      "rewrite-000": 22.616,
+      "rewrite-004": 30.856,
+      "rewrite-008": 23.079,
+      "rewrite-012": 22.395,
+      "rewrite-016": 20.429,
+      "rewrite-020": 22.955,
+      "rewrite-024": 25.163,
+      "rewrite-028": 24.0,
+      "rewrite-032": 23.305,
+      "rewrite-036": 23.106,
+      "rewrite-040": 29.86,
+      "rewrite-044": 15.87,
+      "verify-000": 129.538,
+      "verify-006": 136.472,
+      "verify-012": 129.962,
+      "verify-018": 155.345,
+      "verify-024": 184.799,
+      "verify-030": 144.293,
+      "verify-036": 146.195,
+      "verify-042": 123.234
+    },
+    "wall_time_note": "resumed worker duration excludes earlier cached inference; cumulative calls include their original measured times; not isolated CPU performance"
+  },
+  "review_data_paths_canonicalized": true,
+  "selected_build_model_manifest_sha256": {
+    "models_manifest.json": "2249a8e80e35668096c471a5a3a7fa6544b277977bebe025343682945cd66cc3",
+    "diarization_models_manifest.json": "99c7b17de78f628a067aeb3c8cc791ca51859da8c54d51790ad8fad26ecd8bf0"
+  },
+  "visual_qa": {
+    "pdf_pages_inspected": 4,
+    "word_render_pages_inspected": 4,
+    "scope": "layout and glyph inspection only, not human factual acceptance",
+    "actual_ui_tabs_inspected": [
+      "transcript",
+      "minutes",
+      "votes"
+    ],
+    "preview_sha256": {
+      "summary-preview.pdf": "033a78dfcdc41ef622d72737560a891259e48795a26fdf44f48301b6cd832847",
+      "summary-preview.docx": "4cf2cec6d31093c3d40fa113f180296a33c4c87da32311e3f4c224e2ad400031",
+      "summary-word-preview.pdf": "1896abed8e3e2ba781ea84bba860ce775955a46d0b974131233595828842fe71"
+    }
+  },
+  "post_benchmark_closeout": {
+    "recorded_at_utc": "2026-10-18T07:37:14.038834+00:00",
+    "code_change": "global intermediate schema lets duplicate IDs reach actual LLM assignment repair; final uniqueness/completeness checks retained",
+    "summary_source_sha256": "a358483ee15ef5e0e7d6278842b480270926a03c3d5110fa9a686cf620d3f5c3",
+    "full_natural_summary_rerun_after_schema_change": false,
+    "real_compiled_fixture_assignment_repair_passed": true,
+    "pytest_tests_passed": 86,
+    "compiled_workers_passed": [
+      "asr",
+      "diarization-sherpa",
+      "llm"
+    ],
+    "compiled_executables_sha256": {
+      "NoteTaker.exe": "69ce7ae830303236da9ed971420ac722bf55afd01969188efb7c01f860ef13d0",
+      "NoteTaker-worker.exe": "6032fa721a81872e80f4581f95b5174e788d0a6712dc9d8432d5264409f3fc9f"
+    },
+    "clean_offline_windows_tested": false,
+    "human_review_created": false
+  }
+}

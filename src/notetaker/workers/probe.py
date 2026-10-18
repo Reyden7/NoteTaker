@@ -20,6 +20,7 @@ def transcribe(request):
                                        vad_filter=True, word_timestamps=True)
     return {"language": info.language, "duration_seconds": info.duration,
             "segments": [{"id": f"s{i}", "start": s.start, "end": s.end, "text": s.text,
+                           "words": [{"start": w.start, "end": w.end, "word": w.word, "probability": w.probability} for w in (s.words or [])],
                            "avg_logprob": s.avg_logprob, "no_speech_prob": s.no_speech_prob}
                           for i, s in enumerate(segments)]}
 
@@ -66,23 +67,42 @@ def diarize_sherpa(request):
         samples = np.frombuffer(stream.readframes(stream.getnframes()), dtype="<i2").astype(np.float32) / 32768
     output = engine.process(samples).sort_by_start_time()
     from notetaker.engines.overlap import possible_overlaps
-    return {"turns": [{"start": t.start, "end": t.end, "speaker": f"speaker_{t.speaker}"} for t in output],
+    result = {"turns": [{"start": t.start, "end": t.end, "speaker": f"speaker_{t.speaker}"} for t in output],
             "clustering": "automatic-threshold-0.5", "device": "cpu",
             "possible_overlaps": possible_overlaps(samples, segmentation) if request.get("overlap", False) else []}
+    if request.get("speaker_strategy", "clean-anchors") == "clean-anchors":
+        from notetaker.engines.speaker_refinement import extract_observations, assign_observations
+        refinement_model = local_path(request.get("refinement_embedding", str(embedding)))
+        observations, vectors = extract_observations(samples, result["turns"], refinement_model, result["possible_overlaps"])
+        is_wespeaker = "wespeaker" in str(refinement_model).lower()
+        refined = assign_observations(observations, vectors, threshold=0.4 if is_wespeaker else 0.5, linkage="complete" if is_wespeaker else "average")
+        refined["diagnostics"]["embedding_model"] = refinement_model.name
+        refined["possible_overlaps"] = result["possible_overlaps"]
+        refined["diagnostics"]["initial_sherpa_speakers"] = len({t["speaker"] for t in result["turns"]})
+        return refined
+    return result
 
 def main():
+    if sys.stdout is not None and hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="strict")
     start = time.perf_counter()
     try:
         request = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
         kind = request["engine"]
         from notetaker.engines.llama_adapter import select_sources
-        result = {"asr": transcribe, "diarization": diarize, "diarization-sherpa": diarize_sherpa, "llm": select_sources}[kind](request)
+        from notetaker.engines.hierarchical_summary import summarize
+        result = {"asr": transcribe, "diarization": diarize, "diarization-sherpa": diarize_sherpa,
+                  "llm": summarize if request.get("task") == "summary" else select_sources}[kind](request)
         response = {"status": "completed", "engine": kind, "result": result}
     except Exception as exc:
-        response = {"status": "failed", "error_code": type(exc).__name__}
+        import re
+        code = str(exc)
+        response = {"status": "failed", "error_code": code if re.fullmatch(r"[A-Z][A-Z0-9_]*(?: U\+[0-9A-F,+ U]+)?", code) else type(exc).__name__}
     response["elapsed_seconds"] = round(time.perf_counter() - start, 3)
     response["python_network_attempts"] = len(NETWORK_ATTEMPTS)
-    print(json.dumps(response, ensure_ascii=False))
+    # ASCII JSON remains lossless even when a frozen Windows interpreter ignores
+    # PYTHONIOENCODING. Never send locale-encoded French through a UTF-8 pipe.
+    print(json.dumps(response, ensure_ascii=True))
     return 0 if response["status"] == "completed" else 2
 
 if __name__ == "__main__":

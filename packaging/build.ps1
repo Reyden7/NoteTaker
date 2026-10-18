@@ -1,8 +1,9 @@
-param([switch]$Development, [switch]$SkipModels, [string]$InnoCompiler)
+param([switch]$Development, [switch]$SkipModels, [string]$InnoCompiler, [string]$DistributionDirectory = 'dist')
 $ErrorActionPreference = 'Stop'
 $notetakerRoot = Split-Path -Parent $PSScriptRoot
 Set-Location -LiteralPath $notetakerRoot
-$notetakerBundle = [IO.Path]::GetFullPath((Join-Path $notetakerRoot 'dist\NoteTaker'))
+$notetakerDistRoot = [IO.Path]::GetFullPath((Join-Path $notetakerRoot $DistributionDirectory))
+$notetakerBundle = Join-Path $notetakerDistRoot 'NoteTaker'
 if (-not $notetakerBundle.StartsWith($notetakerRoot + [IO.Path]::DirectorySeparatorChar)) { throw 'Build target is outside the repository' }
 if (Test-Path -LiteralPath $notetakerBundle) { throw 'dist\NoteTaker already exists. Preserve or move that generated bundle before rebuilding.' }
 if (-not $Development) {
@@ -13,7 +14,7 @@ $env:PYTHONPATH = Join-Path $notetakerRoot 'src'
 $notetakerTestDir = Join-Path $notetakerRoot ('.cache\build-tests-' + [guid]::NewGuid().ToString('N'))
 & .venv\Scripts\python.exe -m pytest "--basetemp=$notetakerTestDir"
 if ($LASTEXITCODE -ne 0) { throw 'Tests failed' }
-$notetakerBuild = Start-Process -FilePath (Join-Path $notetakerRoot '.venv\Scripts\python.exe') -WorkingDirectory $notetakerRoot -ArgumentList @('-m','PyInstaller','--noconfirm','packaging/notetaker.spec') -WindowStyle Hidden -Wait -PassThru -RedirectStandardOutput (Join-Path $notetakerRoot 'build-pyinstaller.log') -RedirectStandardError (Join-Path $notetakerRoot 'build-pyinstaller-stderr.log')
+$notetakerBuild = Start-Process -FilePath (Join-Path $notetakerRoot '.venv\Scripts\python.exe') -WorkingDirectory $notetakerRoot -ArgumentList @('-m','PyInstaller','--noconfirm','--distpath',('"' + $notetakerDistRoot + '"'),'packaging/notetaker.spec') -WindowStyle Hidden -Wait -PassThru -RedirectStandardOutput (Join-Path $notetakerRoot 'build-pyinstaller.log') -RedirectStandardError (Join-Path $notetakerRoot 'build-pyinstaller-stderr.log')
 if ($notetakerBuild.ExitCode -ne 0) { throw 'PyInstaller failed; inspect build-pyinstaller-stderr.log' }
 if (-not $SkipModels) {
     & .venv\Scripts\python.exe -m notetaker.main verify-models
@@ -35,5 +36,5 @@ Copy-Item -LiteralPath 'third_party' -Destination $notetakerBundle -Recurse
 Copy-Item -LiteralPath 'LICENSES-THIRD-PARTY.md' -Destination $notetakerBundle
 Copy-Item -LiteralPath 'docs\operator-guide.md' -Destination (Join-Path $notetakerBundle 'GUIDE-UTILISATEUR.md')
 Copy-Item -LiteralPath 'docs\field-test.md' -Destination (Join-Path $notetakerBundle 'RECETTE-TERRAIN.md')
-@{development_only=$true; models_included=(-not $SkipModels); qualification='NOT VALIDATED ON CLEAN OFFLINE WINDOWS'; version='0.1.0'} | ConvertTo-Json | Set-Content -Encoding utf8 (Join-Path $notetakerBundle 'BUILD-STATUS.json')
+@{development_only=$true; models_included=(-not $SkipModels); qualification='QUALITY UNDER EVALUATION; NOT VALIDATED ON CLEAN OFFLINE WINDOWS'; version='0.2.1.dev0'} | ConvertTo-Json | Set-Content -Encoding utf8 (Join-Path $notetakerBundle 'BUILD-STATUS.json')
 Write-Output "Development bundle created: $notetakerBundle. This is not an approved commercial installer."

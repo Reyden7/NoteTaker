@@ -1,0 +1,50 @@
+{
+  "status": "compiled_not_inference_qualified",
+  "source_commit": "617405f4b050e994e829d527da6caa0e0030afe7",
+  "flags": [
+    "-DWITH_MKL=OFF",
+    "-DWITH_CUDA=OFF",
+    "-DWITH_CUDNN=OFF",
+    "-DWITH_RUY=ON",
+    "-DOPENMP_RUNTIME=NONE",
+    "-DBUILD_CLI=OFF",
+    "-DBUILD_TESTS=OFF",
+    "-DRUY_BUILD_TESTS=OFF",
+    "-DRUY_BUILD_BENCHMARKS=OFF",
+    "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
+    "-DCMAKE_CXX_FLAGS=/utf-8",
+    "-DCMAKE_C_FLAGS=/utf-8"
+  ],
+  "dll_sha256": "1f8d76705a6b55f6d4a63e6be81933b5ee87fee9fceb0eb6f08ebd0e68d6065d",
+  "dll_size_bytes": 7082496,
+  "imports": [
+    "KERNEL32.dll",
+    "MSVCP140.dll",
+    "VCRUNTIME140.dll",
+    "VCRUNTIME140_1.dll",
+    "api-ms-win-crt-string-l1-1-0.dll",
+    "api-ms-win-crt-heap-l1-1-0.dll",
+    "api-ms-win-crt-runtime-l1-1-0.dll",
+    "api-ms-win-crt-math-l1-1-0.dll",
+    "api-ms-win-crt-stdio-l1-1-0.dll",
+    "api-ms-win-crt-convert-l1-1-0.dll",
+    "api-ms-win-crt-environment-l1-1-0.dll",
+    "api-ms-win-crt-filesystem-l1-1-0.dll",
+    "api-ms-win-crt-time-l1-1-0.dll",
+    "api-ms-win-crt-locale-l1-1-0.dll"
+  ],
+  "inference_tested": false,
+  "application_environment_modified": false,
+  "commercial_clearance": false,
+  "submodules": [
+    " 8a494eb1e158ec2050e5f699a504fbc9b896a43b third_party/cpu_features (8a494eb)",
+    "-bbe579a9e3beb6ea6626d9227ec32d0dae119a49 third_party/cutlass",
+    "-c74846a891b3cc3bfa992d588b1295f528d43039 third_party/cxxopts",
+    "-f8d7d77c06936315286eb55f8de22cd23c188571 third_party/googletest",
+    " 363f252289fb7a1fba1703d99196524698cb884d third_party/ruy (363f252)",
+    " 082deffc80ce517f81dc2f3aebe6ba671fcd09c9 third_party/ruy/third_party/cpuinfo (082deff)",
+    " 6c58c11d5497b6ee1df3cb400ce30deb72fc28c0 third_party/ruy/third_party/googletest (6c58c11)",
+    " 76fb40d95455f249bd70824ecfcae7a8f0930fa3 third_party/spdlog (76fb40d)",
+    "-d997cd37a95b0fa2f1a0cd4697fd1188a842fbc8 third_party/thrust"
+  ]
+}

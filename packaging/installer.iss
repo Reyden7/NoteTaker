@@ -8,7 +8,7 @@
 [Setup]
 AppId={{D1C659D7-A226-45F9-9698-62A668290345}
 AppName=NoteTaker
-AppVersion=0.1.0
+AppVersion=0.2.1
 DefaultDirName={autopf}\NoteTaker
 DefaultGroupName=NoteTaker
 OutputDir=..\dist\installer

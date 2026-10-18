@@ -1,8 +1,11 @@
 # Recette d’une réunion réelle de 10 à 20 minutes
 
-**État : NON VALIDÉ.** Aucun audio naturel français à trois intervenants n’était
-disponible le 16 octobre 2026. Cette procédure prépare l’essai sans bloquer
-les autres fonctions.
+**État de la réunion municipale : NON VALIDÉ.** Un débat télévisé français de
+51 minutes a depuis été fourni et a révélé les défauts de la version 0.1.
+L'audit et la comparaison 0.2 sont décrits dans `audit-0.2.md` et
+`benchmark-0.2.md`. Ce corpus ne valide ni une capture micro de réunion longue,
+ni la fidélité des voix et des résumés sans référence humaine annotée.
+La procédure suivante reste à exécuter dans les conditions d'une mairie.
 
 ## Préparation
 

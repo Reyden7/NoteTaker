@@ -1,0 +1,49 @@
+{
+  "scope": "upgrade of isolated v3 real-session audit snapshot only; live user database untouched",
+  "source_database_sha256": "e7eec8406f7735fb505ae212f0e1e69780324c83a1dbb85ea807995925fa15ce",
+  "source_unchanged": true,
+  "schema_before": 3,
+  "schema_after": 4,
+  "existing_tables_byte_values_preserved": true,
+  "tables": {
+    "session": {
+      "rows": 1,
+      "sha256": "914c2f2671377974ef82366b2f746fdd56ee764f404b23994f6a42b23c6f4da4"
+    },
+    "job": {
+      "rows": 3,
+      "sha256": "46f2b52ab5c91be46cf278a18360af8c8c2d27daa17718a673daae90640a5fec"
+    },
+    "audio_take": {
+      "rows": 2,
+      "sha256": "5172c6ff60fca046521f1b6ab95a0e80a98b1a302f02f925f89f6dae94dbcc75"
+    },
+    "speaker": {
+      "rows": 195,
+      "sha256": "c0fa5b189861469a2c007da431f42630e400a49ed67079727471f12073ea08f1"
+    },
+    "utterance": {
+      "rows": 1485,
+      "sha256": "972a4b0b0640c4a0019b8553121262ba6a7839f6d088462b79e290d91ce2efdc"
+    },
+    "manual_record": {
+      "rows": 1,
+      "sha256": "82d01e9e0609afc4dd74a25337574840eab69403ad2ee80116c5f0f026ced2b0"
+    },
+    "draft_minutes": {
+      "rows": 1,
+      "sha256": "13f8e781e4d8490743f09fe27e9caee9ce3fcf973c7e21b28c9032a3659944d2"
+    },
+    "export": {
+      "rows": 1,
+      "sha256": "e4946ad27cc032f671891f67da90ddf9d05e7913747db9a0746eedd1b81c801e"
+    },
+    "edit_history": {
+      "rows": 1,
+      "sha256": "a76042edcc12c84a0d127cb238f397b1ccdc7c12948e3ecbeb8ac46d39e88b3b"
+    }
+  },
+  "backup_created": true,
+  "backup_path": "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\output\\directory-validation\\legacy-e07d528a8a854ef99bcbf59f25d4cfad\\migration-backups\\notetaker-v3-before-v4-b45424444dbb4369b62e445b83a1c904.sqlite3",
+  "foreign_key_check_passed": true
+}

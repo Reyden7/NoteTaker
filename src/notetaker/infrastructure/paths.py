@@ -22,7 +22,8 @@ class ModelPaths:
         self.asr = self.root / "models/asr/small"
         self.segmentation = self.root / "models/diarization/sherpa/sherpa-onnx-pyannote-segmentation-3-0/model.onnx"
         self.embedding = self.root / "models/diarization/sherpa/3dspeaker_speech_eres2net_base_sv_zh-cn_3dspeaker_16k.onnx"
-        self.llm = self.root / "models/llm/qwen3-4b/Qwen3-4B-Q4_K_M.gguf"
+        self.refinement_embedding = self.root / "models/diarization/wespeaker/voxceleb_resnet34-sherpa.onnx"
+        self.llm = self.root / "models/llm/qwen3-4b-instruct-2507/Qwen3-4B-Instruct-2507-Q4_K_M.gguf"
         self.llama = self.root / "runtimes/llama-cpu-b11681/llama-completion.exe"
 
     def verify(self):

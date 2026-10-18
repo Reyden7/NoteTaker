@@ -16,6 +16,9 @@ def validate_minutes(content: dict, segment_ids: set[str], recorded_votes: dict)
         vote_id = point["vote_id"]
         if vote_id is not None and vote_id not in recorded_votes:
             raise ValueError("UNKNOWN_STRUCTURED_VOTE")
+        for claim in point.get("claims", []):
+            if not claim.get("evidence") or not {e["id"] for e in claim["evidence"]} <= set(point["sources"]):
+                raise ValueError("CLAIM_SOURCES_NOT_IN_POINT")
     # No numeric vote values are accepted in model output. Rendering will use
     # operator-entered vote objects later. Free text still needs human checking.
 

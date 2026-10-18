@@ -1,0 +1,281 @@
+{
+  "baseline_speakers": 195,
+  "human_reference": "not-available",
+  "extraction": {
+    "seconds": 39.205,
+    "normalized_audio_sha256": "3e38e6f1e744e07d2250aacca8cc3fe4c81f0a5f913a57549b96bdddde3bb8f9",
+    "samples": 49034108
+  },
+  "variants": {
+    "complete-0.4": {
+      "speakers": 9,
+      "observations": 1222,
+      "reliable_anchors": 619,
+      "short_or_contaminated_observations": 603,
+      "uncertain_observations": 640,
+      "speaker_seconds": {
+        "speaker_0": 12.083066582679749,
+        "speaker_1": 592.1900290374756,
+        "speaker_2": 429.00325775146484,
+        "unattributed": 741.3839683532715,
+        "speaker_3": 291.6576232910156,
+        "speaker_4": 398.8369369506836,
+        "speaker_8": 84.1751708984375,
+        "speaker_5": 176.99911499023438,
+        "speaker_6": 666.1414794921875,
+        "speaker_7": 159.056396484375
+      },
+      "embedding_norms": {
+        "min": 1.2506838367232294,
+        "median": 4.287462544821279,
+        "max": 6.978119397382821
+      },
+      "linkage": "complete",
+      "cosine_distance_threshold": 0.4,
+      "minimum_anchor_seconds": 2.0,
+      "clustering_seconds": 0.069,
+      "quality_against_human_reference": "not-measured",
+      "cluster_cosine_radii": [
+        0.1505750979159412,
+        0.1756682076216351,
+        0.1798922899775965,
+        0.1861088446928495,
+        0.17304150950921676,
+        0.21028367762076405,
+        0.19665376232832366,
+        0.19203532440675308,
+        0.16840310093522554
+      ],
+      "prototype_margin_thresholds": [
+        0.025780588128723348,
+        0.02,
+        0.02,
+        0.02,
+        0.02,
+        0.02,
+        0.02,
+        0.02,
+        0.02
+      ]
+    },
+    "complete-0.5": {
+      "speakers": 5,
+      "observations": 1222,
+      "reliable_anchors": 619,
+      "short_or_contaminated_observations": 603,
+      "uncertain_observations": 468,
+      "speaker_seconds": {
+        "speaker_0": 13.061582207679749,
+        "speaker_1": 704.1368368988037,
+        "speaker_2": 1195.577163696289,
+        "unattributed": 625.8302879333496,
+        "speaker_3": 177.31546020507812,
+        "speaker_4": 835.605712890625
+      },
+      "embedding_norms": {
+        "min": 1.2506838367232294,
+        "median": 4.287462544821279,
+        "max": 6.978119397382821
+      },
+      "linkage": "complete",
+      "cosine_distance_threshold": 0.5,
+      "minimum_anchor_seconds": 2.0,
+      "clustering_seconds": 0.059,
+      "quality_against_human_reference": "not-measured",
+      "cluster_cosine_radii": [
+        0.1505750979159412,
+        0.2182330954384814,
+        0.20835349427245264,
+        0.21028367762076405,
+        0.2521928173351668
+      ],
+      "prototype_margin_thresholds": [
+        0.02428989394548875,
+        0.02016836057241731,
+        0.02016836057241731,
+        0.02,
+        0.02
+      ]
+    },
+    "complete-0.6": {
+      "speakers": 4,
+      "observations": 1222,
+      "reliable_anchors": 619,
+      "short_or_contaminated_observations": 603,
+      "uncertain_observations": 465,
+      "speaker_seconds": {
+        "speaker_0": 846.7669044733047,
+        "speaker_1": 708.5736044769287,
+        "speaker_2": 1196.571548461914,
+        "unattributed": 622.631404876709,
+        "speaker_3": 176.98358154296875
+      },
+      "embedding_norms": {
+        "min": 1.2506838367232294,
+        "median": 4.287462544821279,
+        "max": 6.978119397382821
+      },
+      "linkage": "complete",
+      "cosine_distance_threshold": 0.6,
+      "minimum_anchor_seconds": 2.0,
+      "clustering_seconds": 0.052,
+      "quality_against_human_reference": "not-measured",
+      "cluster_cosine_radii": [
+        0.2570287489382557,
+        0.2182330954384814,
+        0.20835349427245264,
+        0.21028367762076405
+      ],
+      "prototype_margin_thresholds": [
+        0.02,
+        0.02016836057241731,
+        0.02016836057241731,
+        0.02
+      ]
+    },
+    "complete-0.7": {
+      "speakers": 2,
+      "observations": 1222,
+      "reliable_anchors": 619,
+      "short_or_contaminated_observations": 603,
+      "uncertain_observations": 442,
+      "speaker_seconds": {
+        "speaker_0": 1779.9356627588277,
+        "speaker_1": 1197.1846466064453,
+        "unattributed": 574.4067344665527
+      },
+      "embedding_norms": {
+        "min": 1.2506838367232294,
+        "median": 4.287462544821279,
+        "max": 6.978119397382821
+      },
+      "linkage": "complete",
+      "cosine_distance_threshold": 0.7,
+      "minimum_anchor_seconds": 2.0,
+      "clustering_seconds": 0.056,
+      "quality_against_human_reference": "not-measured",
+      "cluster_cosine_radii": [
+        0.2858704525014641,
+        0.20835349427245264
+      ],
+      "prototype_margin_thresholds": [
+        0.023610416651596612,
+        0.023610416651596612
+      ]
+    },
+    "average-0.4": {
+      "speakers": 3,
+      "observations": 1222,
+      "reliable_anchors": 619,
+      "short_or_contaminated_observations": 603,
+      "uncertain_observations": 433,
+      "speaker_seconds": {
+        "speaker_0": 1071.3198829889297,
+        "speaker_1": 1911.507884872437,
+        "unattributed": 564.699275970459,
+        "speaker_2": 4.0
+      },
+      "embedding_norms": {
+        "min": 1.2506838367232294,
+        "median": 4.287462544821279,
+        "max": 6.978119397382821
+      },
+      "linkage": "average",
+      "cosine_distance_threshold": 0.4,
+      "minimum_anchor_seconds": 2.0,
+      "clustering_seconds": 0.056,
+      "quality_against_human_reference": "not-measured",
+      "cluster_cosine_radii": [
+        0.26269629449991816,
+        0.2560799537298108,
+        0.08
+      ],
+      "prototype_margin_thresholds": [
+        0.02796057071729823,
+        0.02796057071729823,
+        0.03152610750495035
+      ]
+    },
+    "average-0.5": {
+      "speakers": 1,
+      "observations": 1222,
+      "reliable_anchors": 619,
+      "short_or_contaminated_observations": 603,
+      "uncertain_observations": 427,
+      "speaker_seconds": {
+        "speaker_0": 2989.7215361719136,
+        "unattributed": 561.8055076599121
+      },
+      "embedding_norms": {
+        "min": 1.2506838367232294,
+        "median": 4.287462544821279,
+        "max": 6.978119397382821
+      },
+      "linkage": "average",
+      "cosine_distance_threshold": 0.5,
+      "minimum_anchor_seconds": 2.0,
+      "clustering_seconds": 0.054,
+      "quality_against_human_reference": "not-measured",
+      "cluster_cosine_radii": [
+        0.3162023556939536
+      ],
+      "prototype_margin_thresholds": [
+        0.08
+      ]
+    },
+    "average-0.6": {
+      "speakers": 1,
+      "observations": 1222,
+      "reliable_anchors": 619,
+      "short_or_contaminated_observations": 603,
+      "uncertain_observations": 427,
+      "speaker_seconds": {
+        "speaker_0": 2989.7215361719136,
+        "unattributed": 561.8055076599121
+      },
+      "embedding_norms": {
+        "min": 1.2506838367232294,
+        "median": 4.287462544821279,
+        "max": 6.978119397382821
+      },
+      "linkage": "average",
+      "cosine_distance_threshold": 0.6,
+      "minimum_anchor_seconds": 2.0,
+      "clustering_seconds": 0.053,
+      "quality_against_human_reference": "not-measured",
+      "cluster_cosine_radii": [
+        0.3162023556939536
+      ],
+      "prototype_margin_thresholds": [
+        0.08
+      ]
+    },
+    "average-0.7": {
+      "speakers": 1,
+      "observations": 1222,
+      "reliable_anchors": 619,
+      "short_or_contaminated_observations": 603,
+      "uncertain_observations": 427,
+      "speaker_seconds": {
+        "speaker_0": 2989.7215361719136,
+        "unattributed": 561.8055076599121
+      },
+      "embedding_norms": {
+        "min": 1.2506838367232294,
+        "median": 4.287462544821279,
+        "max": 6.978119397382821
+      },
+      "linkage": "average",
+      "cosine_distance_threshold": 0.7,
+      "minimum_anchor_seconds": 2.0,
+      "clustering_seconds": 0.056,
+      "quality_against_human_reference": "not-measured",
+      "cluster_cosine_radii": [
+        0.3162023556939536
+      ],
+      "prototype_margin_thresholds": [
+        0.08
+      ]
+    }
+  }
+}

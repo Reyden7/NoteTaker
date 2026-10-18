@@ -1,4 +1,4 @@
-"""First migration only. Full session editing is phase 1."""
+"""Transactional migrations and consistent backups before upgrading existing data."""
 import sqlite3
 from pathlib import Path
 
@@ -18,7 +18,11 @@ MIGRATIONS = {1: [
     "CREATE TABLE edit_history(id INTEGER PRIMARY KEY,session_id TEXT NOT NULL REFERENCES session(id),kind TEXT NOT NULL,content_json TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)",
     "CREATE INDEX utterance_session_time ON utterance(session_id,start_ms)",
     "CREATE INDEX draft_session ON draft_minutes(session_id,revision)",
-], 3: ["ALTER TABLE audio_take ADD COLUMN enabled INTEGER NOT NULL DEFAULT 1"]}
+], 3: ["ALTER TABLE audio_take ADD COLUMN enabled INTEGER NOT NULL DEFAULT 1"], 4: [
+    "CREATE TABLE directory_person(id TEXT PRIMARY KEY,first_name TEXT NOT NULL,last_name TEXT NOT NULL,position TEXT NOT NULL DEFAULT '',municipality TEXT NOT NULL DEFAULT '',archived INTEGER NOT NULL DEFAULT 0 CHECK(archived IN (0,1)),revision INTEGER NOT NULL DEFAULT 0,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)",
+    "CREATE TABLE directory_history(id INTEGER PRIMARY KEY,person_id TEXT NOT NULL REFERENCES directory_person(id),action TEXT NOT NULL,content_json TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)",
+    "CREATE TABLE session_participant(session_id TEXT NOT NULL REFERENCES session(id),person_id TEXT NOT NULL REFERENCES directory_person(id),snapshot_json TEXT NOT NULL,attendance TEXT NOT NULL CHECK(attendance IN ('unconfirmed','present','absent','excused','represented')),session_role TEXT NOT NULL DEFAULT '',proxy_to_person_id TEXT,proxy_note TEXT NOT NULL DEFAULT '',sort_order INTEGER NOT NULL,PRIMARY KEY(session_id,person_id),FOREIGN KEY(session_id,proxy_to_person_id) REFERENCES session_participant(session_id,person_id) DEFERRABLE INITIALLY DEFERRED)",
+]}
 
 def open_database(path: Path) -> sqlite3.Connection:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -27,6 +31,16 @@ def open_database(path: Path) -> sqlite3.Connection:
     connection.execute("PRAGMA journal_mode=WAL")
     connection.execute("PRAGMA synchronous=FULL")
     try:
+        version = connection.execute("PRAGMA user_version").fetchone()[0]
+        if 0 < version < max(MIGRATIONS):
+            import uuid
+            backups = path.parent / 'migration-backups'
+            backups.mkdir(exist_ok=True)
+            target = backups / f'{path.stem}-v{version}-before-v{max(MIGRATIONS)}-{uuid.uuid4().hex}.sqlite3'
+            backup_database(connection, target)
+            with sqlite3.connect(target) as saved:
+                if saved.execute('PRAGMA quick_check').fetchone()[0] != 'ok':
+                    raise RuntimeError('MIGRATION_BACKUP_INVALID')
         migrate(connection)
     except BaseException:
         connection.close()

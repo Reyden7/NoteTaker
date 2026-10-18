@@ -1,0 +1,13 @@
+{
+  "same_non_whitespace_text": true,
+  "old_passages": 2350,
+  "new_passages": 1822,
+  "old_uncertain": 1123,
+  "new_uncertain": 894,
+  "inferred_timing_passages": 148,
+  "same_speakers": true,
+  "speakers": 9,
+  "source_sha256": "b4fdbc7932762b5606744d72190868fc74c44556c2593f5e95133a61b3f51673",
+  "audio_sha256": "3e38e6f1e744e07d2250aacca8cc3fe4c81f0a5f913a57549b96bdddde3bb8f9",
+  "human_accuracy": "not-measured"
+}

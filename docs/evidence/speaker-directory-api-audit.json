@@ -1,0 +1,68 @@
+{
+  "recorded_at_utc": "2026-10-18T07:51:21.611199+00:00",
+  "sherpa_version": "1.13.8",
+  "scope": "API feasibility audit only; artificial vectors and generated non-speech tone; no real person enrolled",
+  "application_code_modified": false,
+  "human_accuracy_measured": false,
+  "models": [
+    {
+      "path": "models/diarization/wespeaker/voxceleb_resnet34-sherpa.onnx",
+      "sha256": "38622d7a9b6f72f612f3371f49e2edb00cb60bdb3c24aa27535ad4a70a88e9a2",
+      "dimension": 256,
+      "empty_stream_ready": false,
+      "tone_stream_ready": true,
+      "computed_vector_length": 256,
+      "finite_vector": true,
+      "vector_norm": 3.314652919769287,
+      "provider": "cpu",
+      "speech_quality_test": false
+    },
+    {
+      "path": "models/diarization/sherpa/3dspeaker_speech_eres2net_base_sv_zh-cn_3dspeaker_16k.onnx",
+      "sha256": "1a331345f04805badbb495c775a6ddffcdd1a732567d5ec8b3d5749e3c7a5e4b",
+      "dimension": 512,
+      "empty_stream_ready": false,
+      "tone_stream_ready": true,
+      "computed_vector_length": 512,
+      "finite_vector": true,
+      "vector_norm": 12.918258666992188,
+      "provider": "cpu",
+      "speech_quality_test": false
+    }
+  ],
+  "manager": {
+    "dimension": 256,
+    "registered": 2,
+    "all_speakers": [
+      "fixture-a",
+      "fixture-b"
+    ],
+    "native_python_methods": [
+      "add",
+      "all_speakers",
+      "dim",
+      "num_speakers",
+      "remove",
+      "score",
+      "search",
+      "verify"
+    ],
+    "multiple_embeddings_reduce_to_normalized_mean": true,
+    "prototype_match": "fixture-a",
+    "unknown_rejected": true,
+    "verify_known": true,
+    "verify_unknown_name": false,
+    "prototype_score": 1.0,
+    "ambiguous_scores": [
+      0.7071067690849304,
+      0.7071067690849304
+    ],
+    "ambiguous_native_search": "fixture-a",
+    "native_search_has_no_margin_gate": true,
+    "scaled_query_score": 0.9999999403953552,
+    "thresholds_are_test_values_not_calibrated": true,
+    "removal_passed": true
+  },
+  "status": "api_checks_passed_not_speaker_identification_acceptance",
+  "wall_seconds": 0.533
+}

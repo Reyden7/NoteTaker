@@ -1,0 +1,16 @@
+{
+  "candidate_only": false,
+  "model": "models/llm/qwen3-4b-instruct-2507/Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+  "sha256": "3605803b982cb64aead44f6c1b2ae36e3acdb41d8e46c8a94c6533bc4c67e597",
+  "size_bytes": 2497281120,
+  "revision": "a06e946bb6b655725eafa393f4a9745d460374c9",
+  "quantization_by": "Unsloth",
+  "base_model": "Qwen/Qwen3-4B-Instruct-2507",
+  "base_revision": "cdbee75f17c01a7cc42f958dc650907174af0554",
+  "license": "Apache-2.0",
+  "redistribution": "pending-notices",
+  "not_used_by_application_yet": false,
+  "development_selected_after_comparative_cpu_run": true,
+  "human_quality_acceptance": false,
+  "comparison_result_sha256": "b9c62a5d025c0b5ddcd71839a2dd315c2dfb54f09ef68203f5df6b80c90fbee4"
+}

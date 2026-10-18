@@ -82,3 +82,29 @@ et le worker sherpa compilé a exécuté l'inférence CPU. La panne de diarisati
 et la conservation de l'ASR/audio sont vérifiées par injection de faute.
 **Voix naturelles françaises à trois intervenants, chevauchements réels,
 bruit et DER restent NON VALIDÉS.** La procédure est dans `field-test.md`.
+
+## Premier cas réel et étude 0.2
+
+Le débat français de 51 minutes a effectivement été testé et a mis en échec la
+version 0.1 : 195 groupes. Le paragraphe précédent décrit l'état historique
+avant ce test ; la justesse sur référence humaine reste non validée.
+
+L'audit du code natif 1.13.8 confirme une normalisation L2 déjà présente, avec
+liaison complète sur distance cosinus. Des fenêtres propres trop courtes et
+un seuil non calibré peuvent contribuer à la fragmentation. L'étude utilise
+619 fenêtres propres d'au moins deux secondes et compare plusieurs seuils et
+liaisons, sans nombre de locuteurs imposé.
+
+ERes2Net et WeSpeaker VoxCeleb ResNet34 (poids officiels Apache-2.0) sont comparés
+sur les mêmes plages. WeSpeaker avec liaison complète à 0,4 produit neuf groupes ;
+la liaison moyenne peut au contraire fusionner jusqu'à un groupe. Le profil
+est donc expérimental, sans prétendre que neuf est le bon nombre. Des fenêtres
+ambiguës restent non attribuées et la confiance est un indicateur géométrique,
+pas une probabilité calibrée. L'interface expose les métriques et la restauration
+des corrections ; les chevauchements restent à vérifier à l'écoute.
+
+Community-1 n'est pas acquis ; les restrictions déjà auditées de Sortformer v1
+et Reverb empêchent de les choisir comme substituts commerciaux par défaut.
+Le changement d'embedding est une comparaison réellement exécutée ; ce n'est
+pas une validation de qualité de toutes les voix françaises. Voir les rapports
+`quality-02-speakers*.json`, `audit-0.2.md` et `benchmark-0.2.md`.

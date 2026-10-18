@@ -83,3 +83,58 @@ la recette Windows propre déconnecté dans `../packaging/README.md`.
 Ces deux recettes restent **non exécutées / non validées**. Le bundle autonome
 est testé sur le poste de développement, sans conclure à l'absence de dépendance
 à un runtime déjà installé ni à l'absence de sockets natives.
+
+## Qualité 0.2 après le premier test réel
+
+L'audit et les premières mesures sont dans `audit-0.2.md` et `progress.md`.
+La suite a atteint **86 tests réussis**, dont conservation/restauration des
+corrections, pas de limite à six voix, normalisation des vecteurs, observations
+insuffisantes non créatrices d'identités, alignement des mots, faux signaux de
+scrutin, citations/intervenants, unités sources compactes, protocole JSON ASCII,
+refus des textes perdus U+FFFD et fontes PDF/DOCX réellement incorporées.
+Rapport : `evidence/pytest-quality02.xml`.
+
+La procédure de comparaison réelle est `benchmark-0.2.md`. Les modèles tournent
+réellement sur le débat ; aucune sortie de test injectée n'est présentée comme
+une réussite d'inférence. Les essais de prompts échoués restent conservés dans
+les dossiers privés de recette et sont distingués des résultats finaux.
+Les aperçus techniques ne créent pas de relecture humaine ni d'export approuvé.
+
+La comparaison naturelle complète Instruct est consignée dans
+`evidence/quality-02-comparison-instruct.json`. Toutes les 36 informations
+retenues sont affectées une fois aux huit thèmes. L'existence des citations
+est contrôlée automatiquement ; la fidélité, WER/DER, couverture et taux
+d'invention restent non mesurés sans référence humaine. Les quatre pages PDF
+et les quatre pages du rendu Word ont été inspectées. Les onglets réels de
+la séance de recette ont été rendus et inspectés le 18 octobre.
+
+La dernière recette compilée utilise les commandes `--bundle`/`--report`
+de `../packaging/README.md`. Le premier contrôle du 18 octobre a révélé un
+doublon rejeté par le schéma avant réparation. Le test de régression avec
+réponses de modèle explicitement simulées vérifie que la véritable passe
+d'affectation est atteinte ; la recette compilée rejoue des appels Qwen réels.
+La preuve de cet échec reste `evidence/bundle-quality02-before-schema-fix.json`.
+
+`scripts/build_cpu_runtime.py` compile réellement une variante CTranslate2
+CPU isolée. `scripts/validate_cpu_runtime.py` teste l'import puis 30 secondes
+de voix naturelles (600–630 s de l'audio de comparaison). Il conserve stdout,
+stderr et preuve distincte ; aucune substitution au moteur actif n'en découle.
+Un import réussi ou un inventaire sans DLL NVIDIA ne vaut pas réussite de
+transcription ni qualification sur Windows vierge. L'essai réel du 18 octobre
+a dépassé le délai de 600 secondes pour cet extrait de 30 secondes ; il est
+consigné comme échec dans `evidence/ctranslate2-cpu-smoke.json`, sans intégration.
+
+## Annuaire civil 0.2.1 — étape 1
+
+**104 tests réussis**, dont 14 nouveaux cas de service et quatre tests de widgets.
+Rapport `evidence/pytest-directory.xml`. `test_directory.py` couvre annuaire,
+filtres/homonymes, concurrence, instantanés, pouvoirs, attribution/restauration,
+réanalyse, export municipal et conservation d'une ancienne relecture après
+migration. `test_directory_ui.py` couvre formulaires, recherche, archivage,
+abandon d'édition, présences/procurations et synchronisation de l'attribution.
+
+Commandes de reproduction, recette de la copie réelle v3, rendu des widgets
+Windows et contrôles du nouveau bundle : `directory-stage1.md`. La sonde UI
+est `scripts/validate_directory_ui.py` ; ses fiches sont fictives. Les validations
+d'export automatisées sont des fixtures, sans approbation de séance réelle.
+Le coffre et la biométrie ne sont ni implémentés ni testés dans ce lot.

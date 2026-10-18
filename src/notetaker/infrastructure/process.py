@@ -38,7 +38,7 @@ def run_worker(request: Path, *, python: Path | None = None, timeout: float = 12
             import time
             started = time.monotonic()
             child = subprocess.Popen(command, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                     text=True, encoding="utf-8", errors="replace", creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+                                     text=True, encoding="utf-8", errors="strict", creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
             from .windows_job import WindowsJob
             try:
                 job = WindowsJob(child)
@@ -64,13 +64,19 @@ def run_worker(request: Path, *, python: Path | None = None, timeout: float = 12
         else:
             completed = subprocess.run(
                 command,
-                env=env, capture_output=True, timeout=timeout, text=True, encoding="utf-8", errors="replace",
+                env=env, capture_output=True, timeout=timeout, text=True, encoding="utf-8", errors="strict",
                 creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
                 check=False,
             )
     except subprocess.TimeoutExpired as exc:
         raise TimeoutError("WORKER_TIMEOUT") from exc
     if completed.returncode:
+        try:
+            failed = json.loads(completed.stdout)
+        except (ValueError, TypeError):
+            failed = {}
+        if isinstance(failed, dict) and failed.get("status") == "failed" and isinstance(failed.get("error_code"), str):
+            raise RuntimeError(failed["error_code"])
         raise RuntimeError(f"WORKER_EXIT_{completed.returncode}")
     try:
         result = json.loads(completed.stdout)

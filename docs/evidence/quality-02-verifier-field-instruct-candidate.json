@@ -1,0 +1,42 @@
+{
+  "real_cpu_result": {
+    "checks": [
+      {
+        "id": "c0",
+        "verdict": "not_explicit"
+      },
+      {
+        "id": "c1",
+        "verdict": "supported"
+      },
+      {
+        "id": "c2",
+        "verdict": "not_explicit"
+      },
+      {
+        "id": "c3",
+        "verdict": "uncertain"
+      }
+    ]
+  },
+  "expected": {
+    "c0": [
+      "not_explicit",
+      "uncertain"
+    ],
+    "c1": [
+      "supported"
+    ],
+    "c2": [
+      "not_explicit",
+      "uncertain"
+    ],
+    "c3": [
+      "not_explicit",
+      "uncertain"
+    ]
+  },
+  "scope_regression_passed": true,
+  "not_a_field_accuracy_measure": true,
+  "oracle_note": "Developer text-consistency cases, not human audio annotations. The initial c3 expectation was corrected: a recollection of adolescence does not establish a statement made during adolescence; uncertainty must prevent acceptance."
+}

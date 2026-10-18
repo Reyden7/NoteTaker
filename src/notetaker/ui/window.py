@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt, QThread, Signal, QTimer, QDate, QUrl
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QFormLayout, QPushButton, QLabel,
     QLineEdit, QTextEdit, QListWidget, QListWidgetItem, QTabWidget, QSplitter, QComboBox, QProgressBar,
-    QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView, QDateEdit, QMessageBox, QFileDialog, QInputDialog, QSpinBox)
+    QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView, QDateEdit, QMessageBox, QFileDialog, QInputDialog, QSpinBox, QDialog, QDialogButtonBox)
 from notetaker.domain.minutes import content_digest
 from notetaker.infrastructure.paths import session_directory
 from notetaker.services.storage import SessionStore
@@ -15,6 +15,8 @@ from notetaker.services.recording import MicrophoneRecorder, input_devices, reco
 from notetaker.services.audio import import_audio, prepare_audio
 from notetaker.services.pipeline import Pipeline
 from notetaker.services.session_export import export_session
+from notetaker.services.directory import DirectoryService, person_name
+from notetaker.ui.directory import DirectoryDialog, ParticipantsPage
 
 class Task(QThread):
     progress = Signal(str)
@@ -86,6 +88,8 @@ class MainWindow(QMainWindow):
         side.addWidget(paragraph("Vos séances, conservées localement"))
         self.new_button = button("+  Nouvelle séance", self.new_session, True)
         side.addWidget(self.new_button)
+        self.directory_button = button('Annuaire des intervenants', self.open_directory)
+        side.addWidget(self.directory_button)
         self.search = QLineEdit()
         self.search.setPlaceholderText("Rechercher une séance…")
         self.search.textChanged.connect(self.reload_history)
@@ -97,7 +101,7 @@ class MainWindow(QMainWindow):
         side.addWidget(self.history, 1)
         self.archive_button = button("Archiver / réactiver", self.archive_session)
         side.addWidget(self.archive_button)
-        side.addWidget(paragraph("Version de travail 0.1\nRecette terrain non validée"))
+        side.addWidget(paragraph("Version de travail 0.2.1\nAnnuaire sans biométrie"))
         outer.addWidget(sidebar)
         body = QVBoxLayout()
         body.setContentsMargins(24, 20, 24, 16)
@@ -120,6 +124,9 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(self.build_transcript(), "Transcription et voix")
         self.tabs.addTab(self.build_minutes(), "Projet de procès-verbal")
         self.tabs.addTab(self.build_votes(), "Décisions et votes")
+        self.participants_page = ParticipantsPage(self.store, self)
+        self.participants_page.saved.connect(self.participants_saved)
+        self.tabs.addTab(self.participants_page, 'Participants')
         body.addWidget(self.tabs, 1)
         self.status = paragraph("Créez une séance ou rouvrez-la dans l’historique. Tous les traitements se font sur cet ordinateur.")
         body.addWidget(self.status)
@@ -141,10 +148,10 @@ class MainWindow(QMainWindow):
         for label, field in [("Titre", self.title_edit), ("Commune", self.commune_edit), ("Date", self.date_edit), ("Lieu", self.location_edit)]:
             form.addRow(label, field)
         self.participants_edit, self.agenda_edit, self.notes_edit = QTextEdit(), QTextEdit(), QTextEdit()
-        self.participants_edit.setPlaceholderText("Une personne par ligne ; fonctions, absences et pouvoirs à préciser si nécessaire.")
+        self.participants_edit.setPlaceholderText("Notes conservées des séances existantes. Utilisez l’onglet Participants pour les présences structurées.")
         self.agenda_edit.setPlaceholderText("Un point de l’ordre du jour par ligne")
         self.notes_edit.setPlaceholderText("Notes de l’opérateur")
-        for label, field in [("Participants et présences", self.participants_edit), ("Ordre du jour", self.agenda_edit), ("Notes", self.notes_edit)]:
+        for label, field in [("Notes de présence (texte libre)", self.participants_edit), ("Ordre du jour", self.agenda_edit), ("Notes", self.notes_edit)]:
             field.setMaximumHeight(110)
             form.addRow(label, field)
         layout.addLayout(form)
@@ -204,6 +211,10 @@ class MainWindow(QMainWindow):
         self.transcript_search.setPlaceholderText("Rechercher dans la transcription")
         self.transcript_search.textChanged.connect(self.filter_transcript)
         layout.addWidget(self.transcript_search)
+        tools = QHBoxLayout()
+        tools.addWidget(button("Diagnostic des intervenants…", self.show_speaker_diagnostics))
+        tools.addWidget(button("Restaurer une transcription précédente…", self.restore_analysis))
+        layout.addLayout(tools)
         splitter = QSplitter()
         self.transcript_table = QTableWidget(0, 4)
         self.transcript_table.setHorizontalHeaderLabels(["Début", "Intervenant", "Attribution", "Texte"])
@@ -225,6 +236,14 @@ class MainWindow(QMainWindow):
         edit.addWidget(self.utterance_edit, 1)
         edit.addWidget(button("Enregistrer et confirmer l’attribution", lambda: self.save_utterance(confirm=True), True))
         edit.addWidget(button("Scinder le passage au curseur…", self.split_utterance))
+        edit.addWidget(paragraph('Attribution manuelle depuis les participants de la séance'))
+        self.person_combo = QComboBox()
+        edit.addWidget(self.person_combo)
+        self.person_scope = QComboBox()
+        self.person_scope.addItems(['Ce passage uniquement', 'Toutes les interventions de cette voix'])
+        edit.addWidget(self.person_scope)
+        self.assign_person_button = button('Attribuer à cette personne', self.assign_directory_person)
+        edit.addWidget(self.assign_person_button)
         self.speaker_table = QTableWidget(0, 2)
         self.speaker_table.setHorizontalHeaderLabels(["Voix", "Nom attribué"])
         self.speaker_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
@@ -244,6 +263,15 @@ class MainWindow(QMainWindow):
         layout.addWidget(warning)
         self.review_status = QLabel("Aucun brouillon")
         layout.addWidget(self.review_status)
+        mode_row = QHBoxLayout()
+        mode_row.addWidget(QLabel("Document à préparer"))
+        self.document_mode = QComboBox()
+        self.document_mode.addItem("Compte rendu synthétique", "summary")
+        self.document_mode.addItem("Transcription intégrale", "transcript")
+        self.document_mode.addItem("Procès-verbal municipal — relecture par le secrétaire", "municipal")
+        mode_row.addWidget(self.document_mode, 1)
+        mode_row.addWidget(button("Préparer ce document", self.generate, True))
+        layout.addLayout(mode_row)
         row = QHBoxLayout()
         self.points = QListWidget()
         self.points.currentRowChanged.connect(self.select_point)
@@ -258,6 +286,7 @@ class MainWindow(QMainWindow):
         panel.addWidget(self.point_text, 1)
         panel.addWidget(QLabel("Sources audio et transcription"))
         panel.addWidget(self.point_sources)
+        panel.addWidget(button("Consulter les extraits sources…", self.show_point_sources))
         panel.addWidget(QLabel("Vote saisi associé, si applicable"))
         panel.addWidget(self.point_vote)
         row.addLayout(panel, 3)
@@ -269,6 +298,7 @@ class MainWindow(QMainWindow):
         controls = QHBoxLayout()
         controls.addWidget(button("Ajouter un point", self.add_point))
         controls.addWidget(button("Sauvegarder le brouillon", self.save_draft, True))
+        controls.addWidget(button("Anciennes révisions…", self.restore_draft))
         controls.addWidget(button("J’ai relu cette révision…", self.approve))
         self.pdf_button = button("Exporter PDF", lambda: self.export("pdf"))
         self.docx_button = button("Exporter DOCX", lambda: self.export("docx"))
@@ -358,6 +388,8 @@ class MainWindow(QMainWindow):
         date = QDate.fromString(m.get("date", ""), Qt.ISODate)
         self.date_edit.setDate(date if date.isValid() else QDate.currentDate())
         self.participants_edit.setPlainText(m.get("participants", ""))
+        self.participants_page.load(self.sid)
+        self.refresh_person_choices()
         self.agenda_edit.setPlainText("\n".join(m.get("agenda", [])))
         self.notes_edit.setPlainText(m.get("notes", ""))
         self.takes.clear()
@@ -370,6 +402,7 @@ class MainWindow(QMainWindow):
             self.takes.addItem(item)
         self.populate_transcript()
         self.draft_content = json.loads(json.dumps(s["draft"]["content"])) if s["draft"] else {"points": [], "to_verify": []}
+        self.document_mode.setCurrentIndex(max(0, self.document_mode.findData(self.draft_content.get("document_mode", "summary"))))
         self.points.clear()
         self.points.addItems([p["title"] for p in self.draft_content["points"]])
         self.point_title.clear()
@@ -390,7 +423,7 @@ class MainWindow(QMainWindow):
             self.points.setCurrentRow(0)
 
     def metadata(self):
-        return {"municipality": self.commune_edit.text(), "location": self.location_edit.text(), "date": self.date_edit.date().toString(Qt.ISODate),
+        return {**(self.state['metadata'] if self.state else {}), "municipality": self.commune_edit.text(), "location": self.location_edit.text(), "date": self.date_edit.date().toString(Qt.ISODate),
                 "participants": self.participants_edit.toPlainText(), "agenda": [x.strip() for x in self.agenda_edit.toPlainText().splitlines() if x.strip()], "notes": self.notes_edit.toPlainText()}
 
     def save_details(self):
@@ -408,6 +441,54 @@ class MainWindow(QMainWindow):
             self.flush_edits()
             self.store.archive(self.sid, not self.store.get(self.sid)["archived"])
             self.reload_history()
+
+    def open_directory(self):
+        if self.task or self.recorder:
+            self.status.setText('Terminez la capture ou le traitement avant de modifier l’annuaire.')
+            return
+        self.flush_edits()
+        DirectoryDialog(self.store, self).exec()
+        if self.sid:
+            self.refresh_person_choices()
+
+    def refresh_person_choices(self):
+        selected = self.person_combo.currentData()
+        self.person_combo.clear()
+        self.person_combo.addItem('Choisir un participant…', None)
+        if self.sid:
+            for p in DirectoryService(self.store).participants(self.sid):
+                civil = p['snapshot']
+                title = ' · '.join(filter(None, [person_name(civil), civil.get('position'), civil.get('municipality')]))
+                self.person_combo.addItem(title, p['person_id'])
+        self.person_combo.setCurrentIndex(max(0, self.person_combo.findData(selected)))
+        self.assign_person_button.setEnabled(self.person_combo.count() > 1)
+
+    def participants_saved(self):
+        self.state = self.store.get(self.sid)
+        self.refresh_person_choices()
+        self.review_status.setText('Participants modifiés — nouvelle relecture requise')
+
+    def assign_directory_person(self):
+        pid, uid = self.person_combo.currentData(), self.edit_uid
+        if not pid or not uid:
+            self.status.setText('Sélectionnez un passage et une personne ajoutée dans l’onglet Participants.')
+            return
+        self.flush_edits()
+        state = self.store.get(self.sid)
+        utterance = next(u for u in state['utterances'] if u['id'] == uid)
+        ids = [uid]
+        if self.person_scope.currentIndex() == 1:
+            if utterance['speaker_id'] is None:
+                self.status.setText('Les passages non attribués peuvent appartenir à plusieurs voix. Attribuez-les séparément.')
+                return
+            ids = [u['id'] for u in state['utterances'] if u['speaker_id'] == utterance['speaker_id']]
+            if QMessageBox.question(self, 'Attribution de la voix', f'Attribuer manuellement ces {len(ids)} interventions à la personne sélectionnée ?', QMessageBox.Yes | QMessageBox.No, QMessageBox.No) != QMessageBox.Yes:
+                return
+        DirectoryService(self.store).assign_person(self.sid, ids, pid)
+        self.load_session()
+        row = next(i for i, u in enumerate(self.state['utterances']) if u['id'] == uid)
+        self.transcript_table.selectRow(row)
+        self.status.setText('Attribution manuelle enregistrée. Les autres passages et la fiche permanente sont conservés ; le brouillon doit être relu.')
 
     def refresh_devices(self):
         if self.recorder:
@@ -517,6 +598,8 @@ class MainWindow(QMainWindow):
             self.player.play()
 
     def populate_transcript(self):
+        self.transcript_table.clearSelection()
+        self.transcript_table.setCurrentCell(-1, -1)
         self.transcript_table.setRowCount(len(self.state["utterances"]))
         for row, u in enumerate(self.state["utterances"]):
             automatic = json.loads(u["source_json"]).get("automatic_attribution", True)
@@ -533,10 +616,69 @@ class MainWindow(QMainWindow):
             self.speaker_table.setItem(row, 0, item)
             self.speaker_table.setItem(row, 1, QTableWidgetItem(label))
         self.utterance_edit.clear()
+        self.speaker_combo.clear()
+        self.uncertainty.setText('Sélectionnez un passage')
 
     def filter_transcript(self, text):
         for row in range(self.transcript_table.rowCount()):
             self.transcript_table.setRowHidden(row, text.casefold() not in self.transcript_table.item(row, 3).text().casefold())
+
+    def show_private_text(self, title, text):
+        dialog = QDialog(self)
+        dialog.setWindowTitle(title)
+        dialog.resize(860, 600)
+        layout = QVBoxLayout(dialog)
+        editor = QTextEdit()
+        editor.setReadOnly(True)
+        editor.setPlainText(text)
+        layout.addWidget(editor)
+        close = QDialogButtonBox(QDialogButtonBox.Close)
+        close.rejected.connect(dialog.reject)
+        layout.addWidget(close)
+        dialog.exec()
+
+    def show_speaker_diagnostics(self):
+        if not self.sid:
+            return
+        self.flush_edits()
+        stats = self.store.speaker_diagnostics(self.sid)
+        rows = [f"{len(self.store.get(self.sid)['speakers'])} identifiants ; les durées attribuées ne sont pas une référence humaine.\n"]
+        for key, item in stats.items():
+            rows.append(f"{item['name']} ({key}) : {item['seconds']:.1f} s ; {item['segments']} passages ; {item['short_segments']} < 1 s ; {item['uncertain_segments']} incertains")
+        self.show_private_text("Diagnostic de la séance", "\n".join(rows))
+
+    def restore_analysis(self):
+        if not self.sid or self.task or self.recorder:
+            return
+        self.flush_edits()
+        versions = self.store.analysis_history(self.sid)
+        versions = [v for v in versions if json.loads(v["content_json"])["utterances"]]
+        if not versions:
+            self.status.setText("Aucune transcription antérieure à restaurer.")
+            return
+        options = [f"Version {v['id']} — {v['created_at']} — {len(json.loads(v['content_json'])['utterances'])} passages" for v in versions]
+        choice, ok = QInputDialog.getItem(self, "Restaurer une transcription", "La version active sera elle aussi conservée ; une nouvelle relecture sera requise.", options, 0, False)
+        if ok:
+            self.store.restore_analysis(self.sid, versions[options.index(choice)]["id"])
+            self.load_session()
+
+    def show_point_sources(self):
+        if not self.sid or self.point_index is None:
+            return
+        self.store_point_fields()
+        point = self.draft_content["points"][self.point_index]
+        state = self.store.get(self.sid)
+        sources = {u["id"]: u for u in state["utterances"]}
+        rows = ["Références internes. Contrôlez le sens complet et l'attribution à l'écoute.\n"]
+        for claim in point.get("claims", []):
+            status = 'contrôle IA — relecture humaine requise' if claim.get('machine_verdict') == 'supported_not_human_verified' else 'à vérifier'
+            rows += [f"Reformulation ({status}) : {claim['text']}"]
+            rows += [f"Extrait cité : {e['quote']}" for e in claim["evidence"]]
+        for key in point["sources"]:
+            u = sources.get(key)
+            if u:
+                rows += [f"\n{u['start_ms'] / 1000:.2f}–{u['end_ms'] / 1000:.2f} s — {state['speakers'].get(u['speaker_id'], 'Non attribué')} [{key}]", u["text"]]
+        self.show_private_text("Sources du point sélectionné", "\n".join(rows))
 
     def select_utterance(self):
         if self.loading:
@@ -648,8 +790,12 @@ class MainWindow(QMainWindow):
 
     def store_point_fields(self):
         if self.point_index is not None and 0 <= self.point_index < len(self.draft_content["points"]):
-            self.draft_content["points"][self.point_index] = {"title": self.point_title.text(), "summary": self.point_text.toPlainText(),
+            old = self.draft_content["points"][self.point_index]
+            changed = old["summary"] != self.point_text.toPlainText() or old["sources"] != [x.strip() for x in self.point_sources.text().split(",") if x.strip()]
+            self.draft_content["points"][self.point_index] = {**old, "title": self.point_title.text(), "summary": self.point_text.toPlainText(),
                 "sources": [x.strip() for x in self.point_sources.text().split(",") if x.strip()], "vote_id": self.point_vote.currentData()}
+            if changed:
+                self.draft_content["points"][self.point_index].pop("claims", None)
 
     def select_point(self, row):
         if self.loading:
@@ -736,6 +882,7 @@ class MainWindow(QMainWindow):
 
     def flush_edits(self):
         if self.sid and not self.loading:
+            self.participants_page.save_if_dirty()
             self.save_utterance()
             self.save_details()
             self.save_speakers()
@@ -756,11 +903,38 @@ class MainWindow(QMainWindow):
             # Explicit confirmation rebases the reviewed edited document to current sources.
             if state["draft"]["context_sha256"] != self.store.context_hash(self.sid):
                 self.store.save_draft(self.sid, state["draft"]["content"])
-            self.store.approve(self.sid, reviewer)
+            role = None
+            if state["draft"]["content"].get("document_mode") == "municipal":
+                if QMessageBox.question(self, "Secrétaire de séance", "Confirmez-vous être le secrétaire chargé de relire ce projet de procès-verbal municipal ?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No) != QMessageBox.Yes:
+                    return
+                role = "secretary"
+            self.store.approve(self.sid, reviewer, role)
             self.load_session()
             self.status.setText("Relecture enregistrée pour cette révision. Le document reste un projet non officiel.")
         except Exception as error:
             self.report_error(error)
+
+    def restore_draft(self):
+        if not self.sid or self.task or self.recorder:
+            return
+        self.flush_edits()
+        versions = self.store.draft_history(self.sid)
+        if not versions:
+            return
+        choices = [f"Révision {v['revision']} — {v['created_at']}" for v in versions]
+        choice, ok = QInputDialog.getItem(self, "Révisions conservées", "Choisir une révision à consulter", choices, 0, False)
+        if not ok:
+            return
+        selected = versions[choices.index(choice)]
+        content = json.loads(selected["content_json"])
+        text = "\n\n".join(p["title"] + "\n" + p["summary"] for p in content["points"])
+        self.show_private_text("Ancienne révision — lecture seule", text)
+        if QMessageBox.question(self, "Restaurer le brouillon", "Créer une nouvelle révision avec ce contenu ? La version active reste conservée. Si ses sources ne correspondent plus, restaurez d’abord la transcription associée.", QMessageBox.Yes | QMessageBox.No, QMessageBox.No) == QMessageBox.Yes:
+            try:
+                self.store.restore_draft(self.sid, selected["id"])
+                self.load_session()
+            except Exception as error:
+                self.report_error(error)
 
     def export(self, suffix):
         try:
@@ -800,7 +974,8 @@ class MainWindow(QMainWindow):
         if self.store.get(self.sid)["draft"] and QMessageBox.question(self, "Nouveau brouillon", "Créer une nouvelle révision avec Qwen3 ? L’ancienne révision est conservée.", QMessageBox.Yes | QMessageBox.No, QMessageBox.No) != QMessageBox.Yes:
             return
         sid = self.sid
-        self.run_task("minutes", lambda progress, cancel: Pipeline(self.store.root, progress=progress, cancel=cancel).generate(sid))
+        mode = self.document_mode.currentData()
+        self.run_task("minutes", lambda progress, cancel: Pipeline(self.store.root, progress=progress, cancel=cancel).generate(sid, mode))
 
     def run_task(self, kind, function):
         if self.task:
@@ -910,6 +1085,11 @@ def explain_error(error):
         "WORKER_EXIT_": "Le moteur s’est arrêté avec une erreur. Les prises sont conservées ; vous pouvez relancer le traitement.",
         "SESSION_TITLE_REQUIRED": "Donnez un titre à cette séance avant de la sauvegarder.",
         "SPEAKER_LABEL_REQUIRED": "Saisissez un nom ou un libellé pour chaque intervenant.",
+        "DAMAGED_TRANSCRIPT_RETRANSCRIBE_ORIGINAL": "La transcription contient des caractères perdus par l’ancienne version. Relancez l’analyse depuis l’audio original ; les corrections précédentes restent restaurables.",
+        "UNSUPPORTED_EXPORT_GLYPHS": "Un caractère n’est pas couvert par la police embarquée. L’export est arrêté pour éviter des carrés noirs. Corrigez le caractère signalé : " + text,
+        "MUNICIPAL_SECRETARY_REVIEW_REQUIRED": "Le projet de procès-verbal municipal exige une relecture explicitement confirmée par le secrétaire de séance.",
+        "NO_SUPPORTED_SUMMARY_CLAIMS": "Aucune synthèse suffisamment sourcée n’a été produite. La transcription et le brouillon précédent sont conservés.",
+        "SUMMARY_GROUPING_LOST_OR_DUPLICATED_CLAIMS": "Le regroupement a omis ou répété des informations. Le résumé est refusé ; la transcription et le brouillon précédent restent conservés.",
     }
     for key, message in messages.items():
         if key in text:

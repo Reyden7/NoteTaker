@@ -1,0 +1,47 @@
+{
+  "version": "0.2.1.dev0",
+  "recorded_at_utc": "2026-10-18T08:16:02.493773+00:00",
+  "scope": "stage 1 civil directory only; stages 2-6 not started",
+  "bundle_directory": "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\dist\\directory-01\\NoteTaker",
+  "tests_passed": 104,
+  "new_service_cases": 14,
+  "new_widget_tests": 4,
+  "compiled_workers_passed": [
+    "asr",
+    "diarization-sherpa",
+    "llm"
+  ],
+  "compiled_gui_startup_shutdown_passed": true,
+  "compiled_schema_version": 4,
+  "new_modules_present_in_compiled_archive": [
+    "notetaker.ui.directory",
+    "notetaker.services.directory"
+  ],
+  "executables_sha256": {
+    "NoteTaker.exe": "7c757765fb4184eb2b5084e5c2f6571423d825d9571f1d24c7b0fd6aabbad8d1",
+    "NoteTaker-worker.exe": "fe9f9444d44d4067578f5f511a06c88ae683dab278adccc18a59571f07881835"
+  },
+  "bundle_size_bytes": 3560051330,
+  "operator_guide_sha256": "38054735458081e33dabf1d5c686ad3b57866f6719a13137cce6f2469571f280",
+  "application_source_sha256": {
+    "src/notetaker/services/directory.py": "ed04ba95ffa39425a20087d9a8d4cc9ad8e2dca0b0c63d5b93fb9b1e763840c7",
+    "src/notetaker/ui/directory.py": "b835d87d1557665335448320426c09ef17c1b75e061386407732a417b6b587e5",
+    "src/notetaker/ui/window.py": "4ad8ce4f81f0571602c9c13dcc6e9e2570140f9adf50c8b9b8dfac5ec587d724",
+    "src/notetaker/services/storage.py": "9d7d9f4ceba63f95cdaf38418bc00770869fb2579eeac9218305ad47b8fa0e3f",
+    "src/notetaker/infrastructure/database.py": "9e438f13fe7e9df3618a76198a46e0dbd64bed1470fe9e2139dfd545ad44f295",
+    "src/notetaker/services/session_export.py": "70769fb8dfeacf88981094d30ad741fb4c07eaa9d892173ff1c89000f88dc95b"
+  },
+  "real_snapshot_migration_passed": true,
+  "live_user_database_modified_by_acceptance_tests": false,
+  "visual_qa": {
+    "directory_participants_transcript_inspected": true,
+    "pdf_pages_inspected": 2,
+    "word_render_pages_inspected": 2,
+    "data": "fictional fixtures"
+  },
+  "biometric_enrollment_implemented": false,
+  "biometric_activation": false,
+  "human_operator_interface_acceptance": false,
+  "clean_offline_windows_tested": false,
+  "commercial_setup_created": false
+}

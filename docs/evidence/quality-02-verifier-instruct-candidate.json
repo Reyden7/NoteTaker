@@ -1,0 +1,20 @@
+{
+  "real_cpu_result": {
+    "checks": [
+      {
+        "id": "wrong-scope",
+        "verdict": "not_explicit"
+      },
+      {
+        "id": "faithful",
+        "verdict": "supported"
+      }
+    ]
+  },
+  "expected": {
+    "wrong-scope": "not_explicit",
+    "faithful": "supported"
+  },
+  "scope_regression_passed": true,
+  "not_a_field_accuracy_measure": true
+}

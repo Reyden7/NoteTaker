@@ -120,12 +120,13 @@ def test_real_local_exports(tmp_path, draft, suffix):
         from docx import Document
         doc = Document(path)
         text = "\n".join(p.text for p in doc.paragraphs)
-        assert "Séance test-0" in doc.sections[0].header.paragraphs[0].text
+        assert "Commune de test" in doc.sections[0].header.paragraphs[0].text
+        assert "test-0" not in text  # Technical identifiers stay in the internal snapshot.
     else:
         from pypdf import PdfReader
         reader = PdfReader(path)
-        assert len(reader.pages) == 1
-        text = reader.pages[0].extract_text()
+        assert len(reader.pages) == 2  # Cover plus body.
+        text = "\n".join(p.extract_text() for p in reader.pages)
         assert "Page 1" in text
     assert "BROUILLON NON OFFICIEL" in text and "à compléter" in text
 
@@ -147,8 +148,8 @@ def test_database_restart_and_recovery(tmp_path):
 def test_failed_migration_rolls_back_every_statement(tmp_path):
     connection = open_database(tmp_path / "test.sqlite3")
     with pytest.raises(sqlite3.OperationalError):
-        migrate(connection, {1: [], 2: [], 3: [], 4: ["CREATE TABLE should_rollback(id TEXT)", "INVALID SQL"]})
-    assert connection.execute("PRAGMA user_version").fetchone()[0] == 3
+        migrate(connection, {1: [], 2: [], 3: [], 4: [], 5: ["CREATE TABLE should_rollback(id TEXT)", "INVALID SQL"]})
+    assert connection.execute("PRAGMA user_version").fetchone()[0] == 4
     assert connection.execute("SELECT name FROM sqlite_master WHERE name='should_rollback'").fetchall() == []
     connection.close()
 
@@ -196,7 +197,7 @@ def test_orphan_and_corrupt_segments_are_reported_without_deletion(tmp_path):
 def test_worker_missing_model_fails_without_download(tmp_path):
     request = tmp_path / "request.json"
     atomic_json(request, {"engine": "diarization", "model": str(tmp_path / "missing"), "audio": str(tmp_path / "missing.wav")})
-    with pytest.raises(RuntimeError, match="WORKER_EXIT_2"):
+    with pytest.raises(RuntimeError, match="FileNotFoundError"):
         run_worker(request, timeout=10)
 
 def test_worker_timeout_is_bounded(tmp_path):

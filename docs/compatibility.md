@@ -1,13 +1,13 @@
 # Versions et compatibilité
 
-Audit du 16 octobre 2026. Les versions ci-dessous sont des choix d'étude,
+Audit mis à jour le 18 octobre 2026. Les versions ci-dessous sont des choix d'étude,
 pas une certification Windows 10/11 de l'ensemble du produit.
 
 | Composant | Version ou révision | Windows x64 et état constaté |
 |---|---|---|
 | Python | 3.11.16, build Astral 20260901 | Environnement de test installé ; Python système 3.14 écarté |
 | faster-whisper | 1.2.1 | Transcription française réelle CPU réussie |
-| CTranslate2 | 4.6.0 | CPU int8 validé ; CUDA échoue sans cuDNN 9 |
+| CTranslate2 | 4.6.0 | CPU int8 validé ; frontal cuDNN 9.1.0.70 importé même en CPU, backend GPU incomplet |
 | setuptools | 80.9.0 | Fixe l'import `pkg_resources` requis par CTranslate2 4.6 |
 | PyAV / FFmpeg | 16.0.1 / libavcodec 62.11.100 | Imports WAV, MP3 et M4A réellement décodés ; redistribution à auditer |
 | numpy | 2.2.6 | Import et ASR validés |
@@ -39,7 +39,32 @@ La candidate sherpa est verrouillée dans `requirements.lock` et ses modèles
 dans `diarization_models_manifest.json`. Le fichier de snapshot PyTorch décrit
 la piste antérieure, conservée pour tracer l'audit et non pour livrer les deux piles.
 
-## GPU
+## Complément de recette 0.2
+
+Sur le même poste Windows x64, Whisper a retranscrit le débat complet sur CPU
+avec timestamps de mots et zéro caractère U+FFFD. Le protocole JSON ASCII évite
+la perte de caractères constatée avec la page de codes de stdout compilé.
+La segmentation et les embeddings WeSpeaker ResNet34 adaptés par métadonnées
+ont été exécutés avec sherpa 1.13.8. Noto Sans Regular/Bold est incorporé au PDF
+et au DOCX ; Word a rendu un document de contrôle en lecture seule.
+ONNX 1.19.1 sert seulement à préparer les métadonnées au build et reste exclu
+des exécutables. La qualité humaine du débat et Windows vierge restent à valider.
+
+La comparaison complète utilise Qwen3-4B-Instruct-2507 Q4_K_M (quantification
+Unsloth, révision et hashes dans `models_manifest.json`). Ce modèle est désormais
+celui du nouveau lot de développement, avec llama.cpp CPU b11681. Les 18 blocs
+du débat sont réellement traités ; 36 informations sont retenues dans huit
+thèmes. La fidélité humaine reste non validée. L'ancien Qwen3-4B reste archivé.
+
+Une variante CTranslate2 4.6.0 CPU seule a été compilée avec MSVC 19.51/CMake
+4.3.1 et Ruy. Son import via l'extension cp311 de la roue officielle réussit
+dans un paquet isolé ; les imports PE ne contiennent ni cuDNN ni CUDA. L'essai
+réel ASR sur 30 secondes naturelles dépasse le délai de 600 secondes : échec
+documenté, sans qualification de transcription, de performance ni Windows propre.
+L'environnement actif et le bundle conservent la roue initiale : ne pas
+présenter l'application comme déjà libérée de cette dépendance NVIDIA.
+
+## GPU (qualification distincte)
 
 CTranslate2 4.6 et faster-whisper 1.2.1 nécessitent CUDA 12/cuBLAS et cuDNN 9
 pour Whisper. La page d'installation générale CTranslate2 consultée mentionne

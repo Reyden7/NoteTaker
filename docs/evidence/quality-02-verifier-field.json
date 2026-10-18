@@ -1,0 +1,30 @@
+{
+  "real_cpu_result": {
+    "checks": [
+      {
+        "id": "c0",
+        "verdict": "supported"
+      },
+      {
+        "id": "c1",
+        "verdict": "supported"
+      },
+      {
+        "id": "c2",
+        "verdict": "uncertain"
+      },
+      {
+        "id": "c3",
+        "verdict": "not_explicit"
+      }
+    ]
+  },
+  "expected": {
+    "c0": "not_explicit",
+    "c1": "supported",
+    "c2": "not_explicit",
+    "c3": "supported"
+  },
+  "scope_regression_passed": false,
+  "not_a_field_accuracy_measure": true
+}

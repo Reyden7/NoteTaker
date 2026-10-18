@@ -62,6 +62,8 @@ class SessionStore:
         value["decisions"] = json.loads(manual["decisions_json"]) if manual else []
         draft = self.db.execute("SELECT * FROM draft_minutes WHERE session_id=? ORDER BY revision DESC LIMIT 1", (sid,)).fetchone()
         value["draft"] = None if draft is None else {**dict(draft), "content": json.loads(draft["content_json"]), "review": json.loads(draft["review_json"]) if draft["review_json"] else None}
+        from .directory import DirectoryService
+        value['participants'] = DirectoryService(self).participants(sid)
         return value
 
     def _changed(self, sid):
@@ -138,9 +140,36 @@ class SessionStore:
             confirmed = confirm or speaker_id != current["speaker_id"]
             if confirmed:
                 source["automatic_attribution"] = False
+            if speaker_id != current['speaker_id']:
+                source.pop('directory_person_id', None)
+                source.pop('directory_snapshot', None)
             uncertain = int(speaker_id is None) if confirmed else current["uncertain"]
             self.db.execute("UPDATE utterance SET text=?,speaker_id=?,uncertain=?,source_json=? WHERE session_id=? AND id=?", (text, speaker_id, uncertain, encoded(source), sid, uid))
             self._changed(sid)
+
+    def analysis_history(self, sid):
+        return [dict(r) for r in self.db.execute("SELECT id,kind,created_at,content_json FROM edit_history WHERE session_id=? AND kind IN ('analysis','restore_analysis','directory_assignment') ORDER BY id DESC", (sid,))]
+
+    def restore_analysis(self, sid, history_id):
+        row = self.db.execute("SELECT content_json FROM edit_history WHERE id=? AND session_id=? AND kind IN ('analysis','restore_analysis','directory_assignment')", (history_id, sid)).fetchone()
+        if not row:
+            raise ValueError("ANALYSIS_REVISION_NOT_FOUND")
+        content = json.loads(row[0])
+        utterances = [{**u, "source": json.loads(u["source_json"]) if "source_json" in u else u.get("source", {})} for u in content["utterances"]]
+        self.save_analysis(sid, utterances, content["speakers"], self.get(sid)["revision"])
+
+    def speaker_diagnostics(self, sid):
+        state = self.get(sid)
+        stats = {key: {"name": label, "seconds": 0, "segments": 0, "short_segments": 0, "uncertain_segments": 0} for key, label in state["speakers"].items()}
+        for u in state["utterances"]:
+            key = u["speaker_id"] or "unattributed"
+            item = stats.setdefault(key, {"name": "Non attribué", "seconds": 0, "segments": 0, "short_segments": 0, "uncertain_segments": 0})
+            seconds = (u["end_ms"] - u["start_ms"]) / 1000
+            item["seconds"] += seconds
+            item["segments"] += 1
+            item["short_segments"] += seconds < 1
+            item["uncertain_segments"] += bool(u["uncertain"])
+        return stats
 
     def split_utterance(self, sid, uid, at_ms, text_position):
         state = self.get(sid)
@@ -162,6 +191,13 @@ class SessionStore:
         with self.db:
             self.db.execute("INSERT INTO edit_history(session_id,kind,content_json) VALUES(?,'merge_speakers',?)", (sid, encoded({"utterances": state["utterances"], "speakers": state["speakers"]})))
             self.db.execute("UPDATE utterance SET speaker_id=?,uncertain=1 WHERE session_id=? AND speaker_id=?", (target_id, sid, source_id))
+            for u in state['utterances']:
+                if u['speaker_id'] == source_id:
+                    source = json.loads(u['source_json'])
+                    source.pop('directory_person_id', None)
+                    source.pop('directory_snapshot', None)
+                    source['automatic_attribution'] = False
+                    self.db.execute('UPDATE utterance SET source_json=? WHERE session_id=? AND id=?', (encoded(source), sid, u['id']))
             self.db.execute("DELETE FROM speaker WHERE session_id=? AND id=?", (sid, source_id))
             self._changed(sid)
 
@@ -169,6 +205,19 @@ class SessionStore:
         if not label.strip():
             raise ValueError("SPEAKER_LABEL_REQUIRED")
         with self.db:
+            state = self.get(sid)
+            if speaker_id not in state['speakers']:
+                raise ValueError('UNKNOWN_SPEAKER')
+            if state['speakers'][speaker_id] == label.strip():
+                return
+            self.db.execute("INSERT INTO edit_history(session_id,kind,content_json) VALUES(?,'directory_assignment',?)",
+                            (sid, encoded({'utterances': state['utterances'], 'speakers': state['speakers']})))
+            for row in self.db.execute('SELECT id,source_json FROM utterance WHERE session_id=? AND speaker_id=?', (sid, speaker_id)).fetchall():
+                source = json.loads(row['source_json'])
+                if 'directory_person_id' in source:
+                    source.pop('directory_person_id', None)
+                    source.pop('directory_snapshot', None)
+                    self.db.execute('UPDATE utterance SET source_json=? WHERE session_id=? AND id=?', (encoded(source), sid, row['id']))
             self.db.execute("UPDATE speaker SET label=? WHERE session_id=? AND id=?", (label.strip(), sid, speaker_id))
             self._changed(sid)
 
@@ -180,11 +229,29 @@ class SessionStore:
 
     def context_hash(self, sid):
         s = self.get(sid)
-        return content_digest({k: s[k] for k in ("title", "metadata", "takes", "speakers", "utterances", "votes", "decisions")})
+        context = {k: s[k] for k in ("title", "metadata", "takes", "speakers", "utterances", "votes", "decisions")}
+        # Preserve the exact context of legacy reviewed sessions without structured participants.
+        if s['participants']:
+            context['participants'] = s['participants']
+        return content_digest(context)
+
+    def draft_history(self, sid):
+        return [dict(r) for r in self.db.execute("SELECT id,revision,created_at,content_json FROM draft_minutes WHERE session_id=? ORDER BY revision DESC", (sid,))]
+
+    def restore_draft(self, sid, draft_id):
+        row = self.db.execute("SELECT content_json FROM draft_minutes WHERE id=? AND session_id=?", (draft_id, sid)).fetchone()
+        if not row:
+            raise ValueError("DRAFT_REVISION_NOT_FOUND")
+        return self.save_draft(sid, json.loads(row[0]))
 
     def save_draft(self, sid, content, expected_context=None):
         state = self.get(sid)
         validate_minutes(content, {u["id"] for u in state["utterances"]}, {v["id"]: v for v in state["votes"]})
+        from notetaker.engines.hierarchical_summary import grounded_claim
+        for point in content["points"]:
+            for claim in point.get("claims", []):
+                if not grounded_claim(claim, state["utterances"])[0]:
+                    raise ValueError("CLAIM_EVIDENCE_INVALID")
         context = self.context_hash(sid)
         if expected_context and context != expected_context:
             raise ValueError("SESSION_CHANGED_DURING_GENERATION")
@@ -194,12 +261,14 @@ class SessionStore:
             self.db.execute("INSERT INTO draft_minutes(id,session_id,revision,content_json,context_sha256) VALUES(?,?,?,?,?)", (did, sid, revision, encoded(content), context))
         return did
 
-    def approve(self, sid, reviewer):
+    def approve(self, sid, reviewer, role=None):
         state = self.get(sid)
         draft = state["draft"]
         if not draft or draft["context_sha256"] != self.context_hash(sid):
             raise ValueError("DRAFT_STALE_REVIEW_SOURCES_AND_SAVE_AGAIN")
-        review = {**asdict(record_human_review(draft["content"], reviewer)), "context_sha256": self.context_hash(sid)}
+        if draft["content"].get("document_mode") == "municipal" and role != "secretary":
+            raise ValueError("MUNICIPAL_SECRETARY_REVIEW_REQUIRED")
+        review = {**asdict(record_human_review(draft["content"], reviewer)), "context_sha256": self.context_hash(sid), "reviewer_role": role or "reviewer"}
         with self.db:
             self.db.execute("UPDATE draft_minutes SET review_json=? WHERE id=?", (encoded(review), draft["id"]))
         return review
@@ -209,6 +278,8 @@ class SessionStore:
         d = s["draft"]
         if not d or not d["review"] or d["review"]["context_sha256"] != self.context_hash(sid):
             raise ValueError("HUMAN_REVIEW_REQUIRED_FOR_CURRENT_SESSION")
+        if d["content"].get("document_mode") == "municipal" and d["review"].get("reviewer_role") != "secretary":
+            raise ValueError("MUNICIPAL_SECRETARY_REVIEW_REQUIRED")
         return s, HumanReview(**{k: d["review"][k] for k in ("content_sha256", "reviewer", "reviewed_at")})
 
     def record_export(self, sid, draft_id, path, digest):

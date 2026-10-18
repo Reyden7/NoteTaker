@@ -1,0 +1,25 @@
+{
+  "recorded_at_utc": "2026-10-18T07:40:41.546465+00:00",
+  "status": "cpu_import_passed_natural_asr_timed_out",
+  "scope": "30 seconds of natural French audio, offset 600s; not complete meeting or clean Windows acceptance",
+  "candidate_dll_sha256": "1f8d76705a6b55f6d4a63e6be81933b5ee87fee9fceb0eb6f08ebd0e68d6065d",
+  "isolated_import_process_exit_code": 0,
+  "cuda_device_count": 0,
+  "cpu_compute_types": [
+    "int8_float32",
+    "int8",
+    "float32"
+  ],
+  "inference_attempted": true,
+  "inference_completed": false,
+  "probe_timeout_seconds": 600,
+  "error_type": "subprocess.TimeoutExpired",
+  "evidence_basis": "Observed native import process exit 0, then real ASR child exceeded subprocess.run timeout of 600 seconds. Subsequent Windows process inventory found no remaining probe process; no process was forcibly stopped.",
+  "remaining_probe_processes_after_timeout": 0,
+  "overlay_reused_without_modification": true,
+  "active_environment_replaced": false,
+  "original_wheel_dll_unchanged": true,
+  "commercial_clearance": false,
+  "candidate_integrated_in_bundle": false,
+  "quality_metrics": null
+}

@@ -1,0 +1,127 @@
+{
+  "status": "comparative_test_not_human_acceptance",
+  "baseline": {
+    "speakers": 195,
+    "utterances": 1485,
+    "uncertain_utterances": 506,
+    "draft_characters": 88404,
+    "verification_alerts": 29,
+    "pdfs": [
+      {
+        "sha256": "32faa7a6e25c97c2423533970ac66b2c7d4486c61d59a67d78cad44770ba0230",
+        "pages": 54,
+        "bytes": 89199
+      }
+    ]
+  },
+  "corrected": {
+    "speakers": 9,
+    "utterances": 2350,
+    "uncertain_utterances": 1123,
+    "replacement_characters": 0,
+    "summary_characters": 1006,
+    "topics": 8,
+    "pdf_preview_pages": 2,
+    "pdf_replacement_characters": 0,
+    "claims": {
+      "blocks": 18,
+      "source_units": 1172,
+      "generated_claims": 31,
+      "supported_claims": 31,
+      "rejected_claims": 41,
+      "human_factual_validation": "required_not_performed"
+    },
+    "verification_alerts": 1,
+    "selected_claims": 8,
+    "unselected_claims": 23,
+    "selected_source_time_extent_ms": {
+      "start": 94160,
+      "end": 708060,
+      "not_a_semantic_coverage_score": true
+    }
+  },
+  "original_mp3_sha256": "2083569d042c0f53b93a9fa383485dbe9edf6346a2fd8b64f0eddc9de0f88323",
+  "original_mp3_unchanged": true,
+  "original_import_unchanged": true,
+  "unreviewed_export_blocked": true,
+  "review_created": false,
+  "review_session_directory": "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\output\\quality-02\\review-session",
+  "review_session_id": "49c22916-3613-4289-8cf4-5cfb7e1e63d9",
+  "human_reference": "not-available",
+  "human_metrics": null,
+  "topic_coverage": null,
+  "hallucination_rate": null,
+  "source_file_sha256": {
+    "src\\notetaker\\engines\\hierarchical_summary.py": "e90e157564dd9ccd8299ea153552cbda2825f4bb7739df6c5f304f4c7bb5143e",
+    "src\\notetaker\\engines\\speaker_refinement.py": "3e8bf122534ae8be36e0b47e6a7b633fc7d6f7b2435c383ae15c8236f680684a",
+    "src\\notetaker\\workers\\probe.py": "94f3bfac067db32e0cdd9b0484b690da7e94f5b4d25055780d5301ceb71469f8",
+    "src\\notetaker\\services\\pipeline.py": "6f180c3daddb12eeda7421007a8fdf43ae54c4252682e980df221f7dc7938824",
+    "src\\notetaker\\services\\export.py": "f65b3e0c729940435ff9d9cb7f3201d9def80a6aebd33d76725b193d3ac60f41"
+  },
+  "model_manifest_sha256": {
+    "models_manifest.json": "a9ffb40038459703720b89e4149ff4f255cd0f6007b227f41c7c9f38f248a0e4",
+    "diarization_models_manifest.json": "99c7b17de78f628a067aeb3c8cc791ca51859da8c54d51790ad8fad26ecd8bf0"
+  },
+  "asr_timing": {
+    "cpu_seconds_wall": 1369.168,
+    "audio_sha256": "3e38e6f1e744e07d2250aacca8cc3fe4c81f0a5f913a57549b96bdddde3bb8f9",
+    "human_reference_accuracy": "not-measured",
+    "human_review": "not-performed"
+  },
+  "diarization_timing": {
+    "cpu_seconds_wall": 573.678,
+    "audio_sha256": "3e38e6f1e744e07d2250aacca8cc3fe4c81f0a5f913a57549b96bdddde3bb8f9",
+    "human_reference_accuracy": "not-measured",
+    "human_review": "not-performed"
+  },
+  "summary_timing": {
+    "cpu_seconds_wall": 376.712,
+    "audio_sha256": "3e38e6f1e744e07d2250aacca8cc3fe4c81f0a5f913a57549b96bdddde3bb8f9",
+    "human_reference_accuracy": "not-measured",
+    "human_review": "not-performed",
+    "cached_native_calls_before_resume": 21,
+    "cumulative_native_call_wall_seconds": 2382.836,
+    "native_call_wall_seconds": {
+      "block-000": 103.9,
+      "block-001": 119.774,
+      "block-002": 100.913,
+      "block-003": 142.888,
+      "block-004": 112.755,
+      "block-005": 141.898,
+      "block-006": 109.515,
+      "block-007": 119.454,
+      "block-008": 130.852,
+      "block-009": 117.843,
+      "block-010": 117.175,
+      "block-011": 87.252,
+      "block-012": 117.582,
+      "block-013": 94.169,
+      "block-014": 114.188,
+      "block-015": 86.644,
+      "block-016": 101.065,
+      "block-017": 88.785,
+      "global-topics": 53.007,
+      "rewrite-000": 19.469,
+      "rewrite-004": 18.542,
+      "rewrite-008": 21.171,
+      "rewrite-012": 23.788,
+      "rewrite-016": 22.402,
+      "rewrite-020": 20.131,
+      "rewrite-024": 28.998,
+      "rewrite-028": 22.522,
+      "verify-000": 25.629,
+      "verify-006": 27.743,
+      "verify-012": 27.565,
+      "verify-018": 25.661,
+      "verify-024": 30.885,
+      "verify-030": 8.671
+    },
+    "wall_time_note": "resumed worker duration excludes earlier cached inference; cumulative calls include their original measured times; not isolated CPU performance"
+  },
+  "quality_acceptance": false,
+  "known_quality_failures": [
+    "Added causality and created question accepted by model verifier",
+    "Global grouping selected first eight claims and omitted 23 of 31 machine-supported claims"
+  ],
+  "source_hash_scope": "working_tree_at_report_time; original run predated candidate template branch and grouping completeness guard"
+}

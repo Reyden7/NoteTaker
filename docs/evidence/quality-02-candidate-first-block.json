@@ -1,0 +1,18 @@
+{
+  "scope": "first natural field block only; not full meeting acceptance",
+  "strategy": "hierarchical-grounded-summary",
+  "diagnostics": {
+    "blocks": 1,
+    "source_units": 34,
+    "generated_claims": 2,
+    "supported_claims": 2,
+    "rejected_claims": 2,
+    "human_factual_validation": "required_not_performed"
+  },
+  "retained_claims": 2,
+  "topics": 2,
+  "source_start_ms": 820,
+  "source_end_ms": 161960,
+  "human_fidelity_validation": false,
+  "full_meeting_still_pending": true
+}

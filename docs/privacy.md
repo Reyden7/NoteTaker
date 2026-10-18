@@ -7,11 +7,20 @@ sont imposées avant les imports des moteurs. Elles complètent les chemins
 locaux obligatoires ; elles ne remplacent pas un audit réseau des bibliothèques
 natives et de l'installateur sur VM déconnectée.
 
-Les locuteurs sont anonymes et limités à une séance. Leurs noms sont attribués
-manuellement. Les vecteurs temporaires nécessaires au regroupement des voix
-ne servent pas à constituer une base nominative ni à reconnaître des personnes
-entre séances. L'API du modèle de voix ne doit pas devenir une fonction produit
-de vérification biométrique. Les chevauchements et incertitudes doivent être visibles.
+Les groupes acoustiques restent limités à une séance. Leurs noms sont attribués
+manuellement, depuis du texte libre ou, en 0.2.1, un annuaire civil réutilisable.
+Cet annuaire contient prénom, nom, fonction et commune, sans échantillon vocal
+ni empreinte permanente. Les vecteurs temporaires nécessaires à la diarisation
+ne deviennent pas une base nominative interséances. Le futur assistant vocal est
+indisponible ; ses étapes d'intégration restent bloquées avant validation de
+l'interface et, pour toute collecte biométrique, du cadre juridique approprié.
+Les chevauchements et incertitudes doivent rester visibles.
+
+Les participants d'une séance gardent un instantané de leur fiche et de leurs
+présences/rôles/pouvoirs. L'archivage d'une fiche ne supprime pas cet historique.
+La base civile et ses sauvegardes restent sous les permissions Windows, sans
+chiffrement applicatif à cette étape. Les habilitations avancées, rétention et
+coffre prévus dans le plan ne sont pas encore implémentés.
 
 Une sortie de modèle est un brouillon. Les votes proviennent d'une saisie
 structurée, les absences restent à compléter, et l'opérateur relit la révision

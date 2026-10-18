@@ -1,0 +1,16 @@
+{
+  "scope": "fictional fixture; actual Qt widgets, civil directory only",
+  "data_directory": "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\output\\directory-validation\\2ae49bcf946848ddb1c3a2e6d41d5698\\data",
+  "session_id": "7ccebf25-0d92-464e-9a8b-6545fa5a472f",
+  "directory_form_saved": 5,
+  "participants": 5,
+  "proxy_to_present_person": true,
+  "manual_assignment_passed": true,
+  "voice_enrollment_button_disabled": true,
+  "review_created": false,
+  "screenshots": [
+    "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\output\\directory-validation\\2ae49bcf946848ddb1c3a2e6d41d5698\\directory.png",
+    "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\output\\directory-validation\\2ae49bcf946848ddb1c3a2e6d41d5698\\participants.png",
+    "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\output\\directory-validation\\2ae49bcf946848ddb1c3a2e6d41d5698\\manual-assignment.png"
+  ]
+}
