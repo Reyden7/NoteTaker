@@ -1,0 +1,40 @@
+{
+  "version": "0.2.3.dev0",
+  "recorded_at_utc": "2026-10-18T17:32:01.308267+00:00",
+  "bundle": "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\dist\\topic-summary\\NoteTaker",
+  "executables_sha256": {
+    "NoteTaker.exe": "37cea3440dc2a67ce04d28c5b6a7e25493883aac65adb4c423c525a1cdd60197",
+    "NoteTaker-worker.exe": "1cd3022da6b358363925f82022a2fb1b9c6522963b91b419de7ec1d5e8693629"
+  },
+  "tests_passed": 175,
+  "compiled_workers_passed": [
+    "asr",
+    "diarization-sherpa",
+    "llm"
+  ],
+  "final_llm_native_calls": 0,
+  "final_llm_cache_identities_at_start": 9,
+  "previous_fresh_native_llm_seconds": 352.302,
+  "previous_fresh_native_evidence": "bundle-topic-before-stance-guard.json",
+  "compiled_ui_started_closed": true,
+  "frozen_modules_equal_current_sources": [
+    "notetaker.engines.topic_summary",
+    "notetaker.domain.summary",
+    "notetaker.services.pipeline",
+    "notetaker.services.evidence",
+    "notetaker.ui.window",
+    "notetaker.ui.evidence"
+  ],
+  "comparison_status": "passed",
+  "comparison_transcription_rows": 670,
+  "comparison_pdf_sha256": "0ddad45c7dfcfc022e4cc67fe4b12adc66e24a27ede0878f46ee1351cdba70c2",
+  "comparison_pdf_pages_inspected": 8,
+  "unreviewed_production_export_blocked": true,
+  "real_meeting_review_created": false,
+  "human_fidelity_improvement_measured": null,
+  "biometric_identification_added": false,
+  "clean_offline_windows_validated": false,
+  "commercial_installer_validated": false,
+  "native_redistribution_clearance": false,
+  "environment": "developer PC; system Python paths removed; not clean Windows; host not disconnected"
+}

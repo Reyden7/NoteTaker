@@ -1,0 +1,33 @@
+{
+  "scope": "known synthetic audio fixture only; actual CPU engines; simulated human actions for export gate testing",
+  "data_directory": "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\output\\corrections-chain\\8738d07a19854578b1b75c7a3011158a",
+  "session_id": "f644c944-6b4c-4398-9400-a0d8dc9d37c4",
+  "human_review_of_real_meeting": false,
+  "real_french_accuracy_measured": false,
+  "analysis": {
+    "utterances": 5,
+    "speakers": 1,
+    "device": "cpu"
+  },
+  "generation": {
+    "points": 3
+  },
+  "repeat_analysis": {
+    "utterances": 5,
+    "speakers": 1,
+    "device": "cpu"
+  },
+  "manual_correction_preserved": true,
+  "regeneration": {
+    "points": 3
+  },
+  "unreviewed_export_blocked": true,
+  "status": "passed",
+  "exports": [
+    "pdf",
+    "docx"
+  ],
+  "reopened_with_review_and_sources": true,
+  "original_audio_unchanged": true,
+  "wall_seconds": 362.143
+}

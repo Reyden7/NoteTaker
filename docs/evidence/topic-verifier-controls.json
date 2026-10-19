@@ -1,0 +1,95 @@
+{
+  "scope": "developer-authored textual regression controls; known failure patterns; not a blind field evaluation or human meeting annotation",
+  "actual_local_cpu_inference": true,
+  "human_field_reference": false,
+  "human_fidelity_improvement_measured": null,
+  "model_sha256": "3605803b982cb64aead44f6c1b2ae36e3acdb41d8e46c8a94c6533bc4c67e597",
+  "wall_seconds": 61.814,
+  "results": [
+    {
+      "case": "budget_scope",
+      "expected_supported": false,
+      "machine_accepted": false,
+      "checks": {
+        "meaning": "not_explicit",
+        "modality": "not_explicit",
+        "attribution": "not_explicit",
+        "relation": "not_explicit"
+      },
+      "matches_authored_control": true
+    },
+    {
+      "case": "question",
+      "expected_supported": false,
+      "machine_accepted": false,
+      "checks": {
+        "meaning": "not_explicit",
+        "modality": "not_explicit",
+        "attribution": "not_explicit",
+        "relation": "not_explicit"
+      },
+      "matches_authored_control": true
+    },
+    {
+      "case": "reported_opinion",
+      "expected_supported": false,
+      "machine_accepted": false,
+      "checks": {
+        "meaning": "not_explicit",
+        "modality": "not_explicit",
+        "attribution": "not_explicit",
+        "relation": "not_explicit"
+      },
+      "matches_authored_control": true
+    },
+    {
+      "case": "anecdote",
+      "expected_supported": false,
+      "machine_accepted": false,
+      "checks": {
+        "meaning": "not_explicit",
+        "modality": "not_explicit",
+        "attribution": "not_explicit",
+        "relation": "not_explicit"
+      },
+      "matches_authored_control": true
+    },
+    {
+      "case": "political_identity",
+      "expected_supported": false,
+      "machine_accepted": false,
+      "checks": {
+        "meaning": "not_explicit",
+        "modality": "not_explicit",
+        "attribution": "not_explicit",
+        "relation": "not_explicit"
+      },
+      "matches_authored_control": true
+    },
+    {
+      "case": "faithful_question",
+      "expected_supported": true,
+      "machine_accepted": true,
+      "checks": {
+        "meaning": "supported",
+        "modality": "supported",
+        "attribution": "supported",
+        "relation": "supported"
+      },
+      "matches_authored_control": true
+    },
+    {
+      "case": "faithful_proposal",
+      "expected_supported": true,
+      "machine_accepted": true,
+      "checks": {
+        "meaning": "supported",
+        "modality": "supported",
+        "attribution": "supported",
+        "relation": "supported"
+      },
+      "matches_authored_control": true
+    }
+  ],
+  "all_authored_controls_passed": true
+}

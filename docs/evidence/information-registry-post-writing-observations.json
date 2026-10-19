@@ -1,0 +1,219 @@
+{
+  "scope": "development-agent qualitative reading after real prose; not a human benchmark",
+  "human_annotation": false,
+  "semantic_accuracy_rate": null,
+  "human_review_created": false,
+  "observations": [
+    {
+      "information_id": "3a24b798-afbc-5209-a224-b7864e8709e8",
+      "subject": "Évaluation de l'ampleur du mouvement par différents acteurs (ministère, participants)",
+      "content": "On s'interroge sur la nécessité, en France, d'adopter une certaine forme de comportement ou de politique en réalité.",
+      "evidence": [
+        {
+          "id": "s107-0",
+          "quote": "Vous dites qu'en France, en réalité, il faut",
+          "start_ms": 252220,
+          "end_ms": 255040
+        }
+      ],
+      "reason": "Sujet et contenu semblent incompatibles : la question rédigée ne renseigne pas l'ampleur du mouvement ni ses chiffres.",
+      "human_annotation": false,
+      "disposition": "requires_verification_not_excluded_or_deleted"
+    },
+    {
+      "information_id": "5b1118f1-a746-58c7-9cb2-867e0838bf96",
+      "subject": "Nature des moyens de changement : comparaison entre une approche révolutionnaire (bouffée,",
+      "content": "Il affirme que tous souhaitent faire une révolution, et relate qu'il a eu un premier emploi étudiant comme point de départ personnel.",
+      "evidence": [
+        {
+          "id": "s155-1",
+          "quote": "tous envie de faire la révolution.",
+          "start_ms": 380380,
+          "end_ms": 381440
+        },
+        {
+          "id": "s156-0",
+          "quote": "Et puis, j'ai eu mon premier boulot étudiant.",
+          "start_ms": 382380,
+          "end_ms": 383680
+        },
+        {
+          "id": "s157-0",
+          "quote": "–",
+          "start_ms": 383700,
+          "end_ms": 383720
+        }
+      ],
+      "reason": "Articulation douteuse : la rédaction relie une formule générale sur la révolution à un premier emploi personnel. Vérifier ce lien et le sens du propos.",
+      "human_annotation": false,
+      "disposition": "requires_verification_not_excluded_or_deleted"
+    },
+    {
+      "information_id": "827bccdf-05b2-55fc-a7b1-00ea35023755",
+      "subject": "L'efficacité ou l'existence de systèmes de sélection alternatifs (ex : tirage au sort, ord",
+      "content": "Un témoignage personnel décrit un premier emploi étudiant, une exposition au monde du travail, une sortie de son cadre familial, et un milieu non politisé où l'actualité était discutée.",
+      "evidence": [
+        {
+          "id": "s159-0",
+          "quote": "J'ai eu mon premier job étudiant,",
+          "start_ms": 386100,
+          "end_ms": 387780
+        },
+        {
+          "id": "s160-0",
+          "quote": "alors j'ai côtoyé le monde du travail",
+          "start_ms": 388260,
+          "end_ms": 389660
+        },
+        {
+          "id": "s161-0",
+          "quote": "et puis je me suis un peu sortie de mon spectre, j'ai discuté.",
+          "start_ms": 389660,
+          "end_ms": 391960
+        },
+        {
+          "id": "s162-0",
+          "quote": "Voilà, parce que je viens d'un milieu qui n'est pas du tout politisé,",
+          "start_ms": 392960,
+          "end_ms": 394720
+        },
+        {
+          "id": "s163-0",
+          "quote": "on parlait d'actualité à la maison,",
+          "start_ms": 394720,
+          "end_ms": 395840
+        },
+        {
+          "id": "s164-0",
+          "quote": "j'ai eu cette chance de ne pas avoir télé",
+          "start_ms": 395980,
+          "end_ms": 397020
+        }
+      ],
+      "reason": "Regroupement douteux : ces extraits parlent d'emploi étudiant, de salaire ou de prélèvement, alors que le sujet annoncé concerne la sélection.",
+      "human_annotation": false,
+      "disposition": "requires_verification_not_excluded_or_deleted"
+    },
+    {
+      "information_id": "a813c1be-eccd-5a8a-b882-1899f0d731a7",
+      "subject": "L'efficacité ou l'existence de systèmes de sélection alternatifs (ex : tirage au sort, ord",
+      "content": "Dans la cuisine, l'individu mentionne avoir vu sa fiche de paie, tout en soulignant qu'ils n'étaient pas politisés.",
+      "evidence": [
+        {
+          "id": "s164-1",
+          "quote": "dans la cuisine,",
+          "start_ms": 397020,
+          "end_ms": 397480
+        },
+        {
+          "id": "s165-0",
+          "quote": "mais on n'était pas politisés.",
+          "start_ms": 397600,
+          "end_ms": 398720
+        },
+        {
+          "id": "s166-0",
+          "quote": "Donc j'ai vu ma fiche de paye,",
+          "start_ms": 399280,
+          "end_ms": 401060
+        }
+      ],
+      "reason": "Regroupement douteux : ces extraits parlent d'emploi étudiant, de salaire ou de prélèvement, alors que le sujet annoncé concerne la sélection.",
+      "human_annotation": false,
+      "disposition": "requires_verification_not_excluded_or_deleted"
+    },
+    {
+      "information_id": "73fced34-cbcf-5449-a2c8-202ffcbbfb02",
+      "subject": "L'efficacité ou l'existence de systèmes de sélection alternatifs (ex : tirage au sort, ord",
+      "content": "La personne interroge sur la perception d'une différence entre le brut et le net, en soulignant que cette distinction est au cœur de sa position.",
+      "evidence": [
+        {
+          "id": "s167-1",
+          "quote": "Vous avez vu la différence ?",
+          "start_ms": 401640,
+          "end_ms": 402480
+        },
+        {
+          "id": "s168-0",
+          "quote": "– C'est ça, le brut et le net,",
+          "start_ms": 402480,
+          "end_ms": 403400
+        },
+        {
+          "id": "s169-0",
+          "quote": "et j'ai jamais été opposé au prélèvement.",
+          "start_ms": 403500,
+          "end_ms": 404780
+        }
+      ],
+      "reason": "Regroupement douteux : ces extraits parlent d'emploi étudiant, de salaire ou de prélèvement, alors que le sujet annoncé concerne la sélection.",
+      "human_annotation": false,
+      "disposition": "requires_verification_not_excluded_or_deleted"
+    },
+    {
+      "information_id": "2181d35a-0d6e-58cb-a3d9-937ecf7958d4",
+      "subject": "L'efficacité ou l'existence de systèmes de sélection alternatifs (ex : tirage au sort, ord",
+      "content": "L'argument principal exprimé est que le prélèvement n'a jamais été un point de désaccord, indiquant une position claire et constante.",
+      "evidence": [
+        {
+          "id": "s169-0",
+          "quote": "j'ai jamais été opposé au prélèvement.",
+          "start_ms": 403500,
+          "end_ms": 404780
+        }
+      ],
+      "reason": "Regroupement douteux : ces extraits parlent d'emploi étudiant, de salaire ou de prélèvement, alors que le sujet annoncé concerne la sélection.",
+      "human_annotation": false,
+      "disposition": "requires_verification_not_excluded_or_deleted"
+    },
+    {
+      "information_id": "9d3ab2db-1b85-5a3b-bfbc-5914dfc6d72e",
+      "subject": "L'efficacité ou l'existence de systèmes de sélection alternatifs (ex : tirage au sort, ord",
+      "content": "Le prélèvement est explicitement affirmé comme non opposé, renforçant la cohérence de la position exprimée.",
+      "evidence": [
+        {
+          "id": "s169-0",
+          "quote": "j'ai jamais été opposé au prélèvement.",
+          "start_ms": 403500,
+          "end_ms": 404780
+        }
+      ],
+      "reason": "Regroupement douteux : ces extraits parlent d'emploi étudiant, de salaire ou de prélèvement, alors que le sujet annoncé concerne la sélection.",
+      "human_annotation": false,
+      "disposition": "requires_verification_not_excluded_or_deleted"
+    },
+    {
+      "information_id": "745dd337-6e9d-5a04-a6c3-49d61b452124",
+      "subject": "À classer",
+      "content": "La personne interroge sur une affirmation qu'elle a formulée, sans l'assurer ni la nier explicitement.",
+      "evidence": [
+        {
+          "id": "s170-1",
+          "quote": "Non, j'ai",
+          "start_ms": 404780,
+          "end_ms": 405060
+        }
+      ],
+      "reason": "Objet de la question insuffisamment déterminé : la rédaction décrit une affirmation sans préciser son contenu.",
+      "human_annotation": false,
+      "disposition": "requires_verification_not_excluded_or_deleted"
+    }
+  ],
+  "current_coverage": {
+    "source_segments": 670,
+    "source_segments_with_candidate_citation": 508,
+    "source_segments_without_candidate_citation": 162,
+    "information_entries": 355,
+    "eligible_information_entries": 33,
+    "to_verify_information_entries": 322,
+    "excluded_information_entries": 0,
+    "semantic_coverage_measured": false
+  },
+  "comparison_draft_retained": true,
+  "comparison_draft_registry_revision_id": "1f536328-afd3-4c08-b2ee-dd458603dde1",
+  "current_registry_revision_id": "6977652f-ddb1-4533-b25d-bb86d48ce257",
+  "comparison_draft_obsolete_after_doubts": true,
+  "source_rows_unchanged": true,
+  "historical_reviews_unchanged": true,
+  "obsolete_draft_reference_preflight_refused": true
+}

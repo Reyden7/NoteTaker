@@ -1,0 +1,53 @@
+{
+  "scope": "authored known textual controls; no human meeting reference or quality percentage",
+  "actual_cpu_inference": true,
+  "human_fidelity_improvement_measured": null,
+  "results": [
+    {
+      "case": "neutral",
+      "expected_supported": true,
+      "accepted": true,
+      "checks": {
+        "topic_supported": "supported",
+        "no_unsupported_assertion": "supported",
+        "no_invented_identity_or_decision": "supported"
+      },
+      "passed": true
+    },
+    {
+      "case": "invented_vote",
+      "expected_supported": false,
+      "accepted": false,
+      "checks": {
+        "topic_supported": "contradicted",
+        "no_unsupported_assertion": "supported",
+        "no_invented_identity_or_decision": "supported"
+      },
+      "passed": true
+    },
+    {
+      "case": "budget_scope",
+      "expected_supported": false,
+      "accepted": false,
+      "checks": {
+        "topic_supported": "contradicted",
+        "no_unsupported_assertion": "supported",
+        "no_invented_identity_or_decision": "supported"
+      },
+      "passed": true
+    },
+    {
+      "case": "political_identity",
+      "expected_supported": false,
+      "accepted": true,
+      "checks": {
+        "topic_supported": "supported",
+        "no_unsupported_assertion": "supported",
+        "no_invented_identity_or_decision": "supported"
+      },
+      "passed": false
+    }
+  ],
+  "wall_seconds": 68.844,
+  "passed": false
+}

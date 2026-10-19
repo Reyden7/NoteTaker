@@ -1,0 +1,144 @@
+{
+  "scope": "same 670 frozen utterances; actual Qwen CPU; no ASR/diarization change; no human approval",
+  "status": "passed",
+  "source_snapshot_sha256": "25820a75af33918cfbb60aa0807c5be9233a09207674356c7a873f7dc67ccbad",
+  "transcription_rows": 670,
+  "model_sha256": "3605803b982cb64aead44f6c1b2ae36e3acdb41d8e46c8a94c6533bc4c67e597",
+  "binary_sha256": "8154608e1e7ecaf7dd200f8c36080d1b3d60226f7fa555928f4b0080455ced8a",
+  "human_reference_available": false,
+  "human_review_created": false,
+  "dimensions": {
+    "semantic_theme_coverage": {
+      "status": "not_measured_without_human_annotation"
+    },
+    "semantic_information_loss": {
+      "status": "not_measured_without_human_annotation"
+    },
+    "attribution_errors": {
+      "status": "not_measured_without_human_annotation"
+    },
+    "meaning_inversions": {
+      "status": "not_measured_without_human_annotation"
+    },
+    "grouping_relevance": {
+      "status": "not_measured_without_human_annotation"
+    },
+    "writing_quality": {
+      "status": "not_measured_without_human_annotation"
+    }
+  },
+  "coverage": {
+    "source_segments": 670,
+    "source_segments_with_candidate_citation": 508,
+    "source_segments_without_candidate_citation": 162,
+    "information_entries": 355,
+    "eligible_information_entries": 41,
+    "to_verify_information_entries": 314,
+    "excluded_information_entries": 0,
+    "semantic_coverage_measured": false
+  },
+  "registry_revision": 8,
+  "subjects": {
+    "La présence et le parcours de Louise Montangon, étudiante en master de philosophie à l'Unv": 5,
+    "À classer": 26,
+    "Conséquences sur les élèves : perturbations des horaires de cours, fatigue, impact sur les": 12,
+    "La question de la sélection dans les parcours universitaires": 6,
+    "La parole des groupes anti-blocage et leur origine politique ou militante": 19,
+    "Évolution du mouvement au fil du temps (de l'initiative locale à une mobilisation nation": 22,
+    "La perception du laxisme du gouvernement dans les politiques éducatives et la réponse des⻘": 45,
+    "brûlures de lycées) et une approche par dialogue, débat et tranquillité": 23,
+    "La mobilisation des lycées et les blocages devant les universités": 24,
+    "La critique des groupes comme le GUD et des organisations proches de la France insoumise": 12,
+    "Répartition des revendications entre les différents groupes (lycéens, étudiants, enseignes": 3,
+    "Évaluation de l'ampleur du mouvement par différents acteurs (ministère, participants)": 7,
+    "Rôle du gouvernement (Gabriel Attal) dans la réponse aux manifestations": 3,
+    "Origine du mouvement : début dans un lycée rural à Mayotte": 32,
+    "L'ampleur et la représentativité du mouvement lycéen": 11,
+    "Nature des moyens de changement : comparaison entre une approche révolutionnaire (bouffée,": 8,
+    "L'efficacité ou l'existence de systèmes de sélection alternatifs (ex : tirage au sort, ord": 32,
+    "Le fonctionnement et la santé du système public, notamment les cotisations sociales et les": 2,
+    "Représentation des milieux ruraux dans les débats sur les revendications scolaires": 8,
+    "Impact des actions de manifestation sur les établissements scolaires : fermeture de lycées": 4,
+    "La présence de groupes ou d'individus liés à des débordements anti-sémites ou nazis": 11,
+    "Difficultés liées au transport scolaire dans les zones rurales": 3,
+    "Nombre de lycées touchés par le mouvement et les chiffres contestés (200 vs 30 000 blocage": 15,
+    "Diversité des zones géographiques concernées par le mouvement : rurales, banlieues, villes": 4,
+    "Solidarité entre les lycées et les différents milieux (ruraux, urbains, universitaires)": 4,
+    "Inégalités dans l'accès aux transports scolaires selon les régions": 1,
+    "Évaluation du système de parcours suque et de sa pertinence dans le processus d'admissionà": 13
+  },
+  "verification": {
+    "rejected": 286,
+    "supported": 52,
+    "pending": 11,
+    "ambiguous": 6
+  },
+  "rejection_reasons": {
+    "unsupported_proper_name": 4,
+    "no_unique_exact_quote_for_speaker": 37,
+    "subject_unresolved": 26,
+    "internal_voice_alias_in_content": 172,
+    "decision_not_explicit": 3,
+    "reported_opinion_assigned_to_reporting_voice": 21,
+    "unsupported_absence_added": 13,
+    "operator_requested_verification": 2,
+    "contextual_entailment_rejected": 3,
+    "vote_or_adoption_requires_operator": 1,
+    "listener_actor_changed_to_patient": 1,
+    "verbatim_transcription_not_a_summary": 18,
+    "financial_scope_requires_literal_source": 3,
+    "question_changed_to_assertion": 5,
+    "anecdote_or_description_changed_to_proposal": 8,
+    "source_classification_disagrees": 3
+  },
+  "relations": 9,
+  "old_topics": 6,
+  "new_paragraphs": 5,
+  "new_subjects": 5,
+  "old_source_segments": 34,
+  "new_source_segments": 30,
+  "written_information": 9,
+  "new_characters": 1126,
+  "diagnostics": {
+    "registry_strategy": "information-registry-v1",
+    "registry_coverage": {
+      "source_segments": 670,
+      "source_segments_with_candidate_citation": 508,
+      "source_segments_without_candidate_citation": 162,
+      "information_entries": 355,
+      "eligible_information_entries": 41,
+      "to_verify_information_entries": 314,
+      "excluded_information_entries": 0,
+      "semantic_coverage_measured": false
+    },
+    "blocks": 13,
+    "supported_claims": 41,
+    "rejected_claims": 0,
+    "topics_not_written": [
+      "La présence et le parcours de Louise Montangon, étudiante en master de philosophie à l'Unv",
+      "Conséquences sur les élèves : perturbations des horaires de cours, fatigue, impact sur les",
+      "La question de la sélection dans les parcours universitaires",
+      "La parole des groupes anti-blocage et leur origine politique ou militante",
+      "Évolution du mouvement au fil du temps (de l'initiative locale à une mobilisation nation",
+      "La perception du laxisme du gouvernement dans les politiques éducatives et la réponse des⻘",
+      "brûlures de lycées) et une approche par dialogue, débat et tranquillité",
+      "Origine du mouvement : début dans un lycée rural à Mayotte",
+      "Origine du mouvement : début dans un lycée rural à Mayotte"
+    ],
+    "omitted_claims": 346,
+    "summary_length": "standard",
+    "human_factual_validation": "required_not_performed",
+    "unreliable_passages": []
+  },
+  "production_export_without_review_blocked": true,
+  "wall_seconds": 1996.973,
+  "native_calls_executed_this_run": 46,
+  "original_snapshot_unchanged": true,
+  "copied_transcription_unchanged": true,
+  "historical_draft_preserved": true,
+  "source_sha256": {
+    "src/notetaker/engines/registry_summary.py": "6b708b1c64f31609670161e1ef8234e84808cfd14e8d91da7c6d22248d50d298",
+    "src/notetaker/domain/information_registry.py": "ff4511565b9d7ceb11d83c4cedf2008014410d35e939a7446d53cb3ab2344550",
+    "src/notetaker/services/information_registry.py": "084daf96208931d898dfc176b978c206afbae1e545d81d750af293d2f295acc2"
+  }
+}

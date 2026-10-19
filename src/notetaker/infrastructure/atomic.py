@@ -2,6 +2,7 @@ import hashlib
 import json
 import os
 import tempfile
+import time
 from pathlib import Path
 
 def sha256_file(path: Path) -> str:
@@ -19,6 +20,16 @@ def atomic_json(path: Path, data: object) -> None:
             json.dump(data, stream, ensure_ascii=False, indent=2, allow_nan=False)
             stream.flush()
             os.fsync(stream.fileno())
-        os.replace(temp, path)
+        # Windows readers may briefly omit FILE_SHARE_DELETE. Keep the old
+        # complete file until a bounded atomic replacement succeeds; never
+        # fall back to truncating it in place.
+        for attempt in range(21):
+            try:
+                os.replace(temp, path)
+                break
+            except PermissionError:
+                if os.name != 'nt' or attempt == 20:
+                    raise
+                time.sleep(min(0.01 * (attempt + 1), 0.1))
     finally:
         Path(temp).unlink(missing_ok=True)

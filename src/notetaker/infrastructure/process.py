@@ -34,23 +34,18 @@ def run_worker(request: Path, *, python: Path | None = None, timeout: float = 12
     command = ([str(python or sys.executable), "-m", "notetaker.workers.probe", str(request.resolve(strict=True))]
                if not getattr(sys, "frozen", False) else [str(Path(sys.executable).with_name("NoteTaker-worker.exe")), str(request.resolve(strict=True))])
     try:
-        if cancel is not None:
+        if cancel is not None or os.name == 'nt':
             import time
             started = time.monotonic()
-            child = subprocess.Popen(command, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            from .windows_job import start_process
+            child, job = start_process(command, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                      text=True, encoding="utf-8", errors="strict", creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
-            from .windows_job import WindowsJob
-            try:
-                job = WindowsJob(child)
-            except OSError:
-                stop_tree(child)
-                raise
             try:
                 while True:
-                    if cancel.is_set() or time.monotonic() - started > timeout:
+                    if (cancel is not None and cancel.is_set()) or time.monotonic() - started > timeout:
                         job.close()
                         stop_tree(child)
-                        if cancel.is_set():
+                        if cancel is not None and cancel.is_set():
                             raise JobCancelled("JOB_CANCELLED")
                         raise TimeoutError("WORKER_TIMEOUT")
                     try:

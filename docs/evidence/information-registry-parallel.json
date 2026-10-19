@@ -1,0 +1,81 @@
+{
+  "scope": "test-only parallel real CPU extraction; full source context in each job",
+  "status": "prepared",
+  "source_rows": 670,
+  "units": 184,
+  "batches": 31,
+  "partitions": [
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    [
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30
+    ]
+  ],
+  "source_code_sha256_at_start": "a1886ccc94cbcf818e8add6598a07fc10719e76a78af9743b2cc6bedfbde4caa",
+  "production_parallelism_enabled": false,
+  "verification_policy": "on_request; provisional candidates never become eligible without verification or explicit information approval",
+  "parts": [
+    {
+      "part": 0,
+      "seconds": 292.697,
+      "completed_units": 60,
+      "new_native_calls": 2
+    },
+    {
+      "part": 1,
+      "seconds": 1061.136,
+      "completed_units": 60,
+      "new_native_calls": 7
+    },
+    {
+      "part": 2,
+      "seconds": 1281.705,
+      "completed_units": 64,
+      "new_native_calls": 10
+    }
+  ],
+  "coverage": {
+    "source_segments": 670,
+    "source_segments_with_candidate_citation": 508,
+    "source_segments_without_candidate_citation": 162,
+    "information_entries": 354,
+    "eligible_information_entries": 47,
+    "to_verify_information_entries": 307,
+    "excluded_information_entries": 0,
+    "semantic_coverage_measured": false
+  },
+  "wall_seconds": 2809.266,
+  "source_code_unchanged_during_run": false
+}

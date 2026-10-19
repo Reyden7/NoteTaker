@@ -1,0 +1,31 @@
+{
+  "scope": "actual new Pipeline.verify_information CPU worker; same source rows; no human approval",
+  "information_id": "13aaa1eb-72f3-57dc-a65e-60570397bb09",
+  "before_verification": "rejected",
+  "flagged_development_observations": [
+    "dc4c7013-56fa-5013-b313-ebbe5eab89fb",
+    "38eb15a6-5521-5dba-b348-be5a4fe8104f"
+  ],
+  "human_reference_available": false,
+  "human_review_created": false,
+  "status": "passed",
+  "worker_execution": "actual frozen worker; source service matched separately to frozen code",
+  "frozen_worker_sha256": "5c4e12a4d0919a7363841562c96669b9771f75b65e7a37acd67bb44109a4069b",
+  "environment": "developer PC; Python paths removed, PATH=System32; host not disconnected, not clean Windows",
+  "focus_id": "69a06f01-c733-51b8-aeef-a44e3bc63a2e",
+  "after_verification": "supported",
+  "checks": {
+    "meaning": "supported",
+    "modality": "supported",
+    "attribution": "supported",
+    "relation": "supported"
+  },
+  "original_information_retained": true,
+  "native_calls": 3,
+  "python_network_attempts": 0,
+  "job_status": "completed",
+  "seconds": 53.732,
+  "source_rows_unchanged": true,
+  "historical_reviews_unchanged": true,
+  "source_rows": 670
+}

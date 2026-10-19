@@ -1,0 +1,54 @@
+{
+  "scope": "test-only parallel real CPU extraction; full source context in each job",
+  "status": "failed",
+  "source_rows": 670,
+  "units": 184,
+  "batches": 31,
+  "partitions": [
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    [
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30
+    ]
+  ],
+  "source_code_sha256_at_start": "5b82de8fdb764edc22db7596f1e60d4a68ba4c4cddf3b0ddd382e1aa44299603",
+  "production_parallelism_enabled": false,
+  "error": "LLAMA_NATIVE_PROCESS_FAILED",
+  "wall_seconds": 1886.454,
+  "source_code_unchanged_during_run": false,
+  "interruption_intentional": true,
+  "intentional_stop_reason": "Measured eager verification cost; keep provisional registry and verify selected information on request",
+  "spontaneous_native_crash": false
+}

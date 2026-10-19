@@ -1,17 +1,48 @@
-# Utiliser NoteTaker 0.2.1 en recette
+# Utiliser NoteTaker 0.2.4 en recette
+
+Le nouveau registre est décrit dans `REGISTRE-INFORMATIONS.md` dans le bundle,
+ou `information-registry-0.2.4.md` dans les sources. Utiliser un `--data-dir` de
+copie isolée pour la recette. La migration v5 conserve une sauvegarde préalable ;
+un ancien exécutable v4 ne peut pas ouvrir cette nouvelle base. Les étapes sont
+transcription → préparation du registre → vérification des informations →
+rédaction → relecture finale. Une approbation dans le registre n'autorise
+jamais à elle seule l'export PDF/DOCX.
 
 Version de travail CPU pour une recette locale. La commercialisation et le
 Setup final ne sont pas validés.
 
 ## Démarrer
 
-Ouvrir `dist\directory-01\NoteTaker\NoteTaker.exe`. Conserver tout le dossier NoteTaker :
+Ouvrir `dist\information-registry\NoteTaker\NoteTaker.exe` avec le dossier de
+copie de recette. L'ancien bundle 0.2.3 reste dans `dist\topic-summary`.
+Conserver tout le dossier NoteTaker :
 les dépendances et modèles sont à côté de l’exécutable. Il n’y a aucun premier
 téléchargement. Depuis les sources : `powershell -File scripts\run.ps1`.
 
 Les données sont sous `%LOCALAPPDATA%\NoteTaker`. L’option `--data-dir` permet
 un autre dossier ; utiliser le même dossier aux lancements suivants pour
 retrouver les séances. Deux interfaces sur le même dossier sont refusées.
+
+## Registre avant rédaction
+
+Dans « Registre des informations », **Initialiser sans IA** ouvre immédiatement
+tous les passages. L'édition d'une fiche source crée une information distincte.
+La préparation Qwen propose des fiches et sujets ; ces propositions restent
+à vérifier. Le contrôle approfondi se demande fiche par fiche. Une citation
+exacte ne prouve pas que la reformulation est fidèle.
+
+Saisir opérateur et motif, enregistrer une correction, puis approuver après
+vérification du texte, de l'auteur et de l'audio, ou exclure avec motif. Les
+filtres et changements de fiche préservent la saisie non enregistrée ; utiliser
+« Enregistrer la correction » ou « Annuler la saisie » avant de naviguer.
+Une fiche remise à vérifier est retirée de la rédaction automatique. Un
+contrôle Qwen ne remplace pas le choix opérateur ; sur une fiche verrouillée,
+il reste consultatif. Une attribution incertaine ne devient pas fiable par
+la seule vérification du sens. Corriger la voix dans la transcription si nécessaire.
+
+Rédiger utilise le registre courant et conserve les informations non reprises
+dans « À vérifier » / « Non rédigées ». Relire ensuite le document final :
+l'approbation des fiches n'autorise pas à elle seule les exports PDF/DOCX.
 
 ## Annuaire municipal sans biométrie
 
@@ -186,3 +217,94 @@ les informations absentes avant de confirmer la révision. Les aperçus PDF/DOCX
 du benchmark sont non validés ; l'export normal reste bloqué tant qu'aucune
 relecture explicite n'est enregistrée. Ne pas livrer ces données privées avec
 le futur installateur.
+
+## Corriger les références et attributions avec la version 0.2.2
+
+Après correction d'un nom ou d'une personne, les affirmations du brouillon
+peuvent encore désigner l'ancienne voix. Dans Projet de procès-verbal, cliquer
+**Contrôler les références**. Le diagnostic indique précisément le point,
+l'affirmation, la source et la cause. Il permet d'ouvrir le point, de modifier
+l'affirmation et d'écouter le passage audio.
+
+Si seules les attributions ont changé, utiliser **Actualiser les attributions
+depuis les sources…**, lire la proposition puis confirmer son application.
+Cette action ne change pas les textes ni les citations ; les noms des
+paragraphes générés sont actualisés. Si vous avez rédigé un paragraphe à la
+main, relire et corriger aussi les noms dans votre texte. Les sources absentes,
+citations modifiées et affirmations mélangeant plusieurs voix restent à réparer.
+
+Avec **Corriger l'affirmation…**, modifier le texte ou la voix, remplacer/ajouter
+un extrait exact par recherche dans la transcription, prévisualiser puis
+appliquer. Une affirmation erronée peut être supprimée avec confirmation ;
+son ancienne révision reste conservée. Une révision de travail peut être
+fermée et rouverte pendant ces corrections, mais ne peut pas être exportée
+sans références cohérentes et nouvelle relecture explicite.
+
+Dans Transcription et voix, utiliser Ctrl/Maj pour sélectionner plusieurs
+passages, puis **Confirmer cette voix sur la sélection** ou choisir une personne
+des participants avec la portée voulue (passage, sélection, voix entière).
+**Regrouper la sélection…** exige des passages consécutifs de même voix connue,
+sans chevauchement et sur le même audio. Écouter le passage sélectionné par le
+bouton dédié ou double-clic. Le panneau de droite défile et permet de lire et
+corriger une intervention longue intégralement.
+
+Un nouveau traitement conserve les corrections manuelles et leurs horaires.
+Si les prises cochées changent le montage audio, ou si une zone ne peut plus
+être alignée sûrement, l'analyse refuse de remplacer la transcription corrigée.
+Vérifier les prises sélectionnées ; créer une autre séance pour un autre montage.
+Les voix anonymes peuvent être renumérotées si la correspondance est douteuse :
+un nom confirmé n'est jamais propagé automatiquement à une nouvelle zone.
+
+Pour la séance ayant échoué en 0.2.1, commencer par l'actualisation explicite
+des attributions puis le contrôle des références et la relecture complète.
+La réparation n'a pas été appliquée automatiquement à vos données réelles.
+
+## Compte rendu rédigé par sujet 0.2.3
+
+Choisir **Compte rendu synthétique**, puis une longueur **Courte**, **Standard**
+ou **Détaillée** avant de préparer le document. La longueur est une cible de
+rédaction par sujet, sans garantie de nombre de pages. Les arguments de voix
+différentes sur un même sujet peuvent être rapprochés même à plusieurs minutes
+d'intervalle. Une proximité d'opinion ne vaut pas consensus. Les sujets ou notes
+que le moteur n'a pas pu rédiger sûrement sont signalés dans les points à vérifier.
+
+Choisir **Transcription intégrale** pour conserver tous les passages textuels
+et horodatages sans synthèse Qwen. L'attribution des voix reste à contrôler.
+Le mode PV municipal et ses exigences de relecture demeurent disponibles.
+
+Dans Séance, ouvrir **Lexique local de la séance…** pour saisir des noms propres
+ou termes spécialisés : une graphie par ligne, éventuellement `|` puis les
+variantes séparées par `;`. Exemple : `Médiathèque Simone Veil | Simone Veille`.
+Le lexique ne prouve aucune identité et ne réécrit pas les sources. Les noms
+d'intervenants proviennent toujours des attributions manuelles ; confirmer les
+personnes dans l'annuaire/Participants et la transcription. Une voix inconnue
+reste nommée « Voix N » ou « Voix inconnue » dans le document.
+
+Pour relire un paragraphe, utiliser **Consulter les extraits sources…**, choisir
+une phrase puis une citation et **Écouter cet extrait**. Vérifier le sens complet,
+la personne qui exprime l'avis, les négations et le caractère de question, récit
+personnel ou proposition. Un avis rapporté ne devient pas l'avis de celui qui le
+cite ; une anecdote ne devient pas une mesure officielle. Les vérifications IA
+peuvent se tromper et ne remplacent pas cette relecture.
+
+**Passages écartés ou incertains…** donne aussi accès aux passages non retenus
+par le moteur ou dont la voix/chronologie est incertaine, avec leur horodatage
+et une lecture audio. Cette liste décrit l'état lors de la génération ; après
+correction, préparer une nouvelle révision si nécessaire. Les dialogues de
+sources permettent d'arrêter l'écoute ; leur fermeture arrête cette lecture.
+
+Modifier le paragraphe dans l'éditeur reste possible : ses références sont
+conservées, le nouveau texte est marqué comme modification humaine à relire.
+Une correction d'affirmation peut recomposer le point ; contrôler la
+prévisualisation. Aucun verdict machine ni ancienne relecture n'approuve votre
+nouveau texte. Après toute correction, actualiser les noms au besoin, contrôler
+les références, confirmer la relecture et exporter comme auparavant.
+
+
+Cette version peut écarter un montant financier dont la reformulation risque
+de changer l’objet. Le moteur exige alors une phrase source financière
+littérale ou omet le montant. Des noms nouveaux et des ajouts comme « sans
+évaluer » sont également refusés dans certaines formes connues. Ces précautions
+peuvent retirer une information utile. Pour la rétablir, retrouver le passage,
+corriger l’affirmation et ses citations, puis relire le texte complet. Aucun
+verdict IA ne certifie la fidélité des autres nombres ou interprétations.

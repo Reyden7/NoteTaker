@@ -1,0 +1,20 @@
+{
+  "scope": "bytecode identity against preserved 0.2.4; no new ASR/diarization inference",
+  "baseline_worker_sha256": "d5e0fdd75a8b1e9190f4510fd6a8af8ed3d7ba52f3b26bddbacae2f3fd74009b",
+  "unchanged_modules": {
+    "notetaker.engines.registry_summary": true,
+    "notetaker.engines.topic_summary": true,
+    "notetaker.engines.hierarchical_summary": true,
+    "notetaker.domain.information_registry": true,
+    "notetaker.services.information_registry": true,
+    "notetaker.engines.speaker_refinement": true,
+    "notetaker.engines.overlap": true,
+    "notetaker.engines.router": true
+  },
+  "unchanged_audio_functions": {
+    "transcribe": true,
+    "diarize": true,
+    "diarize_sherpa": true
+  },
+  "clean_offline_windows_validation": false
+}

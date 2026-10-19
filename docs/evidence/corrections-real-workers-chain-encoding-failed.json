@@ -1,0 +1,16 @@
+{
+  "scope": "known synthetic audio fixture only; actual CPU engines; simulated human actions for export gate testing",
+  "data_directory": "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\output\\corrections-chain\\125eb610bd264b86a3ec347a73ae2f52",
+  "session_id": "d9df1a41-4b9e-43f2-a058-5e08232d79c7",
+  "human_review_of_real_meeting": false,
+  "real_french_accuracy_measured": false,
+  "analysis": {
+    "utterances": 4,
+    "speakers": 1,
+    "device": "cpu"
+  },
+  "status": "failed",
+  "error_type": "RuntimeError",
+  "error": "NO_SUPPORTED_SUMMARY_CLAIMS",
+  "wall_seconds": 37.081
+}

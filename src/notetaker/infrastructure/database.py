@@ -22,6 +22,9 @@ MIGRATIONS = {1: [
     "CREATE TABLE directory_person(id TEXT PRIMARY KEY,first_name TEXT NOT NULL,last_name TEXT NOT NULL,position TEXT NOT NULL DEFAULT '',municipality TEXT NOT NULL DEFAULT '',archived INTEGER NOT NULL DEFAULT 0 CHECK(archived IN (0,1)),revision INTEGER NOT NULL DEFAULT 0,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)",
     "CREATE TABLE directory_history(id INTEGER PRIMARY KEY,person_id TEXT NOT NULL REFERENCES directory_person(id),action TEXT NOT NULL,content_json TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)",
     "CREATE TABLE session_participant(session_id TEXT NOT NULL REFERENCES session(id),person_id TEXT NOT NULL REFERENCES directory_person(id),snapshot_json TEXT NOT NULL,attendance TEXT NOT NULL CHECK(attendance IN ('unconfirmed','present','absent','excused','represented')),session_role TEXT NOT NULL DEFAULT '',proxy_to_person_id TEXT,proxy_note TEXT NOT NULL DEFAULT '',sort_order INTEGER NOT NULL,PRIMARY KEY(session_id,person_id),FOREIGN KEY(session_id,proxy_to_person_id) REFERENCES session_participant(session_id,person_id) DEFERRABLE INITIALLY DEFERRED)",
+], 5: [
+    "CREATE TABLE information_registry(id TEXT PRIMARY KEY,session_id TEXT NOT NULL REFERENCES session(id),revision INTEGER NOT NULL,source_sha256 TEXT NOT NULL,content_json TEXT NOT NULL,actor TEXT NOT NULL,reason TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,UNIQUE(session_id,revision))",
+    "CREATE INDEX registry_session_revision ON information_registry(session_id,revision)",
 ]}
 
 def open_database(path: Path) -> sqlite3.Connection:

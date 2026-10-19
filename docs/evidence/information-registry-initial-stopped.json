@@ -1,0 +1,45 @@
+{
+  "scope": "same 670 frozen utterances; actual Qwen CPU; no ASR/diarization change; no human approval",
+  "status": "failed",
+  "source_snapshot_sha256": "25820a75af33918cfbb60aa0807c5be9233a09207674356c7a873f7dc67ccbad",
+  "transcription_rows": 670,
+  "model_sha256": "3605803b982cb64aead44f6c1b2ae36e3acdb41d8e46c8a94c6533bc4c67e597",
+  "binary_sha256": "8154608e1e7ecaf7dd200f8c36080d1b3d60226f7fa555928f4b0080455ced8a",
+  "human_reference_available": false,
+  "human_review_created": false,
+  "dimensions": {
+    "semantic_theme_coverage": {
+      "status": "not_measured_without_human_annotation"
+    },
+    "semantic_information_loss": {
+      "status": "not_measured_without_human_annotation"
+    },
+    "attribution_errors": {
+      "status": "not_measured_without_human_annotation"
+    },
+    "meaning_inversions": {
+      "status": "not_measured_without_human_annotation"
+    },
+    "grouping_relevance": {
+      "status": "not_measured_without_human_annotation"
+    },
+    "writing_quality": {
+      "status": "not_measured_without_human_annotation"
+    }
+  },
+  "error": "LLAMA_NATIVE_PROCESS_FAILED",
+  "error_type": "RuntimeError",
+  "wall_seconds": 720.085,
+  "native_calls_executed_this_run": 14,
+  "original_snapshot_unchanged": true,
+  "copied_transcription_unchanged": true,
+  "historical_draft_preserved": true,
+  "source_sha256": {
+    "src/notetaker/engines/registry_summary.py": "35e539c55c34e491b73511a858329f8ec80a47abf01209e88b8aa95b981f8d1a",
+    "src/notetaker/domain/information_registry.py": "173cc60548a4631025973dd53264e1a3fc97f07b991fc13a1345382eb8c27f3a",
+    "src/notetaker/services/information_registry.py": "d19664e1ec86a39633a9fd39e3f228bdd80a1b4105ef1be30e62d25662405eac"
+  },
+  "interruption_intentional": true,
+  "intentional_stop_reason": "Separate source classification and normalization",
+  "spontaneous_native_crash": false
+}

@@ -56,9 +56,10 @@ def align_transcript(segments, diarization):
                 groups[-1]["end"] = word["end"]
                 groups[-1]["text"] += word["word"]
                 groups[-1]['word_timing_inferred'] |= index in inferred
+                groups[-1]['aligned_words'].append(word)
             else:
                 groups.append({"start": word["start"], "end": word["end"], "text": word["word"], "identity": identity,
-                               'word_timing_inferred': index in inferred})
+                               'word_timing_inferred': index in inferred, 'aligned_words':[word]})
         for j, group in enumerate(groups):
             expanded.append({**segment, **group, "id": f"{segment.get('id', 's')}-{j}"})
     result = []
@@ -82,6 +83,7 @@ def align_transcript(segments, diarization):
                        "source": {"avg_logprob": s.get("avg_logprob"), "no_speech_prob": s.get("no_speech_prob"),
                                   "possible_overlap": overlap, "candidates": ordered, "automatic_attribution": True,
                                   'word_timing_inferred': s.get('word_timing_inferred', False),
+                                  'word_spans': s.get('aligned_words', []),
                                   "alignment": "word_timestamps" if s.get("words") else "whole_segment_approximate"}})
     return result, speakers
 
@@ -134,6 +136,34 @@ def assemble_draft(state, selection):
 
 
 def assemble_summary(state, result, mode="summary"):
+    if result.get('strategy')=='contextual-topic-paragraphs-v1':
+        from notetaker.domain.summary import render_template
+        by_claim={c['id']:c for c in result['claims']}
+        points=[]
+        for topic in result['topics']:
+            selected=[by_claim[cid] for cid in topic['claims']]
+            narrative=[{'text':render_template(s['text'],s['voice_bindings'],state),'template':s['text'],
+                'voice_bindings':s['voice_bindings'],'claim_ids':s['claim_ids'],
+                **({'implicit_speaker':s['implicit_speaker']} if s.get('implicit_speaker') else {}),
+                'relation':s['relation'],'machine_verdict':s['machine_verdict']} for s in topic['sentences']]
+            points.append({'title':topic['title'],'summary':' '.join(s['text'] for s in narrative),
+                'sources':list(dict.fromkeys(e['id'] for c in selected for e in c['evidence'])),
+                'vote_id':None,'claims':selected,'narrative':narrative})
+        diagnostics=result['diagnostics']
+        warnings=['Synthèse IA rédigée par sujet : contrôler le sens, les noms, les relations et les extraits audio. Les contrôles automatiques ne valent pas validation humaine.']
+        if diagnostics.get('registry_strategy'):
+            counts=diagnostics['registry_coverage']
+            warnings.append(f"Registre : {counts['information_entries']} informations conservées, {counts['to_verify_information_entries']} à vérifier ; "
+                f"{counts['source_segments_without_candidate_citation']} passages sans citation candidate. Ces comptes ne mesurent pas la couverture des thèmes. "
+                'Consultez le registre, ses exclusions, relations et sources intégrales avant de valider ce document.')
+        if diagnostics.get('rejected_claims') or diagnostics.get('topics_not_written'):
+            warnings.append(f"Éléments insuffisamment fiables : {diagnostics.get('rejected_claims',0)} notes écartées ; sujets non rédigés : "+(', '.join(diagnostics.get('topics_not_written',[])) or 'aucun')+'. Consulter la transcription complète et les sources.')
+        if diagnostics.get('omitted_claims'):
+            warnings.append(f"Niveau de longueur : {diagnostics['summary_length']}. {diagnostics['omitted_claims']} notes non reprises par la rédaction ou les contrôles ; leur détail reste dans le dossier de génération et la transcription.")
+        used={sid for p in points for sid in p['sources']}
+        if any(u.get('uncertain',True) for u in state['utterances'] if u['id'] in used):
+            warnings.append('Certaines attributions vocales sources restent incertaines. Écouter et confirmer les voix ; aucun nom inconnu n’a été deviné.')
+        return {'document_mode':mode,'points':points,'to_verify':warnings,'generation_diagnostics':diagnostics}
     claims = {c["id"]: c for c in result["claims"]}
     points, used, reported = [], set(), False
     labels = {"position": "Position", "argument": "Argument", "proposal": "Proposition", "context": "Contexte", "question": "Question soulevée",
@@ -226,6 +256,22 @@ class Pipeline:
             utterances, speakers = align_transcript(asr.value["segments"], diar)
             for u in utterances:
                 u["source"]["normalized_audio"] = str(audio)
+            # Bind old and new time coordinates before preserving human edits.
+            digest = sha256_file(audio)
+            protected_hashes = {}
+            from .transcript import manual, compact_rows
+            for old in state['utterances']:
+                if manual(old,state['speakers']):
+                    source = json.loads(old['source_json'])
+                    previous_audio = source.get('normalized_audio')
+                    if previous_audio:
+                        if previous_audio not in protected_hashes:
+                            protected_hashes[previous_audio] = sha256_file(Path(previous_audio))
+                        if protected_hashes[previous_audio] != digest:
+                            raise ValueError('MANUAL_ALIGNMENT_REQUIRES_REVIEW')
+            for u in utterances:
+                u['source']['audio_sha256'] = digest
+            utterances = compact_rows(utterances)
             store.save_analysis(sid, utterances, speakers, state["revision"])
             atomic_json(workspace / "analysis-diagnostics.json", {**diar.get("diagnostics", {}), "utterances": len(utterances),
                          "uncertain_utterances": sum(bool(u["uncertain"]) for u in utterances)})
@@ -239,11 +285,57 @@ class Pipeline:
         finally:
             store.close()
 
-    def generate(self, sid, mode="summary"):
+    def prepare_registry(self,sid):
+        return self._registry_work(sid,'registry_prepare')
+
+    def verify_information(self,sid,information_id):
+        return self._registry_work(sid,'registry_verify',information_id)
+
+    def _registry_work(self,sid,task,information_id=None):
+        from .information_registry import RegistryService
+        store=SessionStore(self.root);service=RegistryService(store)
+        jid=store.start_job(sid,'information_registry')
+        workspace=session_directory(self.root,sid)/'jobs'/jid;workspace.mkdir(parents=True)
+        original=None
+        try:
+            original=service.initialize(sid) if task=='registry_prepare' else service.latest(sid)
+            if not original:raise ValueError('REGISTRY_REQUIRED')
+            if original['stale']:raise ValueError('REGISTRY_STALE')
+            state=store.get(sid)
+            self.models.verify()
+            self.progress('Contrôle contextuel de la fiche sélectionnée par Qwen CPU' if task=='registry_verify' else
+                'Préparation du registre : chaque passage reste conservé ; les propositions non vérifiées restent en attente')
+            result=self._run(workspace,{'engine':'llm','device':'cpu','task':task,'information_id':information_id,
+                'binary':str(self.models.llama),'model':str(self.models.llm),'workspace':str(workspace),
+                'registry':original['content'],'utterances':state['utterances'],
+                'lexicon':state['metadata'].get('lexicon',[])},timeout=1800 if task=='registry_verify' else 14400)
+            service.save(sid,result['registry'],expected_id=original['id'],actor='Qwen CPU — contrôle provisoire',
+                reason='Préparation ou vérification demandée terminée ; aucune approbation humaine créée')
+            store.finish_job(jid,True)
+            from notetaker.domain.information_registry import coverage
+            return {**coverage(result['registry']),**({'focus_id':result['focus_id']} if result.get('focus_id') else {})}
+        except BaseException as error:
+            checkpoint=workspace/'registry-checkpoint.json'
+            if original and checkpoint.exists():
+                try:
+                    document=json.loads(checkpoint.read_text(encoding='utf-8'))
+                    if task=='registry_prepare':document['processing']['status']='interrupted'
+                    else:document['processing']['last_verification_error']=str(error)[:250]
+                    service.save(sid,document,expected_id=original['id'],actor='NoteTaker — récupération',
+                        reason='Traitement interrompu ; inventaire, candidats et refus conservés')
+                except Exception as recovery_error:
+                    atomic_json(workspace/'registry-recovery-error.json',{'error':str(recovery_error),
+                        'checkpoint_preserved':str(checkpoint)})
+            store.finish_job(jid,False,'CANCELLED' if isinstance(error,JobCancelled) else type(error).__name__)
+            raise
+        finally:store.close()
+
+    def generate(self, sid, mode="summary", summary_length=None):
         store = SessionStore(self.root)
         jid = store.start_job(sid, "minutes")
         workspace = session_directory(self.root, sid) / "jobs" / jid
         workspace.mkdir(parents=True)
+        registry=None
         try:
             state = store.get(sid)
             if not state["utterances"]:
@@ -255,16 +347,46 @@ class Pipeline:
                 return {"points": len(state["utterances"]), "mode": mode}
             if mode not in {"summary", "municipal"}:
                 raise ValueError("INVALID_DOCUMENT_MODE")
-            self.progress("Synthèse hiérarchique et vérification des sources par Qwen3 sur CPU")
+            from .information_registry import RegistryService
+            registry_service=RegistryService(store)
+            registry=registry_service.latest(sid)
+            if not registry:raise ValueError('REGISTRY_REQUIRED')
+            if registry['stale']:raise ValueError('REGISTRY_STALE')
+            self.progress("Rédaction depuis le registre courant et vérification des sources par Qwen3 sur CPU")
             self.models.verify()
+            from notetaker.domain.summary import validate_lexicon,PROFILES
+            length=summary_length or state['metadata'].get('summary_length','standard')
+            if length not in PROFILES:raise ValueError('INVALID_SUMMARY_LENGTH')
+            lexicon=state['metadata'].get('lexicon',[])
+            validate_lexicon(lexicon)
             selection = self._run(workspace, {"engine": "llm", "device": "cpu", "binary": str(self.models.llama), "model": str(self.models.llm),
-                                     "workspace": str(workspace), "task": "summary",
+                                     "workspace": str(workspace), "task": "registry_write",'registry':registry['content'],
+                                     'summary_length':length,'lexicon':lexicon,
                                      "utterances": [{k: u[k] for k in ("id", "text", "speaker_id", "start_ms", "end_ms", "uncertain")} for u in state["utterances"]]})
             draft = assemble_summary(state, selection, mode)
-            store.save_draft(sid, draft, expected_context=context)
+            # Bind the exact reviewed ledger and document atomically. A concurrent edit refuses both.
+            from notetaker.domain.minutes import content_digest
+            with store.db:
+                store.db.execute('UPDATE session SET revision=revision WHERE id=?',(sid,))
+                if store.context_hash(sid)!=context:raise ValueError('SESSION_CHANGED_DURING_GENERATION')
+                rid=registry_service.save(sid,selection['registry'],expected_id=registry['id'],
+                    actor='Qwen CPU — rédaction provisoire',reason='Rédaction et omissions enregistrées ; document à relire')
+                draft['information_registry']={'revision_id':rid,'content_sha256':content_digest(selection['registry']),
+                    'information_ids':list(dict.fromkeys(c['id'] for p in draft['points'] for c in p.get('claims',[])))}
+                store.save_draft(sid, draft, expected_context=store.context_hash(sid))
             store.finish_job(jid, True)
             return {"points": len(draft["points"])}
         except BaseException as error:
+            checkpoint=workspace/'registry-checkpoint.json'
+            if registry and checkpoint.exists():
+                try:
+                    document=json.loads(checkpoint.read_text(encoding='utf-8'))
+                    document['writing']['error']=str(error)[:250]
+                    registry_service.save(sid,document,expected_id=registry['id'],actor='NoteTaker — rédaction interrompue',
+                        reason='Refus et omissions de rédaction conservés ; ancien brouillon préservé')
+                except Exception as recovery_error:
+                    atomic_json(workspace/'registry-recovery-error.json',{'error':str(recovery_error),
+                        'checkpoint_preserved':str(checkpoint)})
             store.finish_job(jid, False, "CANCELLED" if isinstance(error, JobCancelled) else type(error).__name__)
             raise
         finally:

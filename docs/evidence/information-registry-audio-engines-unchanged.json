@@ -1,0 +1,16 @@
+{
+  "scope": "code identity versus preserved 0.2.3 worker; not a new ASR/voice quality or runtime test",
+  "baseline_worker_sha256": "1cd3022da6b358363925f82022a2fb1b9c6522963b91b419de7ec1d5e8693629",
+  "audio_functions_unchanged": {
+    "transcribe": true,
+    "diarize": true,
+    "diarize_sherpa": true
+  },
+  "audio_modules_unchanged": {
+    "notetaker.engines.speaker_refinement": true,
+    "notetaker.engines.overlap": true,
+    "notetaker.engines.router": true
+  },
+  "new_audio_inference_performed": false,
+  "clean_offline_windows_validation": false
+}

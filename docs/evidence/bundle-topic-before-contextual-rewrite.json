@@ -1,0 +1,329 @@
+{
+  "excluded_optional_binaries_absent": true,
+  "environment": "developer PC; system Python paths removed; not clean Windows; host not disconnected",
+  "tested_at_utc": "2026-10-18T13:41:25.358816+00:00",
+  "executables_sha256": {
+    "NoteTaker.exe": "1bb151f8d6f723008e07344c0e9f18b0e6c965c44bc2277d07b20a6e06e3aef4",
+    "NoteTaker-worker.exe": "07d491e27c1e9a6008dbd7f24daf496639e7de3d35b42b7140b3778b284b8fc7"
+  },
+  "workers": {
+    "asr": {
+      "exit_code": 0,
+      "seconds": 8.81,
+      "response": {
+        "status": "completed",
+        "engine": "asr",
+        "result": {
+          "language": "fr",
+          "duration_seconds": 13.59,
+          "segments": [
+            {
+              "id": "s0",
+              "start": 0.0,
+              "end": 2.78,
+              "text": " La séance du Conseil municipal est ouverte.",
+              "words": [
+                {
+                  "start": 0.0,
+                  "end": 0.3,
+                  "word": " La",
+                  "probability": 0.7857699394226074
+                },
+                {
+                  "start": 0.3,
+                  "end": 0.7,
+                  "word": " séance",
+                  "probability": 0.9881927967071533
+                },
+                {
+                  "start": 0.7,
+                  "end": 0.86,
+                  "word": " du",
+                  "probability": 0.9974135756492615
+                },
+                {
+                  "start": 0.86,
+                  "end": 1.34,
+                  "word": " Conseil",
+                  "probability": 0.9034753143787384
+                },
+                {
+                  "start": 1.34,
+                  "end": 1.9,
+                  "word": " municipal",
+                  "probability": 0.7189425230026245
+                },
+                {
+                  "start": 1.9,
+                  "end": 2.2,
+                  "word": " est",
+                  "probability": 0.995824933052063
+                },
+                {
+                  "start": 2.2,
+                  "end": 2.78,
+                  "word": " ouverte.",
+                  "probability": 0.993591825167338
+                }
+              ],
+              "avg_logprob": -0.19481353174176133,
+              "no_speech_prob": 0.0037359537091106176
+            },
+            {
+              "id": "s1",
+              "start": 3.56,
+              "end": 6.14,
+              "text": " Nous examinons les travaux de la bibliothèque.",
+              "words": [
+                {
+                  "start": 3.56,
+                  "end": 3.86,
+                  "word": " Nous",
+                  "probability": 0.9846616387367249
+                },
+                {
+                  "start": 3.86,
+                  "end": 4.5,
+                  "word": " examinons",
+                  "probability": 0.9906816085179647
+                },
+                {
+                  "start": 4.5,
+                  "end": 4.62,
+                  "word": " les",
+                  "probability": 0.9964845180511475
+                },
+                {
+                  "start": 4.62,
+                  "end": 5.02,
+                  "word": " travaux",
+                  "probability": 0.9981469213962555
+                },
+                {
+                  "start": 5.02,
+                  "end": 5.14,
+                  "word": " de",
+                  "probability": 0.9989668130874634
+                },
+                {
+                  "start": 5.14,
+                  "end": 5.28,
+                  "word": " la",
+                  "probability": 0.9943108558654785
+                },
+                {
+                  "start": 5.28,
+                  "end": 6.14,
+                  "word": " bibliothèque.",
+                  "probability": 0.9342351406812668
+                }
+              ],
+              "avg_logprob": -0.19481353174176133,
+              "no_speech_prob": 0.0037359537091106176
+            },
+            {
+              "id": "s2",
+              "start": 6.94,
+              "end": 9.42,
+              "text": " Le montant annoncé est de 12 000 euros.",
+              "words": [
+                {
+                  "start": 6.94,
+                  "end": 7.26,
+                  "word": " Le",
+                  "probability": 0.9751338958740234
+                },
+                {
+                  "start": 7.26,
+                  "end": 7.68,
+                  "word": " montant",
+                  "probability": 0.9840581715106964
+                },
+                {
+                  "start": 7.68,
+                  "end": 8.24,
+                  "word": " annoncé",
+                  "probability": 0.9901737868785858
+                },
+                {
+                  "start": 8.24,
+                  "end": 8.48,
+                  "word": " est",
+                  "probability": 0.9987984895706177
+                },
+                {
+                  "start": 8.48,
+                  "end": 8.62,
+                  "word": " de",
+                  "probability": 0.9985796213150024
+                },
+                {
+                  "start": 8.62,
+                  "end": 8.86,
+                  "word": " 12",
+                  "probability": 0.9648486375808716
+                },
+                {
+                  "start": 8.86,
+                  "end": 9.1,
+                  "word": " 000",
+                  "probability": 0.8271645307540894
+                },
+                {
+                  "start": 9.1,
+                  "end": 9.42,
+                  "word": " euros.",
+                  "probability": 0.5855012536048889
+                }
+              ],
+              "avg_logprob": -0.19481353174176133,
+              "no_speech_prob": 0.0037359537091106176
+            },
+            {
+              "id": "s3",
+              "start": 10.38,
+              "end": 12.68,
+              "text": " Le résultat du vote reste à compléter.",
+              "words": [
+                {
+                  "start": 10.38,
+                  "end": 10.64,
+                  "word": " Le",
+                  "probability": 0.9910257458686829
+                },
+                {
+                  "start": 10.64,
+                  "end": 11.26,
+                  "word": " résultat",
+                  "probability": 0.9994567930698395
+                },
+                {
+                  "start": 11.26,
+                  "end": 11.38,
+                  "word": " du",
+                  "probability": 0.9922539591789246
+                },
+                {
+                  "start": 11.38,
+                  "end": 11.6,
+                  "word": " vote",
+                  "probability": 0.8760005235671997
+                },
+                {
+                  "start": 11.6,
+                  "end": 11.98,
+                  "word": " reste",
+                  "probability": 0.9949008226394653
+                },
+                {
+                  "start": 11.98,
+                  "end": 12.14,
+                  "word": " à",
+                  "probability": 0.8379384875297546
+                },
+                {
+                  "start": 12.14,
+                  "end": 12.68,
+                  "word": " compléter.",
+                  "probability": 0.9639455278714498
+                }
+              ],
+              "avg_logprob": -0.19481353174176133,
+              "no_speech_prob": 0.0037359537091106176
+            }
+          ]
+        },
+        "elapsed_seconds": 8.014,
+        "python_network_attempts": 0
+      }
+    },
+    "diarization-sherpa": {
+      "exit_code": 0,
+      "seconds": 2.161,
+      "response": {
+        "status": "completed",
+        "engine": "diarization-sherpa",
+        "result": {
+          "turns": [
+            {
+              "start": 0.03096874989569187,
+              "end": 2.865968704223633,
+              "speaker": "speaker_0",
+              "uncertain": false,
+              "confidence_margin": 0.96602,
+              "short_observation": false
+            },
+            {
+              "start": 3.6590938568115234,
+              "end": 6.190343856811523,
+              "speaker": "speaker_0",
+              "uncertain": false,
+              "confidence_margin": 0.97235,
+              "short_observation": false
+            },
+            {
+              "start": 7.017219066619873,
+              "end": 9.615968704223633,
+              "speaker": "speaker_0",
+              "uncertain": false,
+              "confidence_margin": 0.96068,
+              "short_observation": false
+            },
+            {
+              "start": 10.409093856811523,
+              "end": 12.97409439086914,
+              "speaker": "speaker_0",
+              "uncertain": false,
+              "confidence_margin": 0.97584,
+              "short_observation": false
+            }
+          ],
+          "diagnostics": {
+            "speakers": 1,
+            "observations": 4,
+            "reliable_anchors": 4,
+            "short_or_contaminated_observations": 0,
+            "uncertain_observations": 0,
+            "speaker_seconds": {
+              "speaker_0": 10.530000125989318
+            },
+            "embedding_norms": {
+              "min": 5.320826088318202,
+              "median": 6.365322053270434,
+              "max": 7.031766327287908
+            },
+            "linkage": "complete",
+            "cosine_distance_threshold": 0.4,
+            "minimum_anchor_seconds": 2.0,
+            "clustering_seconds": 0.007,
+            "quality_against_human_reference": "not-measured",
+            "cluster_cosine_radii": [
+              0.08851785443244589
+            ],
+            "prototype_margin_thresholds": [
+              0.08
+            ],
+            "embedding_model": "voxceleb_resnet34-sherpa.onnx",
+            "initial_sherpa_speakers": 1
+          },
+          "device": "cpu",
+          "clustering": "global-clean-anchors",
+          "possible_overlaps": []
+        },
+        "elapsed_seconds": 1.851,
+        "python_network_attempts": 0
+      }
+    },
+    "llm": {
+      "exit_code": 2,
+      "seconds": 157.287,
+      "response": {
+        "status": "failed",
+        "error_code": "NO_SUPPORTED_TOPIC_PARAGRAPHS",
+        "elapsed_seconds": 156.975,
+        "python_network_attempts": 0
+      }
+    }
+  },
+  "french_unicode_preserved": true
+}

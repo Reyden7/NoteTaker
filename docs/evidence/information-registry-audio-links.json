@@ -1,0 +1,14 @@
+{
+  "scope": "stored paths, original audio hash and segment bounds only; no listening or semantic timing accuracy assessment",
+  "source_rows": 670,
+  "audio_files": [
+    {
+      "audio_sha256": "95da1f0787fd22ad313acfd367fda3012b47587660cb9b1a2d6e6001bf0e708a",
+      "duration_seconds": 1240.0168125,
+      "linked_segments": 670,
+      "all_segment_times_within_audio": true
+    }
+  ],
+  "snapshot_unchanged": true,
+  "actual_audio_playback_tested_this_check": false
+}

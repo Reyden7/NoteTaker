@@ -89,10 +89,23 @@ def main():
     try:
         request = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
         kind = request["engine"]
+        if request.get('task') == 'direct_summary':
+            from notetaker.engines.direct_summary import validate_request
+            validate_request(request)
+        if request.get('task','').startswith('registry_'):
+            from notetaker.domain.information_registry import validate_generation_input
+            validate_generation_input(request)
         from notetaker.engines.llama_adapter import select_sources
-        from notetaker.engines.hierarchical_summary import summarize
+        from notetaker.engines.topic_summary import summarize
+        from notetaker.engines.registry_summary import prepare as prepare_registry,write as write_registry
+        from notetaker.engines.registry_summary import extract_only as extract_registry,finalize as finalize_registry
+        from notetaker.engines.registry_summary import verify_information as verify_registry_information
+        from notetaker.engines.direct_summary import summarize as direct_summary
+        llm_task={'summary':summarize,'registry_prepare':prepare_registry,'registry_write':write_registry,
+                  'registry_extract':extract_registry,'registry_finalize':finalize_registry,
+                  'registry_verify':verify_registry_information,'direct_summary':direct_summary}.get(request.get('task'),select_sources)
         result = {"asr": transcribe, "diarization": diarize, "diarization-sherpa": diarize_sherpa,
-                  "llm": summarize if request.get("task") == "summary" else select_sources}[kind](request)
+                  "llm": llm_task}[kind](request)
         response = {"status": "completed", "engine": kind, "result": result}
     except Exception as exc:
         import re

@@ -1,8 +1,41 @@
 # Architecture 0.2 en évaluation
 
+## Laboratoire 0.2.5 — synthèse directe par sujet
+
+Le parcours habituel reste celui du registre. Un service distinct
+`services/direct_summary.py` n'est accessible qu'avec activation explicite sur
+copie marquée. `domain/direct_summary.py` porte les contextes, citations et
+inventaires ; `engines/direct_summary.py` rédige par contexte puis réutilise les
+phrases dans un plan global. `engines/direct_runtime.py` mesure chaque appel CPU
+et contrôle strictement la reprise. `ui/direct_summary.py` présente alertes,
+paragraphes, rejets et sources, puis renvoie vers l'éditeur et la relecture.
+
+Le registre SQLite v5 reste intact. Les expériences sont des artefacts locaux
+indépendants avec instantanés et empreintes ; la provenance facultative du
+brouillon est vérifiée avant approbation/export, en plus des contrôles existants.
+Les modifications de séance invalident l'essai. Aucun avis machine ne vaut une
+relecture humaine. Voir `direct-summary-0.2.5-plan.md` et `direct-summary-0.2.5.md`.
+
 Le socle Python 3.11, PySide6, SQLite WAL et workers isolés est conservé.
 Capture, copie des originaux, journal PCM et normalisation locale ne sont pas
 remplacés. L'architecture 0.1 est conservée dans `history/architecture-0.1.md`.
+
+## Registre intermédiaire 0.2.4 (sources)
+
+La préparation du registre et la rédaction sont désormais deux tâches séparées
+du même worker Qwen CPU. SQLite v5 ajoute des révisions immuables et leur
+instantané intégral de transcription. Inventaire des passages, candidats et
+variantes, refus, relations et omissions restent consultables, même après
+échec du moteur. Les corrections opérateur sont distinctes des avis machine.
+Les sujets sont proposés depuis les sources originales, puis les informations
+y sont classées ; les paragraphes partent du registre courant seulement.
+
+Le contexte du brouillon inclut la révision de registre lorsqu'elle existe,
+sans changer les empreintes des documents hérités sans registre. La provenance
+du nouveau document référence une révision immuable et son empreinte ; une
+révision obsolète ne peut pas être approuvée comme courante. Les contrôles de
+citations, de sens et de relecture finale restent en place. Aucun changement
+des moteurs de transcription ou de voix. Voir `information-registry-0.2.4.md`.
 
 ## Chaîne audio et voix
 
@@ -141,3 +174,59 @@ deux poids de 2,5 Go. Les manifestes restent non approuvés commercialement.
 Les poids WeSpeaker dérivés, modèles sélectionnés et polices sont embarqués dans le
 bundle de développement séparé `dist/quality-02/NoteTaker`. Le lot commercial,
 GPU et Windows propre déconnecté restent à qualifier.
+
+## Références et corrections 0.2.2
+
+`services/evidence.py` centralise le diagnostic des liens point/affirmation/
+citation/passage/intervenant. Le contrôle est sans mutation du contenu. Une
+révision de travail peut rester incohérente (`allow_invalid=True`, schéma de
+base toujours vérifié) pour permettre sauvegarde et réparation ; approbation et
+export recontrôlent systématiquement les références et règles métier. Les
+empreintes de contexte et de texte restent obligatoires. L'édition de prose
+conserve les affirmations structurées. Aucun vote n'est déduit d'une réparation.
+
+La proposition d'actualisation des intervenants est distincte de l'application :
+prévisualisation et acceptation explicite avant nouvelle révision sans relecture.
+La filiation des scissions/fusions remappe les citations dans la même transaction
+SQLite ; un historique complet est conservé. Pas de nouvelle migration : v4.
+Une migration v3→v4 avec citations, contexte et relecture a été testée.
+
+`services/transcript.py` compacte prudemment les sorties automatiques et conserve
+les passages corrigés humainement pendant une réanalyse. Les coordonnées de
+temps sont liées au hash du montage WAV ; désaccord ou intersection non alignable
+signifie arrêt avant remplacement. Les UUID anonymes ne sont réutilisés que sur
+correspondance temporelle mutuelle dominante ; aucun profil vocal n'est créé.
+Les mots horodatés et anciennes sorties de jobs restent disponibles localement.
+
+`ui/evidence.py` fournit diagnostic, choix de sources exactes et correction des
+affirmations. La fenêtre existante ajoute sélection multiple, regroupement,
+lecture rapide et éditeur défilant. Les UUID de voix sont portés en données Qt,
+avec noms/numéros lisibles à l'écran. Détails : `validation-fixes-0.2.2.md`.
+
+## Synthèse thématique 0.2.3
+
+Le worker de synthèse utilise `engines/topic_summary.py` : sélection de citations,
+reformulation/classification avec contexte, vérification du soutien sémantique,
+catalogue global puis affectation de chaque note par clé obligatoire, rédaction de paragraphes et vérification de
+leurs phrases/titres. Les citations et appels llama hors ligne reposent sur les
+helpers existants. Des alias remplacent les longs IDs de voix dans les données
+de reformulation et de vérification, sans modifier texte source, IDs ni stockage.
+Le contexte voisin est compacté par voix en conservant ses IDs et frontières.
+
+`domain/summary.py` gère graphies locales, profils de longueur et gabarits de
+phrases à alias. Le point garde ses `claims`/`sources` et peut ajouter `narrative`
+avec les liens phrase→affirmations→citations. Une reprise par anaphore exige
+la même voix unique que la phrase précédente ; son identifiant est conservé et
+contrôlé lors des changements d’attribution. Les contrôles existants sont
+conservés ; la cohérence du nouveau rendu et de ses voix est également vérifiée.
+Une modification volontaire du paragraphe conserve ses références avec le
+statut de modification humaine nécessitant relecture. L'historique garde la
+liaison plus fine antérieure. Aucun nouveau texte n'hérite d'une approbation.
+
+Le schéma SQLite reste v4 ; lexique et longueur sont des métadonnées de séance.
+Le schéma JSON étend seulement les points avec une propriété facultative ; les
+anciens brouillons restent lisibles. Employer la nouvelle version pour les
+documents contenant `narrative`, qu'un ancien exécutable peut refuser.
+Une liste de passages écartés/incertains conserve leurs coordonnées audio et
+permet leur consultation/écoute dans l'interface. Les sorties intermédiaires
+restent privées, séparées des modèles redistribuables. Aucun profil biométrique.

@@ -1,0 +1,61 @@
+{
+  "scope": "authored known textual controls; no human meeting reference or quality percentage",
+  "actual_cpu_inference": true,
+  "human_fidelity_improvement_measured": null,
+  "results": [
+    {
+      "case": "neutral",
+      "expected_supported": true,
+      "accepted_by_combined_controls": true,
+      "raw_model_accepted": true,
+      "checks_after_source_guard": {
+        "topic_supported": "supported",
+        "no_unsupported_assertion": "supported",
+        "no_invented_identity_or_decision": "supported",
+        "source_identity_guard": "supported"
+      },
+      "passed": true
+    },
+    {
+      "case": "invented_vote",
+      "expected_supported": false,
+      "accepted_by_combined_controls": false,
+      "raw_model_accepted": false,
+      "checks_after_source_guard": {
+        "topic_supported": "contradicted",
+        "no_unsupported_assertion": "supported",
+        "no_invented_identity_or_decision": "supported",
+        "source_identity_guard": "supported"
+      },
+      "passed": true
+    },
+    {
+      "case": "budget_scope",
+      "expected_supported": false,
+      "accepted_by_combined_controls": false,
+      "raw_model_accepted": false,
+      "checks_after_source_guard": {
+        "topic_supported": "contradicted",
+        "no_unsupported_assertion": "supported",
+        "no_invented_identity_or_decision": "supported",
+        "source_identity_guard": "supported"
+      },
+      "passed": true
+    },
+    {
+      "case": "political_identity",
+      "expected_supported": false,
+      "accepted_by_combined_controls": false,
+      "raw_model_accepted": true,
+      "checks_after_source_guard": {
+        "topic_supported": "supported",
+        "no_unsupported_assertion": "supported",
+        "no_invented_identity_or_decision": "supported",
+        "source_identity_guard": "not_explicit"
+      },
+      "passed": true
+    }
+  ],
+  "wall_seconds": 70.42,
+  "passed": true
+}

@@ -1,0 +1,16 @@
+{
+  "scope": "technical comparison artifact only; not a production session export",
+  "pdf": "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\output\\summary-comparison\\NoteTaker-Comparaison-0.2.3.pdf",
+  "sha256": "0ddad45c7dfcfc022e4cc67fe4b12adc66e24a27ede0878f46ee1351cdba70c2",
+  "pages": 8,
+  "human_review_created": false,
+  "replacement_characters": 0,
+  "rendered_pages_visually_inspected": true,
+  "visual_inspection": {
+    "pages_inspected": 8,
+    "renderer": "Poppler pdftoppm, 110 dpi",
+    "clipping_or_overflow_observed": false,
+    "non_validated_footer_on_every_page": true,
+    "scope": "layout inspection only; not human approval of factual fidelity"
+  }
+}

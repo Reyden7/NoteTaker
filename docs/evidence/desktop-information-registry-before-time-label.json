@@ -1,0 +1,10 @@
+﻿{
+    "isolated_data_directory":  "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\output\\desktop-validation\\a6e4062773f14ef68f2b6e0bc9246d96",
+    "responsive_main_window":  true,
+    "tested_at_utc":  "2026-10-18T20:13:44.0187003Z",
+    "environment":  "developer PC; not clean Windows; host not disconnected",
+    "graceful_exit":  true,
+    "scope":  "compiled UI startup and normal shutdown only; no meeting or quality acceptance",
+    "executable_sha256":  "503f790e79cbd4dda59e257744625fd9ae2838eb48259356430f834db10d2c38",
+    "window_title":  "NoteTaker — séances et procès-verbaux"
+}

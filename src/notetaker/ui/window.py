@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt, QThread, Signal, QTimer, QDate, QUrl
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QFormLayout, QPushButton, QLabel,
     QLineEdit, QTextEdit, QListWidget, QListWidgetItem, QTabWidget, QSplitter, QComboBox, QProgressBar,
-    QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView, QDateEdit, QMessageBox, QFileDialog, QInputDialog, QSpinBox, QDialog, QDialogButtonBox)
+    QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView, QDateEdit, QMessageBox, QFileDialog, QInputDialog, QSpinBox, QDialog, QDialogButtonBox, QScrollArea)
 from notetaker.domain.minutes import content_digest
 from notetaker.infrastructure.paths import session_directory
 from notetaker.services.storage import SessionStore
@@ -17,6 +17,10 @@ from notetaker.services.pipeline import Pipeline
 from notetaker.services.session_export import export_session
 from notetaker.services.directory import DirectoryService, person_name
 from notetaker.ui.directory import DirectoryDialog, ParticipantsPage
+from notetaker.services.evidence import DraftEvidenceError, draft_issues, propose_attribution_refresh
+from notetaker.ui.evidence import EvidenceDiagnostics, ClaimEditor, SourcePicker,NarrativeSources
+from notetaker.domain.summary import PROFILES,lexicon_from_text,lexicon_text,manual_narrative
+from notetaker.ui.information_registry import RegistryPage
 
 class Task(QThread):
     progress = Signal(str)
@@ -45,8 +49,12 @@ def paragraph(text):
     return value
 
 class MainWindow(QMainWindow):
-    def __init__(self, data_root):
+    def __init__(self, data_root, *, experimental_direct=False):
         super().__init__()
+        self.experimental_direct = experimental_direct
+        if experimental_direct:
+            from notetaker.domain.direct_summary import test_workspace
+            test_workspace(data_root)
         self.store = SessionStore(Path(data_root))
         interrupted = self.store.recover()
         self.sid = None
@@ -101,7 +109,7 @@ class MainWindow(QMainWindow):
         side.addWidget(self.history, 1)
         self.archive_button = button("Archiver / réactiver", self.archive_session)
         side.addWidget(self.archive_button)
-        side.addWidget(paragraph("Version de travail 0.2.1\nAnnuaire sans biométrie"))
+        side.addWidget(paragraph("Version de travail 0.2.5\nSynthèse expérimentale en qualification"))
         outer.addWidget(sidebar)
         body = QVBoxLayout()
         body.setContentsMargins(24, 20, 24, 16)
@@ -110,7 +118,7 @@ class MainWindow(QMainWindow):
         body.addWidget(self.heading)
         actions = QHBoxLayout()
         self.analyse_button = button("1. Transcrire et distinguer les voix", self.analyse, True)
-        self.generate_button = button("2. Préparer le brouillon", self.generate)
+        self.generate_button = button("2. Registre / rédaction", self.generate)
         self.cancel_button = button("Annuler le traitement", self.cancel_task)
         self.cancel_button.setEnabled(False)
         actions.addWidget(self.analyse_button)
@@ -127,6 +135,16 @@ class MainWindow(QMainWindow):
         self.participants_page = ParticipantsPage(self.store, self)
         self.participants_page.saved.connect(self.participants_saved)
         self.tabs.addTab(self.participants_page, 'Participants')
+        self.registry_page=RegistryPage(self.store,self.prepare_information_registry,self.write_from_registry,self.play_source,self.report_error,
+            before_change=self.flush_edits,parent=self,play_snapshot=self.play_registry_snapshot,verify=self.verify_registry_information)
+        self.registry_page.changed.connect(self.load_session)
+        self.tabs.addTab(self.registry_page,'Registre des informations')
+        if self.experimental_direct:
+            from notetaker.ui.direct_summary import DirectSummaryPage
+            self.direct_page = DirectSummaryPage(self.store, self.generate_direct,
+                lambda: self.tabs.setCurrentIndex(3), self.play_registry_snapshot, self,
+                resume=self.generate_direct, reuse=self.reuse_direct)
+            self.tabs.addTab(self.direct_page, 'Laboratoire de synthèse')
         body.addWidget(self.tabs, 1)
         self.status = paragraph("Créez une séance ou rouvrez-la dans l’historique. Tous les traitements se font sur cet ordinateur.")
         body.addWidget(self.status)
@@ -156,6 +174,7 @@ class MainWindow(QMainWindow):
             form.addRow(label, field)
         layout.addLayout(form)
         layout.addWidget(button("Enregistrer les informations", self.save_details, True))
+        layout.addWidget(button('Lexique local de la séance…',self.edit_lexicon))
         layout.addStretch()
         return page
 
@@ -214,12 +233,18 @@ class MainWindow(QMainWindow):
         tools = QHBoxLayout()
         tools.addWidget(button("Diagnostic des intervenants…", self.show_speaker_diagnostics))
         tools.addWidget(button("Restaurer une transcription précédente…", self.restore_analysis))
+        tools.addWidget(button('Écouter le passage', self.play_selected))
+        tools.addWidget(button('Regrouper la sélection…', self.merge_selected_segments))
         layout.addLayout(tools)
         splitter = QSplitter()
         self.transcript_table = QTableWidget(0, 4)
         self.transcript_table.setHorizontalHeaderLabels(["Début", "Intervenant", "Attribution", "Texte"])
         self.transcript_table.horizontalHeader().setSectionResizeMode(3, QHeaderView.Stretch)
+        for col,width in [(0,85),(1,170),(2,165)]:self.transcript_table.setColumnWidth(col,width)
         self.transcript_table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.transcript_table.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.transcript_table.setWordWrap(True)
+        self.transcript_table.verticalHeader().setDefaultSectionSize(58)
         self.transcript_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.transcript_table.itemSelectionChanged.connect(self.select_utterance)
         self.transcript_table.cellDoubleClicked.connect(self.play_utterance)
@@ -231,26 +256,32 @@ class MainWindow(QMainWindow):
         self.uncertainty = paragraph("Sélectionnez un passage")
         edit.addWidget(self.uncertainty)
         self.utterance_edit = QTextEdit()
+        self.utterance_edit.setMinimumHeight(140)
         self.utterance_edit.textChanged.connect(self.schedule_transcript_save)
         self.speaker_combo.currentIndexChanged.connect(self.schedule_transcript_save)
         edit.addWidget(self.utterance_edit, 1)
         edit.addWidget(button("Enregistrer et confirmer l’attribution", lambda: self.save_utterance(confirm=True), True))
+        edit.addWidget(button('Confirmer cette voix sur la sélection', self.confirm_selected_voice))
         edit.addWidget(button("Scinder le passage au curseur…", self.split_utterance))
         edit.addWidget(paragraph('Attribution manuelle depuis les participants de la séance'))
         self.person_combo = QComboBox()
         edit.addWidget(self.person_combo)
         self.person_scope = QComboBox()
-        self.person_scope.addItems(['Ce passage uniquement', 'Toutes les interventions de cette voix'])
+        self.person_scope.addItems(['Ce passage uniquement', 'Toutes les interventions de cette voix', 'Interventions sélectionnées'])
         edit.addWidget(self.person_scope)
         self.assign_person_button = button('Attribuer à cette personne', self.assign_directory_person)
         edit.addWidget(self.assign_person_button)
         self.speaker_table = QTableWidget(0, 2)
+        self.speaker_table.setMinimumHeight(120)
         self.speaker_table.setHorizontalHeaderLabels(["Voix", "Nom attribué"])
         self.speaker_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
         edit.addWidget(self.speaker_table)
         edit.addWidget(button("Enregistrer les noms", self.save_speakers))
         edit.addWidget(button("Fusionner la voix sélectionnée…", self.merge_speakers))
-        splitter.addWidget(editor)
+        editor_scroll=QScrollArea()
+        editor_scroll.setWidgetResizable(True)
+        editor_scroll.setWidget(editor)
+        splitter.addWidget(editor_scroll)
         splitter.setSizes([700, 380])
         layout.addWidget(splitter, 1)
         return page
@@ -270,6 +301,13 @@ class MainWindow(QMainWindow):
         self.document_mode.addItem("Transcription intégrale", "transcript")
         self.document_mode.addItem("Procès-verbal municipal — relecture par le secrétaire", "municipal")
         mode_row.addWidget(self.document_mode, 1)
+        self.summary_length=QComboBox()
+        for key,profile in PROFILES.items():self.summary_length.addItem(profile['label'],key)
+        self.summary_length.setCurrentIndex(1)
+        self.summary_length.setToolTip('Longueur de rédaction par sujet ; la fidélité reste prioritaire. Le mode transcription reste intégral.')
+        self.document_mode.currentIndexChanged.connect(lambda:self.summary_length.setEnabled(self.document_mode.currentData()!='transcript'))
+        mode_row.addWidget(QLabel('Longueur'))
+        mode_row.addWidget(self.summary_length)
         mode_row.addWidget(button("Préparer ce document", self.generate, True))
         layout.addLayout(mode_row)
         row = QHBoxLayout()
@@ -287,6 +325,12 @@ class MainWindow(QMainWindow):
         panel.addWidget(QLabel("Sources audio et transcription"))
         panel.addWidget(self.point_sources)
         panel.addWidget(button("Consulter les extraits sources…", self.show_point_sources))
+        panel.addWidget(button('Passages écartés ou incertains…',self.show_unreliable_sources))
+        evidence_actions=QHBoxLayout()
+        evidence_actions.addWidget(button('Contrôler les références…', self.check_draft_references))
+        evidence_actions.addWidget(button('Corriger une affirmation…', self.edit_selected_claim))
+        panel.addLayout(evidence_actions)
+        panel.addWidget(button('Actualiser les attributions depuis les sources…',self.refresh_claim_attributions))
         panel.addWidget(QLabel("Vote saisi associé, si applicable"))
         panel.addWidget(self.point_vote)
         row.addLayout(panel, 3)
@@ -330,6 +374,9 @@ class MainWindow(QMainWindow):
         return page
 
     def report_error(self, error):
+        if isinstance(error,DraftEvidenceError):
+            self.show_evidence_diagnostics(error.issues)
+            return
         message = explain_error(error)
         self.status.setText(message)
         QMessageBox.warning(self, "Action non effectuée", message)
@@ -354,6 +401,8 @@ class MainWindow(QMainWindow):
         self.history.blockSignals(False)
 
     def new_session(self):
+        if self.registry_page.editor_changed():
+            self.status.setText('Enregistrez la correction du registre ou annulez la saisie avant de changer de séance.');return
         title, ok = QInputDialog.getText(self, "Nouvelle séance", "Titre", text="Conseil municipal")
         if ok and title.strip():
             self.flush_edits()
@@ -364,6 +413,9 @@ class MainWindow(QMainWindow):
     def select_session(self, item, previous=None):
         if self.loading or not item:
             return
+        if self.registry_page.editor_changed():
+            self.status.setText('Enregistrez la correction du registre ou annulez la saisie avant de changer de séance.')
+            self.reload_history();return
         try:
             self.flush_edits()
         except Exception as error:
@@ -390,8 +442,12 @@ class MainWindow(QMainWindow):
         self.participants_edit.setPlainText(m.get("participants", ""))
         self.participants_page.load(self.sid)
         self.refresh_person_choices()
+        self.registry_page.load(self.sid)
+        if self.experimental_direct:
+            self.direct_page.load(self.sid)
         self.agenda_edit.setPlainText("\n".join(m.get("agenda", [])))
         self.notes_edit.setPlainText(m.get("notes", ""))
+        self.summary_length.setCurrentIndex(max(0,self.summary_length.findData(m.get('summary_length','standard'))))
         self.takes.clear()
         for take in s["takes"]:
             item = QListWidgetItem(f"{'Import' if take['kind'] == 'import' else 'Microphone'} — {take['status']} — {Path(take['path']).name}")
@@ -414,7 +470,10 @@ class MainWindow(QMainWindow):
             self.add_vote(vote)
         self.decisions.setPlainText("\n".join(s["decisions"]))
         review = s["draft"]["review"] if s["draft"] else None
-        self.review_status.setText(f"Révision {s['draft']['revision']} — " + ("relecture enregistrée par " + review["reviewer"] if review else "relecture requise") if s["draft"] else "Aucun brouillon généré")
+        review_current=bool(review and s['draft']['context_sha256']==self.store.context_hash(self.sid))
+        review_text=('relecture enregistrée par '+review['reviewer'] if review_current else
+            'ancienne relecture conservée — nouvelle relecture requise' if review else 'relecture requise')
+        self.review_status.setText(f"Révision {s['draft']['revision']} — "+review_text if s['draft'] else 'Aucun brouillon généré')
         self.loading = False
         self.enable_session(True)
         self.pause_button.setEnabled(False)
@@ -423,8 +482,11 @@ class MainWindow(QMainWindow):
             self.points.setCurrentRow(0)
 
     def metadata(self):
-        return {**(self.state['metadata'] if self.state else {}), "municipality": self.commune_edit.text(), "location": self.location_edit.text(), "date": self.date_edit.date().toString(Qt.ISODate),
+        values={**(self.state['metadata'] if self.state else {}), "municipality": self.commune_edit.text(), "location": self.location_edit.text(), "date": self.date_edit.date().toString(Qt.ISODate),
                 "participants": self.participants_edit.toPlainText(), "agenda": [x.strip() for x in self.agenda_edit.toPlainText().splitlines() if x.strip()], "notes": self.notes_edit.toPlainText()}
+        if self.summary_length.currentData()!='standard' or 'summary_length' in values:
+            values['summary_length']=self.summary_length.currentData()
+        return values
 
     def save_details(self):
         if not self.sid or self.loading:
@@ -435,6 +497,25 @@ class MainWindow(QMainWindow):
             self.heading.setText(self.title_edit.text())
             self.reload_history()
             self.status.setText("Informations sauvegardées. Toute modification impose une nouvelle relecture du brouillon.")
+
+    def edit_lexicon(self):
+        if not self.sid:return
+        self.flush_edits()
+        dialog=QDialog(self);dialog.setWindowTitle('Lexique local de la séance');dialog.resize(780,520)
+        layout=QVBoxLayout(dialog)
+        layout.addWidget(paragraph('Une forme retenue par ligne, éventuellement suivie de | puis des variantes séparées par ;. Ce lexique corrige la graphie, sans identifier une voix ni modifier les citations sources.'))
+        editor=QTextEdit(lexicon_text(self.store.get(self.sid)['metadata'].get('lexicon',[])));layout.addWidget(editor)
+        feedback=paragraph('Exemple : Médiathèque Simone Veil | médiathèque Simone Veille');layout.addWidget(feedback)
+        def save():
+            try:
+                entries=lexicon_from_text(editor.toPlainText())
+                state=self.store.get(self.sid)
+                self.store.save_details(self.sid,state['title'],{**state['metadata'],'lexicon':entries})
+                self.state=self.store.get(self.sid);dialog.accept()
+                self.review_status.setText('Lexique modifié — régénérez et relisez le document si nécessaire.')
+            except ValueError as error:feedback.setText(str(error))
+        buttons=QDialogButtonBox(QDialogButtonBox.Save|QDialogButtonBox.Cancel);buttons.accepted.connect(save);buttons.rejected.connect(dialog.reject);layout.addWidget(buttons)
+        dialog.exec()
 
     def archive_session(self):
         if self.sid:
@@ -477,6 +558,8 @@ class MainWindow(QMainWindow):
         state = self.store.get(self.sid)
         utterance = next(u for u in state['utterances'] if u['id'] == uid)
         ids = [uid]
+        if self.person_scope.currentIndex() == 2:
+            ids=self.selected_utterance_ids()
         if self.person_scope.currentIndex() == 1:
             if utterance['speaker_id'] is None:
                 self.status.setText('Les passages non attribués peuvent appartenir à plusieurs voix. Attribuez-les séparément.')
@@ -603,15 +686,19 @@ class MainWindow(QMainWindow):
         self.transcript_table.setRowCount(len(self.state["utterances"]))
         for row, u in enumerate(self.state["utterances"]):
             automatic = json.loads(u["source_json"]).get("automatic_attribution", True)
-            texts = [f"{u['start_ms'] // 60000:02d}:{u['start_ms'] // 1000 % 60:02d}", self.state["speakers"].get(u["speaker_id"], "À attribuer"), "À vérifier" if u["uncertain"] else ("Automatique" if automatic else "Confirmée"), u["text"]]
+            status='Voix inconnue' if not u['speaker_id'] else ('Incertaine' if u['uncertain'] else ('Automatique à vérifier' if automatic else 'Confirmée manuellement'))
+            texts = [f"{u['start_ms'] // 60000:02d}:{u['start_ms'] // 1000 % 60:02d}", self.state["speakers"].get(u["speaker_id"], "Voix inconnue"), status, u["text"]]
             for col, text in enumerate(texts):
                 item = QTableWidgetItem(text)
+                item.setToolTip(text)
                 if u["uncertain"]:
                     item.setBackground(__import__("PySide6.QtGui", fromlist=["QColor"]).QColor("#fff3d6"))
                 self.transcript_table.setItem(row, col, item)
         self.speaker_table.setRowCount(len(self.state["speakers"]))
         for row, (key, label) in enumerate(self.state["speakers"].items()):
-            item = QTableWidgetItem(key)
+            item = QTableWidgetItem(f'Voix {row+1}')
+            item.setData(Qt.UserRole,key)
+            item.setToolTip('Identifiant interne : '+key)
             item.setFlags(item.flags() & ~Qt.ItemIsEditable)
             self.speaker_table.setItem(row, 0, item)
             self.speaker_table.setItem(row, 1, QTableWidgetItem(label))
@@ -662,12 +749,45 @@ class MainWindow(QMainWindow):
             self.store.restore_analysis(self.sid, versions[options.index(choice)]["id"])
             self.load_session()
 
+    def show_unreliable_sources(self):
+        if not self.sid:return
+        entries=self.draft_content.get('generation_diagnostics',{}).get('unreliable_passages',[])
+        if not entries:
+            self.status.setText('Ce brouillon ne comporte pas de liste détaillée de passages incertains. Consultez les alertes et la transcription complète.');return
+        state=self.store.get(self.sid);by_id={u['id']:u for u in state['utterances']}
+        dialog=QDialog(self);dialog.setWindowTitle('Passages écartés ou incertains');dialog.resize(1050,700)
+        layout=QVBoxLayout(dialog);layout.addWidget(paragraph('Ces passages n’ont pas permis une rédaction sûre ou portent une attribution/chronologie incertaine. Les corriger ne valide pas automatiquement le compte rendu. La liste décrit l’état lors de sa génération.'))
+        sources=QTableWidget(len(entries),3);sources.setHorizontalHeaderLabels(['Horodatage','Cause à vérifier','Texte actuel'])
+        sources.setEditTriggers(QAbstractItemView.NoEditTriggers);sources.setSelectionBehavior(QAbstractItemView.SelectRows)
+        sources.setSelectionMode(QAbstractItemView.SingleSelection);sources.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        labels={'information_rejected':'Rédaction ou citation à vérifier avant reprise','voice_or_timing_uncertain':'Voix, chevauchement ou horaire incertain','note_not_selected':'Note non reprise dans le paragraphe choisi'}
+        for i,entry in enumerate(entries):
+            u=by_id.get(entry['source_id'])
+            for j,text in enumerate([f"{entry['start_ms']//60000:02d}:{entry['start_ms']//1000%60:02d}",
+                ' ; '.join(labels.get(r,r) for r in entry['reasons']),u['text'] if u else 'Source ancienne absente de la transcription actuelle']):
+                item=QTableWidgetItem(text);item.setToolTip(text);item.setData(Qt.UserRole,entry['source_id']);sources.setItem(i,j,item)
+        layout.addWidget(sources,1)
+        full=QTextEdit();full.setReadOnly(True);full.setMaximumHeight(180);layout.addWidget(full)
+        def selected():
+            row=sources.currentRow()
+            if row>=0:full.setPlainText(sources.item(row,2).text())
+        def listen():
+            row=sources.currentRow()
+            if row>=0:self.play_source(sources.item(row,0).data(Qt.UserRole))
+        sources.itemSelectionChanged.connect(selected);sources.cellDoubleClicked.connect(lambda *a:listen())
+        actions=QHBoxLayout();actions.addWidget(button('Écouter ce passage',listen));actions.addWidget(button('Arrêter l’écoute',self.player.stop));actions.addWidget(button('Fermer',dialog.close));layout.addLayout(actions)
+        dialog.finished.connect(lambda *a:self.player.stop())
+        sources.selectRow(0);selected();dialog.exec()
+
     def show_point_sources(self):
         if not self.sid or self.point_index is None:
             return
         self.store_point_fields()
         point = self.draft_content["points"][self.point_index]
         state = self.store.get(self.sid)
+        if point.get('narrative'):
+            NarrativeSources(point,state,self.play_source,self,stop=self.player.stop).exec()
+            return
         sources = {u["id"]: u for u in state["utterances"]}
         rows = ["Références internes. Contrôlez le sens complet et l'attribution à l'écoute.\n"]
         for claim in point.get("claims", []):
@@ -724,7 +844,7 @@ class MainWindow(QMainWindow):
             return
         self.save_utterance()
         for row in range(self.speaker_table.rowCount()):
-            key, label = self.speaker_table.item(row, 0).text(), self.speaker_table.item(row, 1).text()
+            key, label = self.speaker_table.item(row, 0).data(Qt.UserRole), self.speaker_table.item(row, 1).text()
             if self.state["speakers"].get(key) != label:
                 self.store.rename_speaker(self.sid, key, label)
                 self.state["speakers"][key] = label
@@ -739,7 +859,7 @@ class MainWindow(QMainWindow):
     def split_utterance(self):
         if not self.edit_uid:
             return
-        self.save_utterance()
+        self.flush_edits()
         u = next(x for x in self.state["utterances"] if x["id"] == self.edit_uid)
         cursor = self.utterance_edit.textCursor()
         cursor.setPosition(0, __import__("PySide6.QtGui", fromlist=["QTextCursor"]).QTextCursor.KeepAnchor)
@@ -756,9 +876,9 @@ class MainWindow(QMainWindow):
         row = self.speaker_table.currentRow()
         if row < 0:
             return
-        self.save_speakers()
-        source = self.speaker_table.item(row, 0).text()
-        options = {f"{label} ({key})": key for key, label in self.state["speakers"].items() if key != source}
+        self.flush_edits()
+        source = self.speaker_table.item(row, 0).data(Qt.UserRole)
+        options = {f"{label} — voix {i+1}": key for i,(key,label) in enumerate(self.state['speakers'].items()) if key != source}
         if not options:
             self.report_error("Deux voix sont nécessaires pour une fusion.")
             return
@@ -768,7 +888,9 @@ class MainWindow(QMainWindow):
             self.load_session()
 
     def play_utterance(self, row, col=0):
-        u = self.state["utterances"][row]
+        self.play_registry_snapshot(self.state['utterances'][row])
+
+    def play_registry_snapshot(self,u):
         source = json.loads(u["source_json"])
         path = Path(source.get("normalized_audio", ""))
         if not path.is_file():
@@ -794,8 +916,9 @@ class MainWindow(QMainWindow):
             changed = old["summary"] != self.point_text.toPlainText() or old["sources"] != [x.strip() for x in self.point_sources.text().split(",") if x.strip()]
             self.draft_content["points"][self.point_index] = {**old, "title": self.point_title.text(), "summary": self.point_text.toPlainText(),
                 "sources": [x.strip() for x in self.point_sources.text().split(",") if x.strip()], "vote_id": self.point_vote.currentData()}
-            if changed:
-                self.draft_content["points"][self.point_index].pop("claims", None)
+            if 'narrative' in old and old['summary']!=self.point_text.toPlainText():
+                manual_narrative(self.draft_content['points'][self.point_index],self.point_text.toPlainText())
+            # Editing prose must never silently discard its checked assertions.
 
     def select_point(self, row):
         if self.loading:
@@ -830,9 +953,10 @@ class MainWindow(QMainWindow):
         self.store_point_fields()
         self.draft_content["to_verify"] = [x for x in self.to_verify.toPlainText().splitlines() if x.strip()]
         current = self.store.get(self.sid)["draft"]
-        if self.draft_content["points"] and (not current or current["content"] != self.draft_content):
-            self.store.save_draft(self.sid, self.draft_content)
-            self.review_status.setText("Brouillon sauvegardé — relecture requise")
+        if (self.draft_content['points'] or current) and (not current or current["content"] != self.draft_content):
+            self.store.save_draft(self.sid, self.draft_content,allow_invalid=True)
+            issues=draft_issues(self.draft_content,self.store.get(self.sid))
+            self.review_status.setText(f'Brouillon de travail sauvegardé — {len(issues)} incohérence(s) à corriger' if issues else 'Brouillon sauvegardé — relecture requise')
         for row, p in enumerate(self.draft_content["points"]):
             self.points.item(row).setText(p["title"])
 
@@ -889,12 +1013,106 @@ class MainWindow(QMainWindow):
             self.save_manual()
             self.save_draft()
 
+    def selected_utterance_ids(self):
+        return [self.state['utterances'][i]['id'] for i in sorted({index.row() for index in self.transcript_table.selectionModel().selectedRows()})]
+
+    def confirm_selected_voice(self):
+        ids=self.selected_utterance_ids();speaker=self.speaker_combo.currentData()
+        if not ids:return
+        self.save_utterance()
+        for u in self.store.get(self.sid)['utterances']:
+            if u['id'] in ids:self.store.edit_utterance(self.sid,u['id'],u['text'],speaker,confirm=True)
+        self.load_session()
+        self.status.setText(f'{len(ids)} attribution(s) corrigée(s) manuellement. Vérifiez le brouillon avant sa relecture.')
+
+    def merge_selected_segments(self):
+        ids=self.selected_utterance_ids()
+        if len(ids)<2:
+            self.status.setText('Sélectionnez plusieurs interventions consécutives avec Ctrl ou Maj.');return
+        self.flush_edits()
+        if QMessageBox.question(self,'Regrouper les interventions','Regrouper ces passages de la même voix ? Les horaires et sources seront conservés dans l’historique ; le brouillon sera à relire.',QMessageBox.Yes|QMessageBox.No,QMessageBox.No)!=QMessageBox.Yes:return
+        try:
+            uid=self.store.merge_utterances(self.sid,ids);self.load_session()
+            row=next(i for i,u in enumerate(self.state['utterances']) if u['id']==uid)
+            self.transcript_table.selectRow(row)
+        except Exception as error:self.report_error(error)
+
+    def play_selected(self):
+        row=self.transcript_table.currentRow()
+        if row>=0:self.play_utterance(row)
+
+    def play_source(self,uid):
+        row=next((i for i,u in enumerate(self.state['utterances']) if u['id']==uid),None)
+        if row is None:
+            self.status.setText('Cette source n’existe plus. Consultez l’historique ou rattachez l’affirmation à un passage actuel.');return
+        self.play_utterance(row)
+
+    def focus_issue_point(self,index):
+        self.tabs.setCurrentIndex(3)
+        if 0<=index<self.points.count():self.points.setCurrentRow(index)
+
+    def show_evidence_diagnostics(self,issues):
+        self.status.setText(f'{len(issues)} incohérence(s) de sources empêchent la relecture. Corrigez les éléments indiqués.')
+        previous=getattr(self,'evidence_dialog',None)
+        if previous:previous.close()
+        self.evidence_dialog=EvidenceDiagnostics(issues,self.store.get(self.sid),self.edit_claim_at,self.focus_issue_point,self.play_source,self)
+        self.evidence_dialog.show()
+
+    def check_draft_references(self):
+        self.save_draft()
+        issues=draft_issues(self.draft_content,self.store.get(self.sid))
+        if issues:self.show_evidence_diagnostics(issues)
+        else:self.status.setText('Les références sont cohérentes. La fidélité du texte et les attributions restent à relire avant export.')
+
+    def edit_selected_claim(self):
+        self.store_point_fields()
+        pi=self.points.currentRow()
+        if pi<0:return
+        claims=self.draft_content['points'][pi].get('claims',[])
+        if not claims:self.edit_claim_at(pi,None);return
+        choices=[f"{i+1}. {c.get('text','Affirmation incomplète')[:150]}" for i,c in enumerate(claims)]
+        chosen,ok=QInputDialog.getItem(self,'Affirmation à corriger','Choisir une affirmation',choices,0,False)
+        if ok:self.edit_claim_at(pi,choices.index(chosen))
+
+    def edit_claim_at(self,pi,ci):
+        self.save_draft()
+        if not 0<=pi<len(self.draft_content['points']):return
+        point=self.draft_content['points'][pi]
+        if ci is None:
+            self.focus_issue_point(pi)
+            picker=SourcePicker(self.store.get(self.sid),self)
+            if picker.exec()==QDialog.Accepted:
+                if point.get('claims'):
+                    self.status.setText('Corrigez les citations de chaque affirmation avec « Corriger une affirmation ».');return
+                self.point_sources.setText(picker.chosen['id']);self.save_draft()
+            return
+        dialog=ClaimEditor(point,ci,self.store.get(self.sid),self)
+        if dialog.exec()==QDialog.Accepted:
+            if dialog.result_point is None:self.draft_content['points'].pop(pi)
+            else:self.draft_content['points'][pi]=dialog.result_point
+            self.point_index=None
+            self.store.save_draft(self.sid,self.draft_content,allow_invalid=True)
+            self.load_session();self.focus_issue_point(min(pi,len(self.draft_content['points'])-1))
+
+    def refresh_claim_attributions(self):
+        self.flush_edits()
+        proposed,changed=propose_attribution_refresh(self.draft_content,self.store.get(self.sid))
+        if not changed:
+            self.check_draft_references();return
+        preview='\n\n'.join(proposed['points'][i]['title']+'\n'+proposed['points'][i]['summary'] for i in changed)
+        self.show_private_text('Attributions proposées — à contrôler',preview)
+        if QMessageBox.question(self,'Appliquer ces attributions',f'Appliquer la mise à jour de {len(changed)} point(s) depuis les sources actuelles ? Les textes des affirmations restent inchangés ; une nouvelle révision sera créée et devra être relue.',QMessageBox.Yes|QMessageBox.No,QMessageBox.No)!=QMessageBox.Yes:return
+        self.store.save_draft(self.sid,proposed,allow_invalid=True)
+        self.load_session();self.check_draft_references()
+
     def approve(self):
         try:
             self.flush_edits()
             state = self.store.get(self.sid)
             if not state["draft"]:
                 raise ValueError("Préparez et sauvegardez un brouillon avant la relecture.")
+            issues=draft_issues(state['draft']['content'],state)
+            if issues:raise DraftEvidenceError(issues)
             reviewer, ok = QInputDialog.getText(self, "Relecture humaine", "Nom de la personne ayant relu cette révision")
             if not ok or not reviewer.strip():
                 return
@@ -967,19 +1185,79 @@ class MainWindow(QMainWindow):
         if not self.sid or self.recorder or self.task:
             return
         try:
+            if self.registry_page.editor_changed():raise ValueError('Enregistrez la correction de la fiche du registre avant de rédiger.')
             self.flush_edits()
         except Exception as error:
             self.report_error(error)
             return
-        if self.store.get(self.sid)["draft"] and QMessageBox.question(self, "Nouveau brouillon", "Créer une nouvelle révision avec Qwen3 ? L’ancienne révision est conservée.", QMessageBox.Yes | QMessageBox.No, QMessageBox.No) != QMessageBox.Yes:
+        from notetaker.services.information_registry import RegistryService
+        current=RegistryService(self.store).latest(self.sid)
+        if self.document_mode.currentData()!='transcript' and (not current or current['stale']):
+            self.tabs.setCurrentWidget(self.registry_page)
+            self.status.setText('Préparez le registre puis contrôlez ses informations avant de lancer la rédaction.');return
+        if self.store.get(self.sid)["draft"] and QMessageBox.question(self, "Nouveau brouillon", "Créer une nouvelle révision depuis le registre avec Qwen3 ? L’ancienne révision est conservée.", QMessageBox.Yes | QMessageBox.No, QMessageBox.No) != QMessageBox.Yes:
             return
         sid = self.sid
         mode = self.document_mode.currentData()
-        self.run_task("minutes", lambda progress, cancel: Pipeline(self.store.root, progress=progress, cancel=cancel).generate(sid, mode))
+        length=self.summary_length.currentData()
+        state=self.store.get(sid)
+        if mode!='transcript' and state['metadata'].get('summary_length','standard')!=length:
+            self.store.save_details(sid,state['title'],{**state['metadata'],'summary_length':length})
+            self.state=self.store.get(sid)
+        self.run_task("minutes", lambda progress, cancel: Pipeline(self.store.root, progress=progress, cancel=cancel).generate(sid, mode, length))
+
+    def prepare_information_registry(self):
+        if not self.sid or self.recorder or self.task:return
+        try:
+            if self.registry_page.editor_changed():raise ValueError('Enregistrez la correction de la fiche avant de reprendre la préparation.')
+            self.flush_edits()
+        except Exception as error:self.report_error(error);return
+        sid=self.sid
+        self.run_task('registry',lambda progress,cancel:Pipeline(self.store.root,progress=progress,cancel=cancel).prepare_registry(sid))
+
+    def write_from_registry(self):
+        if self.document_mode.currentData()=='transcript':
+            self.document_mode.setCurrentIndex(self.document_mode.findData('summary'))
+        self.generate()
+
+    def verify_registry_information(self,information_id):
+        if not self.sid or self.recorder or self.task:return
+        try:self.flush_edits()
+        except Exception as error:self.report_error(error);return
+        sid=self.sid
+        self.run_task('registry_check',lambda progress,cancel:Pipeline(self.store.root,progress=progress,cancel=cancel).verify_information(sid,information_id))
+
+    def generate_direct(self, length, resume_id=None):
+        if not self.experimental_direct or not self.sid or self.recorder or self.task:
+            return
+        try:
+            self.flush_edits()
+        except Exception as error:
+            self.report_error(error)
+            return
+        from notetaker.services.direct_summary import DirectSummaryService
+        sid = self.sid
+        self.run_task('direct', lambda progress, cancel: DirectSummaryService(self.store.root,
+            enabled=True, progress=progress, cancel=cancel).generate(sid, summary_length=length, resume_id=resume_id))
+
+    def reuse_direct(self, run_id):
+        if not self.experimental_direct or not self.sid or self.recorder or self.task:
+            return
+        try:
+            self.flush_edits()
+            from notetaker.services.direct_summary import DirectSummaryService
+            DirectSummaryService(self.store.root, enabled=True).reuse(self.sid, run_id)
+            self.load_session()
+            self.tabs.setCurrentIndex(3)
+            self.status.setText('Résultat réutilisé sans appel IA. Nouvelle révision à relire ; le brouillon précédent reste dans l’historique.')
+        except Exception as error:
+            self.report_error(error)
 
     def run_task(self, kind, function):
         if self.task:
             return
+        if kind!='stop' and self.registry_page.editor_changed():
+            self.status.setText('Enregistrez la correction du registre ou annulez la saisie avant de lancer ce traitement.');return
         self.task = Task(function, self)
         self.tabs.setEnabled(False)
         self.history.setEnabled(False)
@@ -1008,11 +1286,24 @@ class MainWindow(QMainWindow):
             self.microphone.setEnabled(True)
             self.record_button.setEnabled(True)
         self.load_session()
+        if kind=='registry':self.tabs.setCurrentWidget(self.registry_page)
+        if kind == 'direct':
+            self.tabs.setCurrentWidget(self.direct_page)
+        if kind=='registry_check':
+            self.tabs.setCurrentWidget(self.registry_page)
+            self.registry_page.focus_entry(value.get('focus_id',''))
         if kind == "preview":
             self.player.setSource(QUrl.fromLocalFile(str(value)))
             self.player.play()
         self.status.setText({"stop": "Prise sauvegardée." if not value else f"Prise préservée avec incident : {value}", "import": "Original importé et vérifié. Vous pouvez lancer la transcription.",
-            "analysis": "Transcription et voix disponibles. Relisez les textes et attribuez les noms avant de préparer le brouillon.", "minutes": "Brouillon préparé. Vérifiez les extraits, complétez décisions et votes puis enregistrez votre relecture.", "preview": "Lecture de l’audio préparé."}.get(kind, "Action effectuée."))
+            "analysis": "Transcription et voix disponibles. Relisez les textes et attribuez les noms avant de préparer le registre.",
+            "registry":"Registre préparé. Consultez les informations À vérifier, les sources et les relations avant de rédiger.",
+            "registry_check":"Contrôle Qwen enregistré comme avis provisoire. Examinez les sources et toute variante avant approbation ; le document reste à relire.",
+            "direct": "Essai conservé. Examinez les alertes et omissions, puis ouvrez le brouillon pour le corriger et le relire.",
+            "minutes": "Brouillon préparé. Vérifiez les extraits, complétez décisions et votes puis enregistrez votre relecture.", "preview": "Lecture de l’audio préparé."}.get(kind, "Action effectuée."))
+        if kind == 'direct' and not value.get('draft_saved'):
+            self.status.setText('Essai conservé, mais aucun nouveau brouillon : aucun paragraphe admissible. '
+                                'Consultez les rejets et les sources du laboratoire. Le brouillon précédent reste conservé.')
 
     def task_failure(self, kind, error):
         if kind == "stop":
@@ -1054,6 +1345,9 @@ class MainWindow(QMainWindow):
             self.stop_recording()
             event.ignore()
             return
+        if self.registry_page.editor_changed():
+            self.status.setText('Enregistrez la correction du registre ou annulez la saisie avant de fermer.')
+            event.ignore();return
         try:
             self.flush_edits()
         except Exception as error:
@@ -1066,7 +1360,59 @@ class MainWindow(QMainWindow):
 
 def explain_error(error):
     text = str(error)
+    from jsonschema import ValidationError
+    if isinstance(error,ValidationError):
+        path=' / '.join(str(p) for p in error.absolute_path) or 'document'
+        return f'Le champ « {path} » est incomplet ou mal renseigné. Corrigez-le avant de poursuivre.'
     messages = {
+        "DIRECT_TEST_COPY_REQUIRED": "Le laboratoire exige une copie de test marquée et une activation explicite. Ouvrez le lanceur de test ; les séances habituelles restent conservées.",
+        "DIRECT_PROVENANCE_INVALID": "L’artefact de cet essai est absent ou altéré. Retrouvez le dossier complet de l’essai ou relancez la synthèse sur la copie ; l’export reste bloqué.",
+        "DIRECT_SOURCES_CHANGED": "Les sources, noms ou l’ordre du jour ont changé depuis cet essai. Relancez la synthèse puis relisez la nouvelle révision.",
+        "DIRECT_CONTEXT_BUDGET_EXCEEDED": "Le contexte dépasse la capacité du moteur expérimental. Les sources et résultats intermédiaires sont conservés ; consultez le dossier de l’essai.",
+        "DIRECT_COLD_WORKSPACE_NOT_EMPTY": "Cet essai possède déjà des résultats intermédiaires. Démarrez un nouvel essai à froid ou reprenez explicitement l’essai interrompu.",
+        "DIRECT_COMPLETED_RUN_IMMUTABLE": "Cet essai est terminé et conservé dans l’historique. Démarrez un nouvel essai pour produire une nouvelle révision.",
+        "DIRECT_EXPERIMENT_VERSION_CHANGED": "Cet essai a été créé avec une autre version expérimentale. Ses résultats restent conservés. Démarrez un nouvel essai pour utiliser le moteur actuel.",
+        "DIRECT_MODEL_RESPONSE_INCOMPLETE": "Qwen n’a pas terminé une réponse exploitable. Les sources et résultats partiels sont conservés. Consultez l’essai interrompu puis reprenez-le ou démarrez un nouvel essai.",
+        "DIRECT_MODEL_RESPONSE_SCHEMA_INVALID": "La réponse de Qwen ne respecte pas le format attendu. Elle reste dans le dossier de l’essai pour diagnostic ; le brouillon précédent est conservé.",
+        "DIRECT_MODEL_TIMEOUT": "Le délai de calcul est dépassé. La sortie partielle, les sources et le brouillon précédent sont conservés. Consultez l’essai interrompu avant de le reprendre.",
+        'REGISTRY_REQUIRED':'Préparez le registre des informations puis contrôlez ses sources avant de rédiger.',
+        'REGISTRY_INFORMATION_NOT_FOUND':'La fiche à vérifier n’existe plus dans cette révision. Rechargez le registre courant et sélectionnez une information.',
+        'REGISTRY_STALE':'La transcription ou les attributions ont changé. Le registre précédent reste conservé ; préparez sa nouvelle version puis revérifiez les informations.',
+        'REGISTRY_CONCURRENT_CHANGE':'Le registre a été modifié pendant cette opération. Rechargez sa dernière révision avant de poursuivre ; vos sources sont conservées.',
+        'REGISTRY_HUMAN_CHANGE_PROTECTED':'Le résultat du moteur tenterait de remplacer une information vérifiée ou corrigée par l’opérateur. Le résultat est refusé ; vos choix restent conservés.',
+        'REGISTRY_ACTOR_REASON_REQUIRED':'Renseignez votre nom et le motif de la vérification ou de la correction.',
+        'REGISTRY_INVALID_SOURCE':'Une citation est absente, modifiée ou attribuée à une autre voix. Corrigez les liens dans « Sources et contexte » avant d’approuver.',
+        'REGISTRY_SOURCE_REQUIRES_INFORMATION':'Ce texte est un passage source intégral. Rédigez une information, rattachez ses citations puis enregistrez-la avant de l’approuver.',
+        'REGISTRY_NO_ELIGIBLE_INFORMATION':'Aucune information ne peut être rédigée avec les contrôles actuels. Consultez « À vérifier », corrigez le sens et les citations puis approuvez les informations vérifiées.',
+        'REGISTRY_DOCUMENT_REFERENCE_INVALID':'Le document référence une révision ou une information de registre incohérente. Conservez-le dans l’historique et régénérez depuis le registre courant.',
+        'REGISTRY_EDIT_INVALID':'L’information est incomplète. Vérifiez son contenu, son type, son sujet et ses citations.',
+        'REGISTRY_RELATION_INVALID':'Cette relation ne peut pas être confirmée. Vérifiez les deux informations et leurs sources ; une information ne peut pas se répondre à elle-même.',
+        'REGISTRY_RELATION_SOURCES_REQUIRED':'Le lien doit conserver les sources des deux informations. Rattachez-les avant de confirmer.',
+        'REGISTRY_WRITER_CHANGED_INFORMATION':'La rédaction a tenté de changer une information du registre. Le nouveau texte est refusé ; corrigez l’information dans le registre avant de relancer.',
+        'REGISTRY_SCHEMA_INVALID':'Le registre contient une fiche incomplète ou un état inconnu. Conservez la copie et reprenez sa préparation ; les transcriptions restent disponibles.',
+        'REGISTRY_SNAPSHOT_CHANGED':'L’empreinte de l’instantané source du registre ne correspond plus à son contenu. Ce registre est refusé ; restaurez une version intacte ou préparez-en une nouvelle.',
+        'REGISTRY_SOURCE_INVENTORY_INCOMPLETE':'L’inventaire du registre ne contient pas tous les passages sources. Le résultat est refusé ; reprenez sa préparation depuis la transcription conservée.',
+        'REGISTRY_INVALID_APPROVED_SOURCE':'Une information déclarée fiable possède une citation ou une attribution invalide. Corrigez sa source avant de l’approuver.',
+        'REGISTRY_DUPLICATE_ID':'Deux fiches partagent un identifiant dans le résultat reçu. Le registre précédent reste conservé ; reprenez le traitement.',
+        'REGISTRY_WRONG_SESSION':'Le registre reçu appartient à une autre séance. Le résultat est refusé ; rouvrez la bonne séance avant de poursuivre.',
+        'REGISTRY_EXTRACTION_INCOMPLETE':'Le moteur n’a pas rendu de diagnostic pour tous les tours de parole. Les résultats partiels et les sources sont conservés ; reprenez la préparation.',
+        'REGISTRY_ROUTING_INCOMPLETE':'Le classement a omis une information. Le résultat est refusé ; le registre conserve les fiches pour reprendre leur classement.',
+        'CLAIM_EVIDENCE_INVALID':'Les références du brouillon sont incohérentes. Utilisez « Contrôler les références » puis corrigez l’affirmation, sa citation ou son intervenant.',
+        'MANUAL_ALIGNMENT_REQUIRES_REVIEW':'Les nouvelles prises ou les nouveaux horaires ne permettent pas de replacer sûrement les corrections humaines. La transcription corrigée est conservée ; vérifiez les prises sélectionnées ou préparez une séance distincte.',
+        'ANALYSIS_REVISION_NOT_FOUND':'Cette version de transcription n’est pas disponible dans l’historique de la séance.',
+        'SPLIT_REQUIRES_INTERIOR_TIME_AND_TEXT_POSITION':'Placez le curseur à l’intérieur du texte et choisissez un instant compris dans le passage.',
+        'TWO_EXISTING_SPEAKERS_REQUIRED':'Choisissez deux voix distinctes de la séance avant de les fusionner.',
+        'DATABASE_NEWER_THAN_APPLICATION':'Cette base a été ouverte avec une version plus récente de NoteTaker. Utilisez le dernier exécutable ou une copie de sauvegarde compatible.',
+        'INVALID_SUMMARY_LENGTH':'Choisissez une longueur courte, standard ou détaillée avant de générer le compte rendu.',
+        'SUMMARY_CONTEXT_BUDGET_EXCEEDED':'Le dossier de synthèse dépasse la capacité locale du modèle. La transcription et le précédent brouillon sont conservés ; préparez des extraits plus courts dans une séance distincte.',
+        'NO_SUPPORTED_TOPIC_PARAGRAPHS':'Aucun paragraphe n’a passé les contrôles de sens et d’attribution. La transcription et l’ancien brouillon sont conservés. Vérifiez les passages incertains avant de relancer.',
+        'SUMMARY_INVALID_ID_SET':'Le moteur a perdu ou répété des références pendant la synthèse. Le nouveau résultat est refusé ; l’ancien brouillon et les sources sont conservés.',
+        'NARRATIVE_UNKNOWN_VOICE':'Une phrase désigne une voix absente de ses sources. Le nouveau texte est refusé ; vérifiez les attributions de transcription.',
+        'JSONDecodeError':'Le moteur a rendu une réponse incomplète ou illisible. L’ancien brouillon et les sources sont conservés ; relancez la génération après vérification des passages incertains.',
+        'ValidationError':'La réponse du moteur ne respecte pas le format attendu. Le nouveau résultat est refusé ; le brouillon précédent et ses sources sont conservés.',
+        'UNEXPECTED_LLM_OUTPUT':'Le moteur a ajouté du texte hors du format attendu. La génération est refusée ; vous pouvez la relancer sans perdre les sources ni le précédent brouillon.',
+        'LLAMA_NATIVE_PROCESS_FAILED':'Le moteur de rédaction s’est arrêté. Le précédent brouillon et les enregistrements sont conservés ; vérifiez les modèles locaux et relancez la génération.',
+        'WORKER_TIMEOUT':'Le traitement a dépassé le délai autorisé. Les sources et le précédent brouillon sont conservés ; relancez sur une séance plus courte si nécessaire.',
         "HUMAN_REVIEW_REQUIRED": "Relisez cette révision puis cliquez sur « J’ai relu cette révision » avant l’export.",
         "DRAFT_STALE": "Les sources ont changé. Vérifiez le brouillon et enregistrez une nouvelle relecture.",
         "VOTE_COUNTS_AND_SOURCE_REQUIRED": "Saisissez les quatre nombres du vote et la source du résultat, ou laissez le vote « À compléter ».",

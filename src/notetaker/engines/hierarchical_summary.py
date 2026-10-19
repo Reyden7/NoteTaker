@@ -195,9 +195,10 @@ def grounded_claim(claim, utterances, require_paraphrase=True):
     if not claim.get("evidence"):
         return False, "missing_evidence"
     for evidence in claim["evidence"]:
-        evidence["quote"] = evidence["quote"].strip().removeprefix("«").removesuffix("»").strip()
+        # Validation must not mutate a saved revision or its review hash.
+        quote = evidence["quote"].strip().removeprefix("«").removesuffix("»").strip()
         source = by_id.get(evidence["id"])
-        if not source or not normalized(evidence["quote"]) or normalized(evidence["quote"]) not in normalized(source["text"]):
+        if not source or not normalized(quote) or normalized(quote) not in normalized(source["text"]):
             return False, "quote_not_in_source"
         if (source.get("speaker_id") or "unattributed") != claim["speaker"]:
             return False, "mixed_or_wrong_speaker"

@@ -1,0 +1,14 @@
+{
+  "scope": "isolated snapshot copy only; all original corrections preserved; no live writes",
+  "data_directory": "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\output\\summary-paragraphs\\38a6b4c9d8704b669d4acd8a49c2ff8e\\review-copy-4c655a554aa148a8aefa6c6b77cde421",
+  "session_id": "0ce77b44-c8a0-482f-be0d-ef5a68b80aa2",
+  "new_draft_review": null,
+  "transcription_and_names_unchanged": true,
+  "production_export_without_review_blocked": true,
+  "historical_review_records_preserved": true,
+  "original_snapshot_unchanged": true,
+  "recording_flags_frozen_in_copy_only": 0,
+  "draft_history_entries": 3,
+  "human_semantic_validation": false,
+  "isolated_review_launcher": "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\output\\summary-paragraphs\\38a6b4c9d8704b669d4acd8a49c2ff8e\\review-copy-4c655a554aa148a8aefa6c6b77cde421\\ouvrir-relecture.ps1"
+}

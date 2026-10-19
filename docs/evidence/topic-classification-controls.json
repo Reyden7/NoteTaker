@@ -1,0 +1,21 @@
+{
+  "scope": "authored fictional worker input that failed before; actual local CPU classification and rewrite only",
+  "types": {
+    "c0-0": {
+      "kind": "proposal",
+      "discourse": "own"
+    },
+    "c0-1": {
+      "kind": "argument",
+      "discourse": "own"
+    },
+    "c0-2": {
+      "kind": "proposal",
+      "discourse": "own"
+    }
+  },
+  "structural_rejections": [],
+  "wall_seconds": 77.155,
+  "field_fidelity_measured": false,
+  "data_directory": "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\output\\topic-classification\\6f0eec7fbd8849648254ff6381f86054"
+}

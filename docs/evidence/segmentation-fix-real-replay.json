@@ -1,0 +1,12 @@
+{
+  "scope": "same cached real ASR and diarization, segmentation postprocessing replay only; no new acoustic inference",
+  "before": 1822,
+  "after": 903,
+  "voices_before": 9,
+  "voices_after": 9,
+  "short_before": 491,
+  "short_after": 237,
+  "lexical_tokens_preserved": true,
+  "human_voice_accuracy": null,
+  "speaker_count_not_forced": true
+}

@@ -46,4 +46,16 @@ def test_worker_launcher_forces_utf8_for_french_text(tmp_path, monkeypatch):
         assert kwargs["env"]["PYTHONIOENCODING"] == "utf-8"
         return subprocess.CompletedProcess(args, 0, '{"status":"completed","text":"Séance à vérifier"}', "")
     monkeypatch.setattr(process.subprocess, "run", completed)
+    from notetaker.infrastructure import windows_job
+    class FixtureChild:
+        returncode = 0
+        def communicate(self, timeout):
+            return '{"status":"completed","text":"Séance à vérifier"}', ''
+    class FixtureJob:
+        def close(self):pass
+    def launched(*args, **kwargs):
+        assert kwargs['env']['PYTHONIOENCODING'] == 'utf-8'
+        assert kwargs['encoding'] == 'utf-8' and kwargs['errors'] == 'strict'
+        return FixtureChild(), FixtureJob()
+    monkeypatch.setattr(windows_job, 'start_process', launched)
     assert process.run_worker(request)["text"] == "Séance à vérifier"

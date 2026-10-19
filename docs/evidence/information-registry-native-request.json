@@ -1,0 +1,44 @@
+{
+  "scope": "actual final frozen worker replay on earlier request; strict native cache; response never saved to current registry",
+  "information_id": "13aaa1eb-72f3-57dc-a65e-60570397bb09",
+  "before_verification": "rejected",
+  "flagged_development_observations": [
+    "dc4c7013-56fa-5013-b313-ebbe5eab89fb",
+    "38eb15a6-5521-5dba-b348-be5a4fe8104f"
+  ],
+  "human_reference_available": false,
+  "human_review_created": false,
+  "status": "passed",
+  "worker_execution": "actual final frozen worker; native algorithms bytecode identical to earlier fresh check",
+  "frozen_worker_sha256": "d5e0fdd75a8b1e9190f4510fd6a8af8ed3d7ba52f3b26bddbacae2f3fd74009b",
+  "environment": "developer PC; Python paths removed, PATH=System32; host not disconnected, not clean Windows",
+  "focus_id": "69a06f01-c733-51b8-aeef-a44e3bc63a2e",
+  "after_verification": "supported",
+  "checks": {
+    "meaning": "supported",
+    "modality": "supported",
+    "attribution": "supported",
+    "relation": "supported"
+  },
+  "original_information_retained": true,
+  "native_calls": 0,
+  "python_network_attempts": 0,
+  "job_status": "completed",
+  "seconds": 1.212,
+  "source_rows_unchanged": true,
+  "historical_reviews_unchanged": true,
+  "source_rows": 670,
+  "native_cache_hits": 3,
+  "previous_fresh_native_calls": 3,
+  "previous_fresh_seconds": 53.732,
+  "previous_fresh_evidence": "information-registry-native-request-before-time-label.json",
+  "unchanged_frozen_algorithms": [
+    "notetaker.engines.registry_summary",
+    "notetaker.engines.topic_summary",
+    "notetaker.domain.information_registry",
+    "notetaker.workers.probe",
+    "notetaker.services.pipeline",
+    "notetaker.services.information_registry"
+  ],
+  "current_registry_not_replaced_by_old_response": true
+}

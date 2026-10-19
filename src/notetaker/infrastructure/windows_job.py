@@ -1,5 +1,26 @@
 """Kill the whole Windows worker tree when its parent closes the job handle."""
 import os
+import subprocess
+
+
+def start_process(command, **kwargs):
+    """Assign the root before a Windows launcher can spawn untracked children."""
+    flags = kwargs.pop('creationflags', 0)
+    process = subprocess.Popen(command, creationflags=flags | (0x4 if os.name == 'nt' else 0), **kwargs)
+    job = None
+    try:
+        job = WindowsJob(process)
+        if os.name == 'nt':
+            import psutil
+            psutil.Process(process.pid).resume()
+        return process, job
+    except BaseException:
+        if job:
+            job.close()
+        if process.poll() is None:
+            process.kill()
+        process.wait()
+        raise
 
 class WindowsJob:
     def __init__(self, process):

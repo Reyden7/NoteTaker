@@ -1,17 +1,53 @@
-# Packaging Windows — version de travail 0.2.1
+# Packaging Windows — version de travail 0.2.3
 
-Dernier lot compilé : **`dist/directory-01/NoteTaker`**, annuaire civil sans
-biométrie. Les contrôles sont `bundle-directory.json`, `desktop-directory.json`
-et `native-payload-directory.json` dans `docs/evidence`. Le lot précédent est
-conservé. Build de cette étape :
+Nouveau dossier : **`dist/topic-summary/NoteTaker`**, rédaction par sujet,
+longueurs et lexique local. Bilan : `docs/topic-summary-0.2.3.md`. Les rapports
+réels sont `bundle-topic-summary.json`, `desktop-topic-summary.json` et
+`native-payload-topic-summary.json` dans `docs/evidence` ; consulter leur état,
+les refus initiaux sont conservés séparément. Aucun nouveau modèle ou paquet.
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File packaging\build.ps1 -Development -DistributionDirectory dist/directory-01
+powershell -NoProfile -ExecutionPolicy Bypass -File packaging\build.ps1 -Development -SkipModels -DistributionDirectory dist/topic-summary
+powershell -NoProfile -ExecutionPolicy Bypass -File packaging\attach-dev-assets.ps1 -BundleDirectory dist/topic-summary/NoteTaker
+.venv\Scripts\python.exe scripts\validate_bundle.py --bundle dist/topic-summary/NoteTaker --report docs/evidence/bundle-topic-summary.json
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\validate_desktop.ps1 -BundleDirectory dist/topic-summary/NoteTaker -ReportFile docs/evidence/desktop-topic-summary.json
+```
+
+Pour reconstruire ce dossier existant, `rebuild-dev.ps1 -DistributionDirectory
+dist/topic-summary` archive ses binaires et préserve les modèles. Les modèles
+et dépendances de build partagés par liens physiques doivent rester immuables.
+Les schémas SQLite restent v4 ; les nouveaux points JSON ajoutent des liaisons
+de phrases facultatives. Utiliser 0.2.3 pour ouvrir/valider ces nouveaux documents.
+Les anciens brouillons restent lisibles et soumis aux mêmes contrôles humains.
+
+L'environnement de validation reste ce PC de développement, avec runtimes
+système préexistants. Le Setup commercial et Windows vierge déconnecté ne sont
+pas validés ; les réserves de redistribution du payload natif restent ouvertes.
+
+## Lot précédent 0.2.2
+
+Lot conservé : **`dist/validation-fixes/NoteTaker`**, corrections humaines
+et références de brouillon. Les contrôles sont `bundle-validation-fixes.json`,
+`desktop-validation-fixes.json` et `native-payload-validation-fixes.json` dans
+`docs/evidence`. Le lot précédent `dist/directory-01/NoteTaker` est conservé.
+Build de cette étape (dossier cible inexistant) :
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File packaging\build.ps1 -Development -SkipModels -DistributionDirectory dist/validation-fixes
+powershell -NoProfile -ExecutionPolicy Bypass -File packaging\attach-dev-assets.ps1 -BundleDirectory dist/validation-fixes/NoteTaker
+.venv\Scripts\python.exe scripts\validate_bundle.py --bundle dist/validation-fixes/NoteTaker --report docs/evidence/bundle-validation-fixes.json
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\validate_desktop.ps1 -BundleDirectory dist/validation-fixes/NoteTaker -ReportFile docs/evidence/desktop-validation-fixes.json
 ```
 
 La migration v4 est compatible avec les séances existantes après sauvegarde ;
 les anciens exécutables refusent une base v4. Bilan : `docs/directory-stage1.md`.
-Ce lot n'ajoute ni modèle ni dépendance. Le dossier complet reste nécessaire.
+Ce lot n'ajoute ni modèle ni dépendance. Le schéma reste v4. Bilan des correctifs :
+`docs/validation-fixes-0.2.2.md`. Le dossier complet reste nécessaire.
+`attach-dev-assets.ps1` vérifie hashes/tailles avant et après création de liens
+physiques NTFS vers les assets locaux immuables. C'est une économie de disque
+pour le build de développement uniquement. Les fichiers du dossier complet sont
+autonomes et copiables ; aucun téléchargement ni chemin de modèle externe n'est
+nécessaire à son exécution. Le build habituel sans `-SkipModels` copie les poids.
 
 Objectif de livraison : **un seul `NoteTaker-Setup.exe`**, incluant modèles,
 dépendances et runtimes redistribuables, sans Python préinstallé ni acquisition
@@ -65,6 +101,25 @@ Sans, Whisper small et Qwen3-4B-Instruct-2507 Q4_K_M. Les anciens poids Qwen
 restent hors de ce nouveau payload. Ces contrôles CPU et de démarrage sur le
 poste de développement ne constituent pas une acceptation de qualité du débat
 ni une validation de redistribution commerciale.
+
+## Bundle de travail du registre 0.2.4
+
+Le lot compilé est `dist/information-registry/NoteTaker`. Il comprend le nouvel
+onglet, la migration SQLite v5, les modèles vérifiés et le runtime CPU local.
+Pour cet essai, les poids joints utilisent des liens NTFS immuables vers les
+poids locaux ; ne jamais les modifier en place. Ce dossier n'est pas un Setup.
+Le lanceur privé `output/information-registry/field-670/Ouvrir-NoteTaker.cmd`
+ouvre uniquement la copie de recette, avec `--data-dir`, et garde les séances
+originales séparées. Les fichiers de recette ne font pas partie du logiciel
+à redistribuer.
+
+La compilation exécute la suite avant PyInstaller. Les preuves actuelles sont
+`docs/evidence/information-registry-release.json` (égalité des modules des
+deux exécutables et des sources), `desktop-information-registry.json`
+(démarrage/fermeture) et `information-registry-native-request.json` (contrôle
+Qwen CPU réel d'une fiche avec le worker compilé). La transcription et la
+diarisation ne sont pas recalculées dans ce lot. Les limites de redistribution
+native et la recette sur Windows vierge déconnecté restent ouvertes.
 
 ## Stratégie Inno Setup préparée
 

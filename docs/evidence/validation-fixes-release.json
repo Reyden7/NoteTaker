@@ -1,0 +1,50 @@
+{
+  "version": "0.2.2.dev0",
+  "recorded_at_utc": "2026-10-18T12:38:16.167107+00:00",
+  "bundle": "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\dist\\validation-fixes\\NoteTaker",
+  "executables_sha256": {
+    "NoteTaker.exe": "41ee871919c5e6151f0958fd89545a8f191c51b670a1d0385a9b6ac6c8f9a43e",
+    "NoteTaker-worker.exe": "850161f317f663e52f1815d50e0efdd3743977209325ab6cb01c70d55f256d79"
+  },
+  "bundle_size_bytes": 3560134321,
+  "unit_and_widget_tests_passed": 125,
+  "compiled_workers_passed": [
+    "asr",
+    "diarization-sherpa",
+    "llm"
+  ],
+  "compiled_ui_startup_shutdown": true,
+  "new_modules_in_frozen_archive": [
+    "notetaker.services.evidence",
+    "notetaker.services.transcript",
+    "notetaker.ui.evidence"
+  ],
+  "source_hashes": {
+    "src/notetaker/services/storage.py": "aea4ddf91c1ab1d042678341575a1cc2276aae53d1d540ad87690b00354d4248",
+    "src/notetaker/services/evidence.py": "e73e8790339931bf7548836017cd8f4544df7137bb4513af5614d63a934e09cc",
+    "src/notetaker/services/transcript.py": "ee47f542dc56231c16b3df5f438524e13685e36d1323ca422c3290c13bca4e78",
+    "src/notetaker/services/pipeline.py": "b72db7db7beb9dffa7e9828a455cd96292b02ccde399b82933feccb14aaf73f3",
+    "src/notetaker/engines/hierarchical_summary.py": "1d7e9d7e78f13896d4b5064ca07942826bb21ba0a61529b7001b8f0c59681534",
+    "src/notetaker/ui/window.py": "2a7ecadb6dbe4704cd704ec26df5de77a0d016b21a9afd04b9e9ff5afdfd739c",
+    "src/notetaker/ui/evidence.py": "f83d742d14dd2f12698f2bcabdcca9d812380d9fca0d67d530af9485047f55dd"
+  },
+  "bundled_guide_sha256": "2cae311a10b6de64bcdb645adf273a0ea43ff86adc3d4f906e5d806c7dcba378",
+  "real_snapshot_proposal_invalid_links_before": 42,
+  "real_snapshot_proposal_invalid_links_after": 0,
+  "real_meeting_automatically_approved": false,
+  "synthetic_source_chain_passed": true,
+  "synthetic_chain_seconds": 362.143,
+  "visual_export_qa": {
+    "scope": "known synthetic fixture only",
+    "pdf_pages_inspected": 2,
+    "docx_rendered_pages_inspected": 2,
+    "renderer": "Poppler and installed Word read-only; not a product dependency",
+    "observed_layout_defects": false
+  },
+  "natural_speaker_precision_measured": false,
+  "natural_semantic_fidelity_measured": false,
+  "biometric_identification_added": false,
+  "clean_offline_windows_validated": false,
+  "commercial_installer_validated": false,
+  "environment": "developer PC; system Python paths removed; not clean Windows; host not disconnected"
+}

@@ -1,0 +1,24 @@
+{
+  "scope": "same frozen field transcription; summary only; no ASR/diarization rerun; no live data edits",
+  "snapshot_sha256": "25820a75af33918cfbb60aa0807c5be9233a09207674356c7a873f7dc67ccbad",
+  "transcription_rows": 670,
+  "last_transcription_ms": 1237580,
+  "length": "standard",
+  "human_reference_available": false,
+  "human_fidelity_improvement_measured": null,
+  "human_review_created": false,
+  "production_export_performed": false,
+  "model_sha256": "3605803b982cb64aead44f6c1b2ae36e3acdb41d8e46c8a94c6533bc4c67e597",
+  "binary_sha256": "8154608e1e7ecaf7dd200f8c36080d1b3d60226f7fa555928f4b0080455ced8a",
+  "source_sha256": {
+    "src/notetaker/engines/topic_summary.py": "9ede9e981333c1731e91d251912384c1cb52ed8726803ce10aefa48edf84e159",
+    "src/notetaker/engines/hierarchical_summary.py": "1d7e9d7e78f13896d4b5064ca07942826bb21ba0a61529b7001b8f0c59681534",
+    "src/notetaker/services/pipeline.py": "296fb12e31097a5acec189b1ce7941f85bc2898aff6f6a8ad314558225efcfe4"
+  },
+  "cached_calls_at_start": 41,
+  "status": "failed",
+  "error_type": "RuntimeError",
+  "error": "LLAMA_NATIVE_PROCESS_FAILED",
+  "wall_seconds": 206.098,
+  "snapshot_unchanged": true
+}

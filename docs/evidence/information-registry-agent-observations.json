@@ -1,0 +1,41 @@
+{
+  "scope": "qualitative development-agent reading of quoted text; not a human-annotated benchmark",
+  "human_annotation": false,
+  "accuracy_rate": null,
+  "observations": [
+    {
+      "entry_id": "dc4c7013-56fa-5013-b313-ebbe5eab89fb",
+      "content": "Dans ce contexte, certains observent l'émergence d'un Empire de l'extrême-gauche au sein des universités.",
+      "evidence": [
+        {
+          "id": "s49-1",
+          "quote": "c'est là que j'ai découvert l'Empire de l'extrême-gauche",
+          "start_ms": 119480,
+          "end_ms": 122660
+        },
+        {
+          "id": "s50-0",
+          "quote": "au sein des universités.",
+          "start_ms": 122660,
+          "end_ms": 123460
+        }
+      ],
+      "reason": "Generalisation from a first-person account to unspecified observers; source quotes do not support this plural attribution.",
+      "disposition": "request verification before prose, not human approval"
+    },
+    {
+      "entry_id": "38eb15a6-5521-5dba-b348-be5a4fe8104f",
+      "content": "Le terme « le brut et… » est cité sans complément, indiquant une référence partielle à un élément non précisé.",
+      "evidence": [
+        {
+          "id": "s166-1",
+          "quote": "le brut et…",
+          "start_ms": 401060,
+          "end_ms": 401640
+        }
+      ],
+      "reason": "Metatext about an incomplete ASR fragment; source exists but does not establish a substantive municipal/debate information.",
+      "disposition": "request verification before prose, not human approval"
+    }
+  ]
+}

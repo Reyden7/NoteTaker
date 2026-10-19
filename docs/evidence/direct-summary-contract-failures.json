@@ -1,0 +1,94 @@
+{
+  "semantic_quality_validated": false,
+  "excluded_from_completed_cold_comparison": true,
+  "attempts": [
+    {
+      "status": "interrupted_for_contract_diagnosis",
+      "worker_wall_seconds": 859.1615341999568,
+      "worker_cpu": {
+        "user_seconds": 3289.890625,
+        "kernel_seconds": 59.46875,
+        "processes": 7,
+        "active": 0
+      },
+      "source_db_unchanged": true,
+      "copied_rows_unchanged": true,
+      "registry_unchanged": true,
+      "draft_history_preserved": true,
+      "partial_sentence_count": 8,
+      "distinct_prose_count": 8,
+      "largest_exact_prose_repetition": 1,
+      "directory": "output\\direct-summary\\direct-cold-01"
+    },
+    {
+      "status": "interrupted_for_output_diagnosis",
+      "worker_wall_seconds": 893.1577018000535,
+      "worker_cpu": {
+        "user_seconds": 3437.9375,
+        "kernel_seconds": 52.4375,
+        "processes": 5,
+        "active": 0
+      },
+      "source_db_unchanged": true,
+      "copied_rows_unchanged": true,
+      "registry_unchanged": true,
+      "draft_history_preserved": true,
+      "partial_sentence_count": 54,
+      "distinct_prose_count": 21,
+      "largest_exact_prose_repetition": 6,
+      "directory": "output\\direct-summary\\direct-cold-02"
+    },
+    {
+      "directory": "output\\direct-summary\\context-v3-probe-01",
+      "scope": "one-context probe; incomplete",
+      "calls": [
+        {
+          "stage": "context",
+          "label": "context-000",
+          "cache_hit": false,
+          "prompt_characters": 14311,
+          "token_budget": 5500,
+          "partial_output_characters": 11716,
+          "failure_type": "TimeoutExpired",
+          "wall_seconds": 900.3102649999782,
+          "cpu": {
+            "kernel_seconds": 48.453125,
+            "user_seconds": 3505.734375
+          },
+          "exit_code": 1
+        }
+      ],
+      "partial_sentence_count": 63,
+      "distinct_prose_count": 6,
+      "largest_exact_prose_repetition": 58
+    },
+    {
+      "directory": "output\\direct-summary\\context-v4-probe-01",
+      "scope": "one-context probe; controlled stop for output diagnosis",
+      "status": "interrupted_for_output_diagnosis",
+      "version": "direct-topics-025-v4",
+      "excluded_from_completed_cold_comparison": true,
+      "partial_sentences": 46,
+      "distinct_prose": 42,
+      "partial_topic_count": 10,
+      "profile": [
+        {
+          "stage": "context",
+          "label": "context-000",
+          "cache_hit": false,
+          "prompt_characters": 14820,
+          "token_budget": 5500,
+          "wall_seconds": 723.6752345000277,
+          "cpu": {
+            "kernel_seconds": 27.8125,
+            "user_seconds": 2830.484375
+          },
+          "exit_code": 15,
+          "output_characters": 11690
+        }
+      ],
+      "quality_validated": false,
+      "whole_meeting_processed": false
+    }
+  ]
+}

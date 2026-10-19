@@ -1,0 +1,18 @@
+{
+  "scope": "proposal checked on isolated copy only; no live edits, no human approval",
+  "invalid_source_links_before": 42,
+  "invalid_claims_before": 11,
+  "printed_name_warnings_before": 0,
+  "reasons_before": {
+    "mixed_or_wrong_speaker": 42
+  },
+  "invalid_links_after_proposed_attribution_refresh": 0,
+  "changed_points": 7,
+  "claim_texts_unchanged": true,
+  "claim_quotes_and_source_ids_unchanged": true,
+  "review_created": false,
+  "human_semantic_fidelity_measured": false,
+  "unreviewed_export_blocked": true,
+  "export_error": "HUMAN_REVIEW_REQUIRED_FOR_CURRENT_SESSION",
+  "original_snapshot_unchanged": true
+}

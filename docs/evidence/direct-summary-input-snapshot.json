@@ -1,0 +1,7 @@
+{
+  "source_db_unchanged": true,
+  "source_sha256": "8aea737da0cba41650a01f40b9bb2c742044e208a15f28277e48a7e09ecab643",
+  "frozen_db_sha256": "39299411e113e51c99dcc30b15d7c4147eb142a4bd41f3c1a8500eefa4b88623",
+  "rows": 670,
+  "scope": "SQLite backup of existing 0.2.4 test copy, including registry and history; originals untouched"
+}

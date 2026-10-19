@@ -18,5 +18,7 @@ foreach ($notetakerName in @('models','runtimes','models_manifest.json','diariza
     if (Test-Path -LiteralPath $notetakerTo) { throw 'Asset destination already exists' }
     Move-Item -LiteralPath $notetakerFrom -Destination $notetakerTo
 }
-@{development_only=$true;models_included=$true;qualification='QUALITY UNDER EVALUATION; NOT VALIDATED ON CLEAN OFFLINE WINDOWS';version='0.2.1.dev0'} | ConvertTo-Json | Set-Content -Encoding utf8 (Join-Path $notetakerCurrent 'BUILD-STATUS.json')
+$notetakerNewStatus = Get-Content -LiteralPath (Join-Path $notetakerCurrent 'BUILD-STATUS.json') -Raw | ConvertFrom-Json
+$notetakerNewStatus.models_included = $true
+$notetakerNewStatus | ConvertTo-Json | Set-Content -Encoding utf8 (Join-Path $notetakerCurrent 'BUILD-STATUS.json')
 Write-Output "Code bundle rebuilt; original model files preserved. Previous binaries: $notetakerArchive"

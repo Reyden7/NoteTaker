@@ -36,5 +36,10 @@ Copy-Item -LiteralPath 'third_party' -Destination $notetakerBundle -Recurse
 Copy-Item -LiteralPath 'LICENSES-THIRD-PARTY.md' -Destination $notetakerBundle
 Copy-Item -LiteralPath 'docs\operator-guide.md' -Destination (Join-Path $notetakerBundle 'GUIDE-UTILISATEUR.md')
 Copy-Item -LiteralPath 'docs\field-test.md' -Destination (Join-Path $notetakerBundle 'RECETTE-TERRAIN.md')
-@{development_only=$true; models_included=(-not $SkipModels); qualification='QUALITY UNDER EVALUATION; NOT VALIDATED ON CLEAN OFFLINE WINDOWS'; version='0.2.1.dev0'} | ConvertTo-Json | Set-Content -Encoding utf8 (Join-Path $notetakerBundle 'BUILD-STATUS.json')
+Copy-Item -LiteralPath 'docs\information-registry-0.2.4.md' -Destination (Join-Path $notetakerBundle 'REGISTRE-INFORMATIONS.md')
+Copy-Item -LiteralPath 'docs\direct-summary-0.2.5.md' -Destination (Join-Path $notetakerBundle 'LABORATOIRE-SYNTHESE.md')
+Copy-Item -LiteralPath 'docs\direct-summary-human-evaluation.md' -Destination $notetakerBundle
+$notetakerVersion = & .venv\Scripts\python.exe -c 'from notetaker import __version__; print(__version__)'
+if ($LASTEXITCODE -ne 0) { throw 'Cannot read application version' }
+@{development_only=$true; models_included=(-not $SkipModels); qualification='QUALITY UNDER EVALUATION; NOT VALIDATED ON CLEAN OFFLINE WINDOWS'; version=$notetakerVersion} | ConvertTo-Json | Set-Content -Encoding utf8 (Join-Path $notetakerBundle 'BUILD-STATUS.json')
 Write-Output "Development bundle created: $notetakerBundle. This is not an approved commercial installer."

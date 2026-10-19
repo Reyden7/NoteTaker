@@ -1,5 +1,7 @@
 # Python/Qt/native library bundle. Models are copied separately by build.ps1.
 from pathlib import Path
+import json
+import os
 from PyInstaller.utils.hooks import collect_all, collect_data_files, collect_dynamic_libs, copy_metadata
 
 root = Path(SPECPATH).parent
@@ -23,4 +25,10 @@ a.binaries = [entry for entry in a.binaries if not any(token in entry[0].lower()
 pyz = PYZ(a.pure)
 gui = EXE(pyz, a.scripts, [], exclude_binaries=True, name="NoteTaker", console=False, upx=False)
 worker = EXE(pyz, a.scripts, [], exclude_binaries=True, name="NoteTaker-worker", console=True, upx=False)
-coll = COLLECT(gui, worker, a.binaries, a.datas, strip=False, upx=False, name="NoteTaker")
+if os.environ.get('NOTETAKER_DEV_EXECUTABLES_ONLY') == '1':
+    # The development assembler verifies and hardlinks identical payload files.
+    # Default builds retain ordinary COLLECT behavior.
+    (Path(workpath) / 'development-payload.json').write_text(
+        json.dumps(list(a.binaries) + list(a.datas), ensure_ascii=False), encoding='utf-8')
+else:
+    coll = COLLECT(gui, worker, a.binaries, a.datas, strip=False, upx=False, name="NoteTaker")

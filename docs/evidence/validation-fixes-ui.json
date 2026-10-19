@@ -1,0 +1,12 @@
+{
+  "scope": "actual Windows Qt widgets on fictional data only",
+  "destination": "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\output\\validation-fixes-ui\\7e259bb9ce8f44e98393a3176d370247",
+  "diagnostics_issues": 1,
+  "claim_repair_preview_valid": true,
+  "review_created": false,
+  "images": [
+    "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\output\\validation-fixes-ui\\7e259bb9ce8f44e98393a3176d370247\\transcript.png",
+    "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\output\\validation-fixes-ui\\7e259bb9ce8f44e98393a3176d370247\\diagnostics.png",
+    "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\output\\validation-fixes-ui\\7e259bb9ce8f44e98393a3176d370247\\claim-editor.png"
+  ]
+}

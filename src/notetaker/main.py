@@ -9,6 +9,8 @@ def main():
     parser.add_argument("command", choices=["gui", "verify-models"], nargs="?", default="gui")
     parser.add_argument("--manifest", type=Path, default=Path("models_manifest.json"))
     parser.add_argument("--data-dir", type=Path)
+    parser.add_argument("--experimental-direct-summary", action="store_true",
+                        help="Laboratoire 0.2.5, exige une copie de test explicitement marquée")
     parser.add_argument("--worker", type=Path)
     args = parser.parse_args()
     if args.worker:
@@ -23,6 +25,11 @@ def main():
         from .infrastructure.paths import default_data_root
         from .ui.window import MainWindow
         root = (args.data_dir or default_data_root()).resolve()
+        if args.experimental_direct_summary:
+            if args.data_dir is None:
+                parser.error('Le laboratoire exige --data-dir vers une copie de test marquée.')
+            from .domain.direct_summary import test_workspace
+            test_workspace(root)
         root.mkdir(parents=True, exist_ok=True)
         app = QApplication(sys.argv[:1])
         app.setApplicationName("NoteTaker")
@@ -36,7 +43,7 @@ def main():
             from .ui.window import explain_error
             QMessageBox.warning(app.activeWindow(), "Action non effectuée", explain_error(value))
         sys.excepthook = report
-        window = MainWindow(root)
+        window = MainWindow(root, experimental_direct=args.experimental_direct_summary)
         window.show()
         result = app.exec()
         lock.unlock()

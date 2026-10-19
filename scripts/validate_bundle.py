@@ -18,6 +18,7 @@ from notetaker.infrastructure.paths import ModelPaths
 parser = argparse.ArgumentParser()
 parser.add_argument('--bundle', type=Path, default=ROOT / "dist/NoteTaker")
 parser.add_argument('--report', type=Path, default=ROOT / "docs/evidence/bundle-validation.json")
+parser.add_argument('--reuse-workspace', type=Path, help='Reuse only exact, identity-checked native response caches from a prior generated test workspace.')
 args = parser.parse_args()
 bundle = args.bundle.resolve()
 models = ModelPaths(bundle)
@@ -25,8 +26,12 @@ models.verify()
 forbidden = [str(p.relative_to(bundle)) for p in bundle.rglob('*') if p.is_file() and any(token in p.name.casefold() for token in ('virtualkeyboard', 'asio'))]
 if forbidden:
     raise AssertionError('Unapproved optional binary in payload: ' + ', '.join(forbidden))
-workspace = ROOT / "output/bundle-validation" / str(uuid.uuid4())
-workspace.mkdir(parents=True)
+if args.reuse_workspace:
+    workspace=args.reuse_workspace.resolve(strict=True)
+    if not workspace.is_relative_to((ROOT/'output/bundle-validation').resolve()):raise ValueError('Test workspace must stay inside output/bundle-validation')
+else:
+    workspace = ROOT / "output/bundle-validation" / str(uuid.uuid4())
+    workspace.mkdir(parents=True)
 audio = ROOT / "output/phase0/fr-synthetic.wav"
 requests = [
     {"engine": "asr", "device": "cpu", "audio": str(audio), "model": str(models.asr)},
@@ -47,14 +52,18 @@ results = {
     "tested_at_utc": datetime.now(timezone.utc).isoformat(),
     "executables_sha256": {name: sha256_file(bundle / name) for name in ("NoteTaker.exe", "NoteTaker-worker.exe")},
     "workers": {},
+    "workspace":str(workspace),
+    "native_cache_reuse_requested":bool(args.reuse_workspace),
 }
 for request in requests:
     name = request["engine"]
     path = workspace / (name + ".json")
     atomic_json(path, request)
     started = time.perf_counter()
+    timings_before={p.name:p.stat().st_mtime_ns for p in workspace.glob('*.timing.json')}
+    identities_before=len(list(workspace.glob('*.identity.json')))
     process = subprocess.run([str(bundle / "NoteTaker-worker.exe"), str(path)], cwd=workspace, env=env,
-                             capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=600,
+                             capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=1800 if name=='llm' else 600,
                              creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     (workspace / (name + ".stderr.txt")).write_text(process.stderr, encoding="utf-8")
     (workspace / (name + ".stdout.txt")).write_text(process.stdout, encoding="utf-8")
@@ -63,6 +72,9 @@ for request in requests:
     except ValueError:
         response = {"status": "invalid-response"}
     results["workers"][name] = {"exit_code": process.returncode, "seconds": round(time.perf_counter() - started, 3), "response": response}
+    if name=='llm':
+        results['workers'][name].update(native_cache_identities_at_start=identities_before,
+            native_calls_executed_this_run=sum(timings_before.get(p.name)!=p.stat().st_mtime_ns for p in workspace.glob('*.timing.json')))
     if process.returncode == 0 and not process.stdout.isascii():
         raise AssertionError('Worker JSON protocol must remain ASCII across Windows locales')
     if name == 'asr' and response.get('status') == 'completed':

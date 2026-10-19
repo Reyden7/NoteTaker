@@ -1,0 +1,2411 @@
+{
+  "scope": "same frozen field transcription; summary only; no ASR/diarization rerun; no live data edits",
+  "snapshot_sha256": "25820a75af33918cfbb60aa0807c5be9233a09207674356c7a873f7dc67ccbad",
+  "transcription_rows": 670,
+  "last_transcription_ms": 1237580,
+  "length": "standard",
+  "human_reference_available": false,
+  "human_fidelity_improvement_measured": null,
+  "human_review_created": false,
+  "production_export_performed": false,
+  "model_sha256": "3605803b982cb64aead44f6c1b2ae36e3acdb41d8e46c8a94c6533bc4c67e597",
+  "binary_sha256": "8154608e1e7ecaf7dd200f8c36080d1b3d60226f7fa555928f4b0080455ced8a",
+  "source_sha256": {
+    "src/notetaker/engines/topic_summary.py": "9f12824bcdd203bf71bb19c89a764915e35e325a35cf9cbfb22dd50f5df8bf77",
+    "src/notetaker/engines/hierarchical_summary.py": "1d7e9d7e78f13896d4b5064ca07942826bb21ba0a61529b7001b8f0c59681534",
+    "src/notetaker/services/pipeline.py": "296fb12e31097a5acec189b1ce7941f85bc2898aff6f6a8ad314558225efcfe4"
+  },
+  "cached_calls_at_start": 48,
+  "status": "passed",
+  "old_topics": 7,
+  "new_topics": 6,
+  "old_characters": 2830,
+  "new_characters": 1711,
+  "new_sourced_sentences": 12,
+  "diagnostics": {
+    "blocks": 6,
+    "supported_claims": 15,
+    "rejected_claims": 21,
+    "topic_assignment_repair": false,
+    "topics_not_written": [
+      "Absence de dialogue et de reconnaissance des positions politiques de droite"
+    ],
+    "omitted_claims": 3,
+    "unreliable_passages": [
+      {
+        "source_id": "s0-0",
+        "start_ms": 0,
+        "end_ms": 0,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s1-0",
+        "start_ms": 2920,
+        "end_ms": 2920,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s13-0",
+        "start_ms": 36280,
+        "end_ms": 36280,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s14-0",
+        "start_ms": 38900,
+        "end_ms": 38900,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s15-1",
+        "start_ms": 42920,
+        "end_ms": 42920,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s16-0",
+        "start_ms": 43340,
+        "end_ms": 43340,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s19-1",
+        "start_ms": 49020,
+        "end_ms": 49380,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s20-0",
+        "start_ms": 49580,
+        "end_ms": 49700,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s23-0",
+        "start_ms": 56420,
+        "end_ms": 56420,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s23-1",
+        "start_ms": 56420,
+        "end_ms": 59400,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s24-0",
+        "start_ms": 59500,
+        "end_ms": 61040,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s28-0",
+        "start_ms": 67940,
+        "end_ms": 67940,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s33-0",
+        "start_ms": 81940,
+        "end_ms": 85040,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s34-0",
+        "start_ms": 85040,
+        "end_ms": 87340,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s35-0",
+        "start_ms": 87620,
+        "end_ms": 88700,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s36-0",
+        "start_ms": 88700,
+        "end_ms": 88960,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s40-0",
+        "start_ms": 98760,
+        "end_ms": 100860,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s41-0",
+        "start_ms": 100980,
+        "end_ms": 102760,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s42-0",
+        "start_ms": 102880,
+        "end_ms": 103460,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s49-0",
+        "start_ms": 119480,
+        "end_ms": 119480,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s55-0",
+        "start_ms": 132220,
+        "end_ms": 132220,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s58-1",
+        "start_ms": 138700,
+        "end_ms": 140080,
+        "reasons": [
+          "information_rejected",
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s62-0",
+        "start_ms": 148440,
+        "end_ms": 148440,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s68-0",
+        "start_ms": 158100,
+        "end_ms": 160160,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s69-0",
+        "start_ms": 160160,
+        "end_ms": 162060,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s70-0",
+        "start_ms": 162140,
+        "end_ms": 163240,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s71-0",
+        "start_ms": 163300,
+        "end_ms": 165780,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s72-0",
+        "start_ms": 166220,
+        "end_ms": 167300,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s73-0",
+        "start_ms": 167460,
+        "end_ms": 168540,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s74-0",
+        "start_ms": 168980,
+        "end_ms": 170200,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s75-0",
+        "start_ms": 170200,
+        "end_ms": 171660,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s79-0",
+        "start_ms": 180360,
+        "end_ms": 180360,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s79-1",
+        "start_ms": 180360,
+        "end_ms": 183040,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s80-0",
+        "start_ms": 183080,
+        "end_ms": 184120,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s81-0",
+        "start_ms": 184160,
+        "end_ms": 185000,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s82-0",
+        "start_ms": 185460,
+        "end_ms": 187640,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s83-0",
+        "start_ms": 187720,
+        "end_ms": 189920,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s84-0",
+        "start_ms": 189980,
+        "end_ms": 189980,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s84-1",
+        "start_ms": 189980,
+        "end_ms": 191960,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s85-0",
+        "start_ms": 191960,
+        "end_ms": 193660,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s86-0",
+        "start_ms": 194080,
+        "end_ms": 195900,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s87-0",
+        "start_ms": 196320,
+        "end_ms": 198700,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s88-0",
+        "start_ms": 199160,
+        "end_ms": 201120,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s89-0",
+        "start_ms": 201120,
+        "end_ms": 203320,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s90-0",
+        "start_ms": 203800,
+        "end_ms": 205940,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s91-0",
+        "start_ms": 206040,
+        "end_ms": 209180,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s92-0",
+        "start_ms": 209240,
+        "end_ms": 210640,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s93-0",
+        "start_ms": 211200,
+        "end_ms": 213860,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s94-0",
+        "start_ms": 213860,
+        "end_ms": 217140,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s95-0",
+        "start_ms": 217600,
+        "end_ms": 219400,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s96-0",
+        "start_ms": 219600,
+        "end_ms": 220800,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s97-0",
+        "start_ms": 221340,
+        "end_ms": 223200,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s98-0",
+        "start_ms": 223200,
+        "end_ms": 226400,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s99-0",
+        "start_ms": 226500,
+        "end_ms": 230260,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s100-0",
+        "start_ms": 230260,
+        "end_ms": 232540,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s101-0",
+        "start_ms": 232960,
+        "end_ms": 235060,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s102-0",
+        "start_ms": 235200,
+        "end_ms": 238260,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s103-0",
+        "start_ms": 238320,
+        "end_ms": 240800,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s104-0",
+        "start_ms": 240800,
+        "end_ms": 245540,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s105-0",
+        "start_ms": 245820,
+        "end_ms": 249040,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s106-0",
+        "start_ms": 249560,
+        "end_ms": 251960,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s107-0",
+        "start_ms": 252220,
+        "end_ms": 255040,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s109-1",
+        "start_ms": 259100,
+        "end_ms": 259720,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s110-0",
+        "start_ms": 259720,
+        "end_ms": 260960,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s112-0",
+        "start_ms": 265260,
+        "end_ms": 269140,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s113-0",
+        "start_ms": 269560,
+        "end_ms": 273600,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s114-0",
+        "start_ms": 274080,
+        "end_ms": 274080,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s135-0",
+        "start_ms": 336240,
+        "end_ms": 336240,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s135-1",
+        "start_ms": 336240,
+        "end_ms": 337320,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s136-0",
+        "start_ms": 337640,
+        "end_ms": 338680,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s137-0",
+        "start_ms": 338840,
+        "end_ms": 341420,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s137-1",
+        "start_ms": 341420,
+        "end_ms": 341420,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s138-0",
+        "start_ms": 341420,
+        "end_ms": 343000,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s139-0",
+        "start_ms": 343000,
+        "end_ms": 345100,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s139-1",
+        "start_ms": 345120,
+        "end_ms": 346360,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s155-0",
+        "start_ms": 380380,
+        "end_ms": 380380,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s157-1",
+        "start_ms": 383720,
+        "end_ms": 384920,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s158-0",
+        "start_ms": 385000,
+        "end_ms": 385020,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s158-1",
+        "start_ms": 385020,
+        "end_ms": 385560,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s159-0",
+        "start_ms": 386100,
+        "end_ms": 387780,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s160-0",
+        "start_ms": 388260,
+        "end_ms": 389660,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s161-0",
+        "start_ms": 389660,
+        "end_ms": 391960,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s162-0",
+        "start_ms": 392960,
+        "end_ms": 394720,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s163-0",
+        "start_ms": 394720,
+        "end_ms": 395840,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s164-0",
+        "start_ms": 395980,
+        "end_ms": 397020,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s167-0",
+        "start_ms": 401640,
+        "end_ms": 401640,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s170-0",
+        "start_ms": 404780,
+        "end_ms": 404780,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s171-1",
+        "start_ms": 409480,
+        "end_ms": 409480,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s172-1",
+        "start_ms": 409620,
+        "end_ms": 409620,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s176-1",
+        "start_ms": 422080,
+        "end_ms": 422080,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s187-0",
+        "start_ms": 446680,
+        "end_ms": 446680,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s188-0",
+        "start_ms": 447500,
+        "end_ms": 447500,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s189-0",
+        "start_ms": 449380,
+        "end_ms": 449380,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s200-0",
+        "start_ms": 471440,
+        "end_ms": 471440,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s200-1",
+        "start_ms": 471440,
+        "end_ms": 472920,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s201-0",
+        "start_ms": 473100,
+        "end_ms": 475020,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s202-0",
+        "start_ms": 475240,
+        "end_ms": 476800,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s203-0",
+        "start_ms": 477520,
+        "end_ms": 478400,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s204-0",
+        "start_ms": 478540,
+        "end_ms": 480080,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s205-0",
+        "start_ms": 480100,
+        "end_ms": 480660,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s206-0",
+        "start_ms": 481900,
+        "end_ms": 483840,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s207-0",
+        "start_ms": 484020,
+        "end_ms": 485980,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s208-0",
+        "start_ms": 486660,
+        "end_ms": 488600,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s209-0",
+        "start_ms": 488700,
+        "end_ms": 490200,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s210-0",
+        "start_ms": 490240,
+        "end_ms": 491460,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s211-0",
+        "start_ms": 491500,
+        "end_ms": 492800,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s212-0",
+        "start_ms": 493420,
+        "end_ms": 494700,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s213-0",
+        "start_ms": 494780,
+        "end_ms": 496760,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s214-0",
+        "start_ms": 496820,
+        "end_ms": 500220,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s215-0",
+        "start_ms": 500220,
+        "end_ms": 502400,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s216-0",
+        "start_ms": 502480,
+        "end_ms": 505100,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s217-0",
+        "start_ms": 505160,
+        "end_ms": 506400,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s218-0",
+        "start_ms": 506500,
+        "end_ms": 508620,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s219-0",
+        "start_ms": 509260,
+        "end_ms": 511420,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s220-0",
+        "start_ms": 511600,
+        "end_ms": 512760,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s221-0",
+        "start_ms": 512820,
+        "end_ms": 513900,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s222-0",
+        "start_ms": 514660,
+        "end_ms": 517500,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s223-0",
+        "start_ms": 517600,
+        "end_ms": 519700,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s224-0",
+        "start_ms": 519700,
+        "end_ms": 524340,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s225-0",
+        "start_ms": 524380,
+        "end_ms": 526400,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s226-0",
+        "start_ms": 527360,
+        "end_ms": 529900,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s252-1",
+        "start_ms": 593020,
+        "end_ms": 593020,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s254-0",
+        "start_ms": 596020,
+        "end_ms": 596400,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s255-0",
+        "start_ms": 596920,
+        "end_ms": 597580,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s256-0",
+        "start_ms": 597820,
+        "end_ms": 597820,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s257-0",
+        "start_ms": 599520,
+        "end_ms": 599520,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s257-2",
+        "start_ms": 599740,
+        "end_ms": 602180,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s262-0",
+        "start_ms": 611380,
+        "end_ms": 613680,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s265-0",
+        "start_ms": 618480,
+        "end_ms": 620380,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s266-0",
+        "start_ms": 620600,
+        "end_ms": 622460,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s277-0",
+        "start_ms": 644420,
+        "end_ms": 647080,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s288-1",
+        "start_ms": 670760,
+        "end_ms": 670960,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s288-2",
+        "start_ms": 670960,
+        "end_ms": 671300,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s289-0",
+        "start_ms": 671300,
+        "end_ms": 672860,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s290-0",
+        "start_ms": 673160,
+        "end_ms": 674460,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s291-0",
+        "start_ms": 674880,
+        "end_ms": 676140,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s292-0",
+        "start_ms": 676200,
+        "end_ms": 677960,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s293-0",
+        "start_ms": 678680,
+        "end_ms": 679800,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s294-0",
+        "start_ms": 679860,
+        "end_ms": 682760,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s295-0",
+        "start_ms": 683060,
+        "end_ms": 684940,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s296-0",
+        "start_ms": 684940,
+        "end_ms": 686260,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s297-0",
+        "start_ms": 686740,
+        "end_ms": 688680,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s298-0",
+        "start_ms": 688900,
+        "end_ms": 690500,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s299-0",
+        "start_ms": 690500,
+        "end_ms": 692380,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s300-0",
+        "start_ms": 692760,
+        "end_ms": 695880,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s301-0",
+        "start_ms": 695880,
+        "end_ms": 698140,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s302-0",
+        "start_ms": 698140,
+        "end_ms": 700980,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s303-0",
+        "start_ms": 700980,
+        "end_ms": 702180,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s304-0",
+        "start_ms": 702660,
+        "end_ms": 705480,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s305-0",
+        "start_ms": 705480,
+        "end_ms": 707200,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s306-0",
+        "start_ms": 707300,
+        "end_ms": 708460,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s307-0",
+        "start_ms": 708840,
+        "end_ms": 712520,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s308-0",
+        "start_ms": 712680,
+        "end_ms": 713880,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s309-0",
+        "start_ms": 714200,
+        "end_ms": 716100,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s310-0",
+        "start_ms": 716180,
+        "end_ms": 719240,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s311-0",
+        "start_ms": 719600,
+        "end_ms": 721560,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s312-0",
+        "start_ms": 721560,
+        "end_ms": 725140,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s313-0",
+        "start_ms": 725300,
+        "end_ms": 726520,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s327-0",
+        "start_ms": 762960,
+        "end_ms": 762960,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s328-1",
+        "start_ms": 766820,
+        "end_ms": 766820,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s328-2",
+        "start_ms": 766820,
+        "end_ms": 766900,
+        "reasons": [
+          "information_rejected",
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s329-0",
+        "start_ms": 766900,
+        "end_ms": 769680,
+        "reasons": [
+          "information_rejected",
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s330-0",
+        "start_ms": 770020,
+        "end_ms": 772200,
+        "reasons": [
+          "information_rejected",
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s331-0",
+        "start_ms": 772240,
+        "end_ms": 774380,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s332-0",
+        "start_ms": 774380,
+        "end_ms": 778420,
+        "reasons": [
+          "information_rejected",
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s333-0",
+        "start_ms": 778520,
+        "end_ms": 780480,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s334-0",
+        "start_ms": 780520,
+        "end_ms": 783800,
+        "reasons": [
+          "information_rejected",
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s335-0",
+        "start_ms": 783920,
+        "end_ms": 787640,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s336-0",
+        "start_ms": 787920,
+        "end_ms": 790320,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s337-0",
+        "start_ms": 790400,
+        "end_ms": 792400,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s338-0",
+        "start_ms": 792400,
+        "end_ms": 794540,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s339-0",
+        "start_ms": 794660,
+        "end_ms": 796080,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s340-0",
+        "start_ms": 796120,
+        "end_ms": 797940,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s341-0",
+        "start_ms": 798880,
+        "end_ms": 800400,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s342-0",
+        "start_ms": 800500,
+        "end_ms": 803220,
+        "reasons": [
+          "information_rejected",
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s343-0",
+        "start_ms": 803220,
+        "end_ms": 805500,
+        "reasons": [
+          "information_rejected",
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s344-0",
+        "start_ms": 805500,
+        "end_ms": 808860,
+        "reasons": [
+          "information_rejected",
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s345-0",
+        "start_ms": 808860,
+        "end_ms": 811040,
+        "reasons": [
+          "information_rejected",
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s346-0",
+        "start_ms": 811040,
+        "end_ms": 811140,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s346-1",
+        "start_ms": 811140,
+        "end_ms": 813200,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s348-0",
+        "start_ms": 815120,
+        "end_ms": 817080,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s353-0",
+        "start_ms": 825520,
+        "end_ms": 827660,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s354-0",
+        "start_ms": 827980,
+        "end_ms": 829020,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s355-0",
+        "start_ms": 829040,
+        "end_ms": 829780,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s356-0",
+        "start_ms": 829780,
+        "end_ms": 830400,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s358-1",
+        "start_ms": 836020,
+        "end_ms": 837220,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s359-0",
+        "start_ms": 837540,
+        "end_ms": 838880,
+        "reasons": [
+          "information_rejected",
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s360-0",
+        "start_ms": 839080,
+        "end_ms": 842080,
+        "reasons": [
+          "information_rejected",
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s361-0",
+        "start_ms": 843020,
+        "end_ms": 843660,
+        "reasons": [
+          "information_rejected",
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s362-0",
+        "start_ms": 843660,
+        "end_ms": 845260,
+        "reasons": [
+          "information_rejected",
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s362-1",
+        "start_ms": 845260,
+        "end_ms": 845800,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s363-0",
+        "start_ms": 845800,
+        "end_ms": 847640,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s364-0",
+        "start_ms": 847780,
+        "end_ms": 848100,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s364-1",
+        "start_ms": 848100,
+        "end_ms": 849600,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s365-0",
+        "start_ms": 849680,
+        "end_ms": 851120,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s366-0",
+        "start_ms": 852120,
+        "end_ms": 852760,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s366-1",
+        "start_ms": 852760,
+        "end_ms": 854140,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s367-0",
+        "start_ms": 854140,
+        "end_ms": 855020,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s368-0",
+        "start_ms": 855020,
+        "end_ms": 857260,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s369-0",
+        "start_ms": 858160,
+        "end_ms": 860160,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s372-1",
+        "start_ms": 865240,
+        "end_ms": 865240,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s384-0",
+        "start_ms": 884920,
+        "end_ms": 884920,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s384-1",
+        "start_ms": 884920,
+        "end_ms": 886220,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s385-0",
+        "start_ms": 886280,
+        "end_ms": 888600,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s386-0",
+        "start_ms": 889140,
+        "end_ms": 890560,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s387-0",
+        "start_ms": 891180,
+        "end_ms": 893780,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s388-0",
+        "start_ms": 893780,
+        "end_ms": 895620,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s389-0",
+        "start_ms": 895620,
+        "end_ms": 897700,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s390-0",
+        "start_ms": 898080,
+        "end_ms": 899440,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s391-0",
+        "start_ms": 899900,
+        "end_ms": 903120,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s392-0",
+        "start_ms": 903420,
+        "end_ms": 904080,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s393-0",
+        "start_ms": 904080,
+        "end_ms": 905860,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s394-0",
+        "start_ms": 906140,
+        "end_ms": 907160,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s395-0",
+        "start_ms": 907200,
+        "end_ms": 908160,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s396-0",
+        "start_ms": 908600,
+        "end_ms": 910220,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s397-0",
+        "start_ms": 910220,
+        "end_ms": 911260,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s398-0",
+        "start_ms": 911360,
+        "end_ms": 913040,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s399-0",
+        "start_ms": 913220,
+        "end_ms": 914980,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s399-1",
+        "start_ms": 914980,
+        "end_ms": 915300,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s400-0",
+        "start_ms": 915360,
+        "end_ms": 915360,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s400-1",
+        "start_ms": 915360,
+        "end_ms": 916560,
+        "reasons": [
+          "information_rejected",
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s401-0",
+        "start_ms": 916600,
+        "end_ms": 918240,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s402-0",
+        "start_ms": 918240,
+        "end_ms": 919120,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s403-0",
+        "start_ms": 919620,
+        "end_ms": 921900,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s407-0",
+        "start_ms": 929580,
+        "end_ms": 930120,
+        "reasons": [
+          "information_rejected",
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s408-0",
+        "start_ms": 930400,
+        "end_ms": 932680,
+        "reasons": [
+          "information_rejected",
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s418-1",
+        "start_ms": 951920,
+        "end_ms": 951920,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s419-0",
+        "start_ms": 954020,
+        "end_ms": 955700,
+        "reasons": [
+          "information_rejected",
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s420-0",
+        "start_ms": 955700,
+        "end_ms": 957060,
+        "reasons": [
+          "information_rejected",
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s421-0",
+        "start_ms": 957440,
+        "end_ms": 959000,
+        "reasons": [
+          "information_rejected",
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s422-0",
+        "start_ms": 960660,
+        "end_ms": 961700,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s426-0",
+        "start_ms": 967300,
+        "end_ms": 969600,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s427-0",
+        "start_ms": 969600,
+        "end_ms": 970860,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s429-0",
+        "start_ms": 973780,
+        "end_ms": 975340,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s430-0",
+        "start_ms": 975340,
+        "end_ms": 976000,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s431-1",
+        "start_ms": 979640,
+        "end_ms": 980100,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s432-0",
+        "start_ms": 980100,
+        "end_ms": 980580,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s437-0",
+        "start_ms": 989800,
+        "end_ms": 989800,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s438-0",
+        "start_ms": 991340,
+        "end_ms": 991340,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s438-2",
+        "start_ms": 992060,
+        "end_ms": 992680,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s439-0",
+        "start_ms": 993800,
+        "end_ms": 995260,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s440-0",
+        "start_ms": 995260,
+        "end_ms": 996160,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s441-0",
+        "start_ms": 996160,
+        "end_ms": 997220,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s442-0",
+        "start_ms": 997220,
+        "end_ms": 997700,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s457-1",
+        "start_ms": 1028520,
+        "end_ms": 1028520,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s458-1",
+        "start_ms": 1029160,
+        "end_ms": 1029540,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s459-0",
+        "start_ms": 1029540,
+        "end_ms": 1031780,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s479-0",
+        "start_ms": 1069200,
+        "end_ms": 1070740,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s481-0",
+        "start_ms": 1072820,
+        "end_ms": 1074900,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s482-0",
+        "start_ms": 1074900,
+        "end_ms": 1076960,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s495-0",
+        "start_ms": 1099200,
+        "end_ms": 1101440,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s496-0",
+        "start_ms": 1101440,
+        "end_ms": 1102260,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s497-0",
+        "start_ms": 1103060,
+        "end_ms": 1104940,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s498-0",
+        "start_ms": 1104940,
+        "end_ms": 1107160,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s499-0",
+        "start_ms": 1107160,
+        "end_ms": 1108560,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s500-0",
+        "start_ms": 1108560,
+        "end_ms": 1109860,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s501-0",
+        "start_ms": 1109860,
+        "end_ms": 1111300,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s503-1",
+        "start_ms": 1113420,
+        "end_ms": 1117540,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s505-0",
+        "start_ms": 1118580,
+        "end_ms": 1119060,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s506-0",
+        "start_ms": 1121740,
+        "end_ms": 1123220,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s507-0",
+        "start_ms": 1123220,
+        "end_ms": 1123780,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s507-1",
+        "start_ms": 1123780,
+        "end_ms": 1125520,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s508-0",
+        "start_ms": 1125520,
+        "end_ms": 1126160,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s509-0",
+        "start_ms": 1126800,
+        "end_ms": 1128260,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s510-0",
+        "start_ms": 1128260,
+        "end_ms": 1128480,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s510-1",
+        "start_ms": 1128480,
+        "end_ms": 1128840,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s510-2",
+        "start_ms": 1128840,
+        "end_ms": 1129180,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s511-0",
+        "start_ms": 1129180,
+        "end_ms": 1131540,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s512-0",
+        "start_ms": 1131540,
+        "end_ms": 1133360,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s512-1",
+        "start_ms": 1133360,
+        "end_ms": 1134540,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s513-0",
+        "start_ms": 1134540,
+        "end_ms": 1136250,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s514-0",
+        "start_ms": 1137040,
+        "end_ms": 1138560,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s515-0",
+        "start_ms": 1138560,
+        "end_ms": 1140420,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s516-0",
+        "start_ms": 1140420,
+        "end_ms": 1142340,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s517-0",
+        "start_ms": 1142340,
+        "end_ms": 1144620,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s518-0",
+        "start_ms": 1144620,
+        "end_ms": 1146700,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s544-0",
+        "start_ms": 1192680,
+        "end_ms": 1194700,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s545-0",
+        "start_ms": 1194700,
+        "end_ms": 1196240,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s547-0",
+        "start_ms": 1197920,
+        "end_ms": 1199940,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s548-0",
+        "start_ms": 1199940,
+        "end_ms": 1201400,
+        "reasons": [
+          "information_rejected"
+        ]
+      },
+      {
+        "source_id": "s550-0",
+        "start_ms": 1203180,
+        "end_ms": 1209240,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s555-1",
+        "start_ms": 1216140,
+        "end_ms": 1216580,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s556-0",
+        "start_ms": 1216860,
+        "end_ms": 1216860,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s559-1",
+        "start_ms": 1223880,
+        "end_ms": 1224220,
+        "reasons": [
+          "information_rejected",
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s560-0",
+        "start_ms": 1224220,
+        "end_ms": 1225860,
+        "reasons": [
+          "information_rejected",
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s561-0",
+        "start_ms": 1225860,
+        "end_ms": 1227360,
+        "reasons": [
+          "information_rejected",
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s562-0",
+        "start_ms": 1227360,
+        "end_ms": 1228760,
+        "reasons": [
+          "information_rejected",
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s562-1",
+        "start_ms": 1228760,
+        "end_ms": 1228960,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s563-0",
+        "start_ms": 1228960,
+        "end_ms": 1229980,
+        "reasons": [
+          "information_rejected",
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s564-0",
+        "start_ms": 1229980,
+        "end_ms": 1232080,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s565-0",
+        "start_ms": 1232080,
+        "end_ms": 1233440,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s566-0",
+        "start_ms": 1233440,
+        "end_ms": 1235680,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      },
+      {
+        "source_id": "s567-0",
+        "start_ms": 1235680,
+        "end_ms": 1237580,
+        "reasons": [
+          "voice_or_timing_uncertain"
+        ]
+      }
+    ],
+    "summary_length": "standard",
+    "human_factual_validation": "required_not_performed",
+    "machine_verification": "meaning_modality_attribution_relation_not_a_human_reference"
+  },
+  "wall_seconds": 943.588,
+  "snapshot_unchanged": true
+}

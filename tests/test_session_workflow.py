@@ -242,7 +242,7 @@ def test_migration_from_phase0_keeps_sessions_and_jobs(tmp_path):
         connection.execute("INSERT INTO job VALUES('j','legacy','asr','completed',NULL)")
     connection.close()
     migrated = open_database(path)
-    assert migrated.execute("PRAGMA user_version").fetchone()[0] == 4
+    assert migrated.execute("PRAGMA user_version").fetchone()[0] == 5
     assert migrated.execute("SELECT title FROM session").fetchone()[0] == "Ancienne séance"
     assert migrated.execute("SELECT status FROM job").fetchone()[0] == "completed"
     migrated.close()

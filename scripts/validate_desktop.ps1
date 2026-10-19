@@ -1,4 +1,4 @@
-param([string]$BundleDirectory = 'dist\NoteTaker', [string]$ReportFile = 'docs\evidence\desktop-validation.json')
+param([string]$BundleDirectory = 'dist\NoteTaker', [string]$ReportFile = 'docs\evidence\desktop-validation.json', [switch]$ExperimentalDirect)
 # Compiled UI startup smoke test on this developer PC, not clean Windows acceptance.
 $ErrorActionPreference = 'Stop'
 Add-Type -TypeDefinition @'
@@ -41,7 +41,12 @@ $notetakerRoot = Split-Path -Parent $PSScriptRoot
 $notetakerExe = Join-Path (Join-Path $notetakerRoot $BundleDirectory) 'NoteTaker.exe'
 $notetakerData = Join-Path $notetakerRoot ('output\desktop-validation\' + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Force -Path $notetakerData | Out-Null
-$notetakerProcess = Start-Process -FilePath $notetakerExe -ArgumentList @('--data-dir', $notetakerData) -WorkingDirectory $notetakerData -WindowStyle Hidden -PassThru
+$notetakerArguments = @('--data-dir', ('"' + $notetakerData + '"'))
+if ($ExperimentalDirect) {
+    @{id=[guid]::NewGuid().ToString(); purpose='direct-summary-test'} | ConvertTo-Json | Set-Content -Encoding utf8NoBOM -LiteralPath (Join-Path $notetakerData 'EXPERIMENTAL-TEST-WORKSPACE.json')
+    $notetakerArguments += '--experimental-direct-summary'
+}
+$notetakerProcess = Start-Process -FilePath $notetakerExe -ArgumentList $notetakerArguments -WorkingDirectory $notetakerData -WindowStyle Hidden -PassThru
 $notetakerReady = $false
 $notetakerClosed = $false
 $notetakerTitle = ''
@@ -72,6 +77,7 @@ try {
         graceful_exit=$notetakerClosed
         isolated_data_directory=$notetakerData
         scope='compiled UI startup and normal shutdown only; no meeting or quality acceptance'
+        experimental_direct_enabled=[bool]$ExperimentalDirect
     }
     $notetakerReport | ConvertTo-Json | Set-Content -Encoding UTF8 -LiteralPath (Join-Path $notetakerRoot $ReportFile)
     Write-Output 'Compiled UI opened a responsive main window, created its database and closed normally.'
