@@ -1,0 +1,71 @@
+{
+  "scope": "byte-for-byte original PCM excerpt integrity; no semantic or speaker acceptance",
+  "source_rows_sha256": "f477e051bafc3f100755422611deddefd76ceb71060e628fc5b7e1f68232b26b",
+  "audio_sha256": "95da1f0787fd22ad313acfd367fda3012b47587660cb9b1a2d6e6001bf0e708a",
+  "clips": [
+    {
+      "id": "E01",
+      "seconds": 40.0,
+      "sha256": "5c249fec71d5e72a227df2dfec67c252c5d9d9d790a0032cc33c301755b1e378"
+    },
+    {
+      "id": "E02",
+      "seconds": 40.0,
+      "sha256": "69e86fd81c9c11674a649099210392a47021d5f260ebc916adae1c8795307377"
+    },
+    {
+      "id": "E03",
+      "seconds": 40.0,
+      "sha256": "491c930170d57f1c207ab484450cdb9d1f14b198b5e76ab1bc00dc9d103f56dd"
+    },
+    {
+      "id": "E04",
+      "seconds": 40.0,
+      "sha256": "dee1a57c4a1f79af95d65a6e78492f655e99fcd08cd5377ccca9de7e6640d941"
+    },
+    {
+      "id": "E05",
+      "seconds": 40.0,
+      "sha256": "0a398700c7d0dabf8bc46558e5654332668358d91be967d21f60c417df6a531f"
+    },
+    {
+      "id": "E06",
+      "seconds": 40.0,
+      "sha256": "f2c0207a8cb10cf945fa0c831ac3405aa84fd941790247589f9fcf0ca334c3fc"
+    },
+    {
+      "id": "E07",
+      "seconds": 40.0,
+      "sha256": "be31ab74ce97a8eb953a6f12d3b50ae5f6d6f0f4e2b25d0dc464a7430a66bfdf"
+    },
+    {
+      "id": "E08",
+      "seconds": 40.0,
+      "sha256": "b35898e35f5ffeda94dbe680d366ad11a61ee0bf4192141d7d1566097e812f67"
+    },
+    {
+      "id": "E09",
+      "seconds": 40.0,
+      "sha256": "d35cd79a5e515bc58a9a0299114496765692fc45b5876b14eb65c5bd4a0e3578"
+    },
+    {
+      "id": "E10",
+      "seconds": 40.0,
+      "sha256": "a1a48004ee13b1e7692e2d8edd37db41758577c8f6f95bc351d9d91c2c1362ff"
+    },
+    {
+      "id": "E11",
+      "seconds": 40.0,
+      "sha256": "ad94585a3d0c70adfe866b7526935ae812ef2e43efc311a7ed6b8027d6dfe45b"
+    },
+    {
+      "id": "E12",
+      "seconds": 40.0,
+      "sha256": "1d6b0ab0544729ec77084abc1dafa21916765ccdf7013a86da0bdb4fd517c445"
+    }
+  ],
+  "total_seconds": 480.0,
+  "annotations_unchanged": true,
+  "human_checked_excerpts": 0,
+  "quality_validated": false
+}

@@ -1,0 +1,88 @@
+{
+  "scope": "real 670-row field copy; every original SQLite row compared, no human approval created",
+  "all_nonblank_source_characters_found_in_actual_model_prompts": true,
+  "stored_voice_labels_preserved_in_actual_model_prompts": true,
+  "input_rows": 670,
+  "context_prompts_checked": 5,
+  "nonwhitespace_source_characters": 22421,
+  "source_db_sha256": "39299411e113e51c99dcc30b15d7c4147eb142a4bd41f3c1a8500eefa4b88623",
+  "source_db_unchanged": true,
+  "tables": {
+    "session": {
+      "original_rows": 2,
+      "all_original_rows_identical": true,
+      "added_rows": 0
+    },
+    "job": {
+      "original_rows": 7,
+      "all_original_rows_identical": true,
+      "added_rows": 0
+    },
+    "audio_take": {
+      "original_rows": 5,
+      "all_original_rows_identical": true,
+      "added_rows": 0
+    },
+    "speaker": {
+      "original_rows": 202,
+      "all_original_rows_identical": true,
+      "added_rows": 0
+    },
+    "utterance": {
+      "original_rows": 2155,
+      "all_original_rows_identical": true,
+      "added_rows": 0
+    },
+    "manual_record": {
+      "original_rows": 2,
+      "all_original_rows_identical": true,
+      "added_rows": 0
+    },
+    "draft_minutes": {
+      "original_rows": 4,
+      "all_original_rows_identical": true,
+      "added_rows": 1
+    },
+    "export": {
+      "original_rows": 2,
+      "all_original_rows_identical": true,
+      "added_rows": 0
+    },
+    "edit_history": {
+      "original_rows": 8,
+      "all_original_rows_identical": true,
+      "added_rows": 0
+    },
+    "directory_person": {
+      "original_rows": 4,
+      "all_original_rows_identical": true,
+      "added_rows": 0
+    },
+    "directory_history": {
+      "original_rows": 6,
+      "all_original_rows_identical": true,
+      "added_rows": 0
+    },
+    "session_participant": {
+      "original_rows": 4,
+      "all_original_rows_identical": true,
+      "added_rows": 0
+    },
+    "information_registry": {
+      "original_rows": 17,
+      "all_original_rows_identical": true,
+      "added_rows": 0
+    }
+  },
+  "sqlite_schema_version_unchanged": true,
+  "new_draft_saved": true,
+  "new_draft_provenance_and_evidence_valid": true,
+  "same_state_after_close_reopen": true,
+  "real_export_refusals": {
+    "pdf": "HUMAN_REVIEW_REQUIRED_FOR_CURRENT_SESSION",
+    "docx": "HUMAN_REVIEW_REQUIRED_FOR_CURRENT_SESSION"
+  },
+  "pdf_or_docx_written": false,
+  "human_review_created": false,
+  "quality_validated": false
+}

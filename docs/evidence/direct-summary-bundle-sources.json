@@ -1,6 +1,6 @@
 {
   "version": "0.2.5.dev0",
-  "bundle": "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\dist\\direct-summary-final\\NoteTaker",
+  "bundle": "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\dist\\direct-summary-catalogue-final\\NoteTaker",
   "both_executables_match_tested_sources": [
     "notetaker",
     "notetaker.main",
@@ -21,8 +21,8 @@
     "notetaker.engines.topic_summary"
   ],
   "executables_sha256": {
-    "NoteTaker.exe": "d588a8b79a8f0084a97bf2d09787a374f76f5ac5b83ceb1578f021bb7735e10a",
-    "NoteTaker-worker.exe": "a77a6ea7c77d78294e6d5b6142c1695c7323d4677cd75f9ff08c2980f344ff5a"
+    "NoteTaker.exe": "6173865a52120d38ca5de9430e116e758aec29ab849ba7b724efb165895d3c86",
+    "NoteTaker-worker.exe": "3609ae5f8c52ccbc6f794959282ab0262df3723e0be936cfe65d90cceeb5f540"
   },
   "new_schema_matches": true,
   "all_manifest_model_hashes_checked": true,

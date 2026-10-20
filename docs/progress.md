@@ -4,6 +4,79 @@ Dernier lot sources : **0.2.5.dev0, laboratoire de synthèse directe en qualific
 Plan préalable : `direct-summary-0.2.5-plan.md` ; utilisation et limites :
 `direct-summary-0.2.5.md`. Le parcours 0.2.4 et le schéma SQLite v5 sont conservés.
 
+## Bilan actuel — expérimentation livrée, résultat rédactionnel insuffisant
+
+Bundle de travail : **`dist/direct-summary-catalogue-final/NoteTaker`**.
+Lancement sur la copie du débat :
+`output/direct-summary/direct-cold-05/Ouvrir-NoteTaker-0.2.5.cmd`.
+Le laboratoire reste facultatif, réservé à une copie marquée ; le parcours 0.2.4
+reste disponible. Aucun changement Whisper/sherpa, aucune biométrie, aucune migration
+SQLite supplémentaire et aucune approbation de séance créée par ces essais.
+
+Dernier test complet CPU, **mêmes 670 passages**, profil standard, réponses absentes
+et processus neufs (`direct-cold-05`) : **1 844,612 s écoulées worker (30 min 45 s),
+7 031,297 s CPU cumulées, 10 appels neufs**. Source du moteur inchangée pendant
+la mesure. Étapes natives : contextes 966,522 s / 5 appels ; catalogue et affectation
+162,641 s / 2 appels ; contrôles ciblés 711,474 s / 3 appels. Cache disque Windows
+non purgé ; le poste de développement n'est pas un laboratoire isolé.
+
+Résultat : **33 propositions, 24 refus, 1 paragraphe de 9 phrases, 18 alertes**.
+Le catalogue affecte vingt candidats à deux sujets sans incohérence d'indices.
+Le contrôle machine refuse le sujet « Sélection universitaire et accessibilité »
+et ses onze candidats pour cohésion insuffisante ; cela ne prouve pas que chacun
+de ces propos est faux. Les textes, références et motifs restent dans le journal.
+**552 passages ne sont pas cités** et 553 contiennent du texte hors citation ;
+ce comptage n'est pas une mesure de couverture sémantique. La synthèse est très
+incomplète : **objectif rédactionnel non atteint, aucun gain de fiabilité ni de
+temps humain annoncé**. Le temps légèrement inférieur à la rédaction seule 0.2.4
+ne démontre pas un gain de produit avec une restitution aussi différente.
+
+Comparaison détaillée : **`output/direct-summary/comparaison-0.2.5.md`** et JSON.
+Rédaction seule 0.2.4 : 1 985,427 s, 46 appels, cinq paragraphes, depuis l'ancien
+registre déjà travaillé ; préparation/anciens contrôles exclus. Préparation neuve
+0.2.4 mesurée séparément : 3 750,575 s, 45 appels, 270 éléments à vérifier, zéro
+encore admissible. Ne pas additionner ces mesures issues de registres différents
+en les présentant comme un parcours complet mesuré.
+
+Vérifications réellement exécutées :
+
+- **268 tests automatisés réussis en 8,79 s** au gate de compilation ; fixtures
+  explicitement rédigées, exports PDF/DOCX et réouverture avec relecture de fixture.
+- Exécutables compilés conformes aux sources testées ; modèles et runtime locaux
+  vérifiés, démarrage/fermeture Windows normaux. Rejeu compilé des 670 passages :
+  **zéro appel neuf, dix réponses réutilisées, 2,470 s**, résultat identique hors
+  durée. Ce rejeu n'est pas une mesure à froid.
+- Toutes les anciennes lignes de chaque table SQLite comparées et identiques,
+  dont les 17 registres et quatre anciens brouillons ; un seul brouillon ajouté.
+  Même état après fermeture/réouverture ; base source inchangée.
+- **22 421 caractères non blancs** des 670 sources retrouvés dans les cinq prompts
+  réellement envoyés ; voix sauvegardées conservées. Provenance/citations valides.
+  Exports PDF et DOCX sans nouvelle relecture réellement tentés et refusés ; aucun
+  fichier de séance non relue créé.
+- Cinq vues Qt réelles capturées sur copie secondaire et inspectées visuellement ;
+  aucune écoute audio manuelle effectuée par ce contrôle visuel.
+- Douze extraits de 40 s comparés octet par octet au PCM original ; formulaire
+  inchangé, **zéro annotation humaine**. Modules 0.2.4 et fonctions ASR/diarisation
+  comparés au worker conservé : inchangés.
+
+Preuves : `evidence/pytest-direct-summary.xml`,
+`evidence/direct-summary-real-comparison.json`, `evidence/direct-summary-field-preservation.json`,
+`evidence/direct-summary-frozen-replay.json`, `evidence/direct-summary-field-ui.json`,
+`evidence/direct-summary-bundle-sources.json`, `evidence/direct-summary-preserved-engines.json`.
+Les essais incomplets, refusés et versions précédentes restent conservés ci-dessous.
+
+Référence indépendante prête : **`output/direct-summary/reference-humaine/A_LIRE_ET_ANNOTER.md`**.
+Annoter avant de lire les réponses Qwen comparées ; les douze extraits ne suffisent
+pas à mesurer toutes les omissions des vingt minutes. Fidélité, erreurs
+d'attribution, inversions de sens et pertinence des groupes : **non mesurées**.
+Le débat et son ordre du jour très général ne valident pas un PV municipal réel.
+La suite utile est cette annotation, puis une évaluation des regroupements et des
+omissions ; ne pas poursuivre les ajustements aveugles en annonçant des gains.
+
+Produit non terminé : recette sur Windows vierge déconnecté, qualification
+commerciale des dépendances (dont la réserve `cudnn64_9.dll`), installateur unique
+et qualité rédactionnelle réelle restent ouverts.
+
 ## Lot 0.2.5.dev0 — travaux du 19 octobre 2026
 
 Implémentation séparée, activée uniquement avec option CLI et copie de données
@@ -115,18 +188,126 @@ Audit natif : 292 PE, aucun composant optionnel interdit, présence conservée
 de `cudnn64_9.dll`. Cet inventaire ne vaut pas autorisation de redistribution :
 les réserves commerciales et la recette Windows vierge déconnecté restent ouvertes.
 
+### Premier rejeu intégral v5 et correction du plan
+
+`direct-cold-03` a terminé : **9 appels neufs, 1 932,561 s écoulées worker,
+7 611,828 s CPU cumulées**, 33 propositions, 15 refus, 18 paragraphes et 25
+alertes. Les 5 contextes ont tous été traités. Reprise séparée : **0 appel neuf,
+9 réponses réutilisées**, résultat identique hors durée mesurée. Le rejeu du
+worker compilé sur ces caches réussit également ; ce n'est pas une mesure à froid.
+
+Le plan global était cependant **invalide** : IDs présents dans plusieurs sujets,
+répétés dans un sujet, ou à la fois retenus et écartés. Le contrôle a bien refusé
+ce plan, puis conservé les groupes locaux. Les 18 paragraphes d'une seule phrase
+ne satisfont donc pas l'objectif de regroupement global. Cet échec fonctionnel
+est conservé dans `output/direct-summary/comparaison-v5-plan-listes.md`, avec les
+prompts, sorties, profils, code source et ancien bundle. Aucun gain de vitesse
+significatif ni de qualité annoncé : le temps reste proche des 1 985,427 s de
+rédaction seule 0.2.4 et le CPU est légèrement supérieur ; les périmètres diffèrent.
+
+Audit réel : **22 421 caractères non blancs** retrouvés dans les cinq prompts
+effectivement envoyés à Qwen ; tous les libellés de voix sauvegardés sont conservés.
+Chaque ancienne ligne de toutes les tables SQLite est identique, y compris les
+17 révisions de registre et les 4 anciens brouillons ; un seul nouveau brouillon
+est ajouté. Réouverture identique. Les contrôles de provenance et de citations
+du nouveau brouillon passent. Les deux exports réels tentés sont refusés pour
+absence de relecture humaine ; aucun PDF/DOCX de séance non relue n'est créé.
+Preuves conservées : `evidence/direct-summary-v5-array-plan-preservation.json`
+et `evidence/direct-summary-v5-array-plan-frozen-replay.json`.
+
+Correction en qualification : une clé obligatoire par ID de candidat dans la
+réponse de regroupement. Chaque clé affecte un sujet, un ordre et, en cas
+d'exclusion, un motif. Le plan est ensuite reconstruit et le contrôle d'inventaire
+existant reste exécuté. Aucun affaiblissement des vérifications sémantiques,
+des sources ou de la relecture. **266 tests réussis en 12,49 s**, dont reproduction
+du plan doublonné et refus d'une clé absente. Le sous-contrat est enregistré comme
+`required-candidate-assignments-v1` ; la forme publique des artefacts v5 reste
+compatible. L'empreinte du prompt et du schéma empêche de réutiliser l'ancien plan.
+
+La préparation neuve 0.2.4 est mesurée séparément dans
+`output/direct-summary/legacy-prepare-cold-01`, avec le worker conservé, tous les
+670 passages et sans approbation simulée. Elle a terminé : **3 750,575 s écoulées,
+14 123,141 s CPU cumulées, 45 appels neufs**, 184 unités inspectées. Elle produit
+270 informations à vérifier et **aucune information encore admissible à la
+rédaction**, avec la politique conservée `on_request`. Des contrôles ou une
+intervention humaine supplémentaires restent nécessaires ; ils ne sont ni
+simulés ni inclus dans ce temps. Ce registre neuf diffère du registre déjà
+travaillé utilisé pour la mesure de rédaction seule : ne pas additionner ces
+durées en les présentant comme un parcours complet mesuré. Preuve :
+`evidence/direct-summary-legacy-preparation.json`.
+
+Bundle de développement avec le plan corrigé :
+`dist/direct-summary-assignment/NoteTaker`, **266 tests réussis en 9,49 s** au
+gate de compilation. Deux exécutables et schéma conformes aux sources testées,
+modèles locaux vérifiés, démarrage/fermeture compilés réussis. Les lots précédents
+restent conservés. Le rejeu intégral `direct-cold-04` est séquencé après la fin
+du worker 0.2.4 ; le temps d'attente n'entre pas dans la mesure d'inférence.
+Le lanceur d'enchaînement a rencontré un `PermissionError` transitoire à la
+lecture du rapport Windows et s'est arrêté avant toute inférence directe.
+L'incident reste dans `direct-cold-04-queue.json` ; la lecture réessaie désormais
+brièvement cette seule erreur. Après fin confirmée du worker conservé
+(aucun processus actif), `direct-cold-04` a été lancé séparément, avec cache vide.
+Les douze extraits de référence ont été comparés octet par octet au PCM original :
+**12 × 40 s**, soit 480 s, empreinte audio et empreinte des 670 entrées vérifiées.
+Le formulaire humain est inchangé et aucun extrait n'est encore marqué relu.
+Preuve : `evidence/direct-summary-human-reference.json`.
+
 La création des workers Windows les assigne désormais au Job avant reprise
 du processus suspendu. Cela corrige la course observée avec le lanceur venv
 qui pouvait créer un enfant avant son rattachement et fausser le CPU cumulé.
 Le test réel avec enfant terminé vérifie la comptabilité ; aucun changement
 dans les algorithmes de transcription ou diarisation.
 
-Le premier bundle compilé 0.2.5 est un lot intermédiaire v1 ; une recompilation
-finale sera nécessaire après cette validation native.
+### Regroupement par catalogue — qualification supplémentaire
+
+Le second rejeu intégral `direct-cold-04` termine : **2 036,763 s écoulées worker,
+7 807,906 s CPU cumulées, 9 appels neufs**, 33 candidats, 15 refus, 17 paragraphes,
+24 alertes, 469 passages non cités. Les cinq contextes ont les mêmes réponses que
+`direct-cold-03`, après de nouvelles inférences. Le plan ne présente plus de
+doublons mais morcelle vingt candidats en dix-neuf sujets avant contrôles :
+objectif de regroupement encore insuffisant, aucun gain de qualité ou de vitesse.
+Comparaison conservée : `output/direct-summary/comparaison-plan-affectations-v1.md`.
+Audit réel des tables, prompts, citations, provenance et réouverture réussi ;
+exports PDF/DOCX sans relecture réellement tentés et refusés. Rejeu compilé :
+zéro inférence neuve, neuf réponses en cache, résultat identique hors durée.
+Preuves : `evidence/direct-summary-required-v1-field-preservation.json`,
+`evidence/direct-summary-required-v1-frozen-replay.json`. Code, tests et anciennes
+preuves conservés sous `output/direct-summary/direct-required-assignments-v1-code`.
+
+L'ajustement annoncé dans le document technique est implémenté : catalogue
+commun avant affectation des IDs, indices contrôlés puis contrôles d'inventaire
+existants ; alerte explicite si le plan reste majoritairement fragmenté, sans
+fusion forcée. **268 tests réussis en 9,09 s** au gate du bundle distinct
+`dist/direct-summary-catalogue/NoteTaker`. Sources embarquées et modèles vérifiés,
+démarrage/fermeture compilés réussis ; aucun téléchargement. Audit natif de
+292 PE : réserve commerciale sur `cudnn64_9.dll` toujours ouverte.
+L'essai natif ciblé `group-catalogue-probe-01` est en cours ; il utilise tous les
+vingt candidats admissibles du rejeu précédent mais ne représente pas une nouvelle
+mesure complète à froid. Aucun gain sémantique déduit des tests de fixtures.
+
+Cet essai a ensuite terminé avec refus d'intégrité : douze sujets mais indices
+jusqu'à quatorze, **163,944 s, un appel neuf** ; brut/profil et `probe.json` conservés.
+Le contrôle n'est pas contourné. Contrat corrigé `catalogue-then-required-assignments-v3` :
+catalogue dans un premier appel, affectations dans un second avec enum des indices
+réels. Les intitulés locaux restent dans le journal et les contrôles ; le
+planificateur reçoit le contenu de tous les candidats sans ces catégories initiales.
+Le probe suivant termine : **deux appels neufs, 162,528 s**, vingt candidats affectés
+à deux sujets, aucun indice invalide. Cela ne mesure pas la pertinence des groupes
+ni la fidélité et ne crée aucun brouillon. Aucun score humain disponible.
+**268 tests réussis en 8,79 s** au gate du nouveau bundle distinct
+`dist/direct-summary-catalogue-final/NoteTaker`, sources et modèles vérifiés,
+démarrage/fermeture compilés réussis, même réserve native commerciale.
+Le rejeu intégral `direct-cold-05` a été exécuté séparément après ce probe, avec
+réponses absentes et tous les contrôles actifs. Résultat complet et limites dans
+le bilan actuel en tête de ce document.
+
+Le premier bundle compilé 0.2.5 reste conservé comme lot intermédiaire v1.
+Le bundle de travail actuel est celui du plan corrigé, indiqué ci-dessus ;
+sa qualification fonctionnelle sur le débat est encore en cours.
 Douze extraits WAV de 40 s et un formulaire vierge sont préparés dans
 `output/direct-summary/reference-humaine`. L'utilisateur a accepté de les
 annoter ; **aucune annotation humaine reçue**, scores de fidélité, regroupement
-et omissions importantes **non mesurés**. Aucun nouveau bundle qualifié à ce stade.
+et omissions importantes **non mesurés**. Aucun bundle commercial qualifié à ce stade.
 
 ## État conservé du lot précédent
 

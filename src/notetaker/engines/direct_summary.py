@@ -9,13 +9,14 @@ from .hierarchical_summary import object_schema, grounded_claim
 from .topic_summary import sentence_problem, identity_problem
 from .direct_runtime import DirectRuntime
 from notetaker.domain.direct_summary import (VERSION, SECTIONS, contexts, resolve_quote,
-    risk_reasons, validate_dispositions, source_inventory, test_workspace, reference_spans, normalize_voice_template)
+    risk_reasons, plan_from_catalogue, source_inventory, test_workspace, reference_spans, normalize_voice_template)
 from notetaker.domain.minutes import content_digest
 from notetaker.domain.summary import TOKEN, validate_lexicon, PROFILES
 from notetaker.infrastructure.atomic import atomic_json
 
 TEXT = {'type': 'string', 'minLength': 1}
 VERDICTS = ['supported', 'contradicted', 'not_explicit', 'uncertain']
+GROUPING_CONTRACT = 'catalogue-then-required-assignments-v3'
 
 
 def enum(values):
@@ -32,6 +33,53 @@ def critic_payload(items, source_catalogue, context_catalogue):
     turns = dict.fromkeys(uid for item in items for uid in item.get('context_refs', []))
     return {'items': items, 'sources': {rid: source_catalogue[rid] for rid in refs},
             'contexts': {uid: context_catalogue[uid] for uid in turns}}
+
+
+def group_candidates(runtime, agenda_ids, planning):
+    """Choose common debate objects before assigning every candidate exactly once."""
+    count = len(planning)
+    # Local headings encouraged one category per sentence in the field replay.
+    # They stay in the ledger/critic, but this planner reads the actual prose.
+    planning = [{key: value for key, value in row.items() if key != 'topic'} for row in planning]
+    catalogue_schema = object_schema({
+        'subjects': {'type': 'array', 'minItems': 1, 'maxItems': count, 'items': object_schema({
+            'title': {'type': 'string', 'minLength': 3, 'maxLength': 100},
+            'agenda_id': enum([*agenda_ids, 'outside'])})}})
+    catalogue = runtime.call('group-catalogue',
+        "Construis un catalogue des objets débattus communs à l'ENSEMBLE de ces phrases. "
+        "Ne rédige pas encore d'affectation ni de synthèse. Un sujet est l'objet ou la question "
+        "discutée, PAS une thèse, un argument isolé, une modalité de discours ou le parcours d'une voix. "
+        "Rapproche les interventions non consécutives sur ce même objet. Regroupe ses arguments, questions, "
+        "réponses, désaccords, propositions et objections ; une opposition ne crée pas à elle seule un nouveau sujet. "
+        "Exemple fictif de méthode, sans lien avec la réunion : coût, accès et calendrier d'une rénovation de bibliothèque "
+        "peuvent appartenir au même sujet de rénovation ; l'entretien d'une autre route reste un objet distinct. "
+        "Un domaine très général ou un même auteur ne suffit pas pour fusionner des contextes incompatibles. "
+        "L'ordre du jour guide les objets et leur ordre ; un point très général peut contenir plusieurs objets. "
+        "Aucun nombre de sujets imposé : conserve les objets distincts réellement nécessaires, sans morceler chaque argument. "
+        "Titres nominaux neutres, sans thèse affirmée, identité, code Vn, décision, causalité ou consensus ajoutés. "
+        "Les arguments, critiques de méthode et solutions concernant un même dispositif sont des composantes "
+        "de son sujet, pas automatiquement des sujets séparés. Ne réécris aucune phrase et ne supprime aucune voix minoritaire. "
+        'Format : {"subjects":[{"title":"Objet partagé","agenda_id":"outside"}]}.',
+        {'agenda': agenda_ids, 'phrases': planning}, catalogue_schema, tokens=1700)
+    # The actual returned catalogue defines the enum in a SECOND call: a single
+    # JSON schema cannot constrain an index to the length of a sibling array.
+    assignment = object_schema({'g': {'type': 'integer', 'enum': list(range(-1, len(catalogue['subjects'])))},
+        'o': {'type': 'integer', 'enum': list(range(count))},
+        'why': {'type': 'string', 'maxLength': 160}})
+    schema = object_schema({'assignments': object_schema({row['id']: assignment for row in planning})})
+    assigned = runtime.call('group-000',
+        "Affecte CHAQUE phrase à l'objet débattu correspondant dans le catalogue fourni. "
+        "Des arguments opposés, questions et propositions sur un même dispositif restent dans son sujet. "
+        "Une voix, une thèse ou une chronologie différente ne crée pas un nouvel objet. "
+        "Vérifie le sens de CHAQUE phrase contre le titre choisi ; ne déroule pas les indices en suivant l'ordre des phrases. "
+        "Ne réécris rien et n'invente aucune relation ni accord. o ordonne les phrases dans le paragraphe à partir de zéro. "
+        "Chaque ID fourni est une clé obligatoire de assignments exactement une fois. g est l'indice du sujet dans subjects "
+        "à partir de zéro ; toutes les phrases d'un même objet utilisent le même indice. "
+        "Pour écarter seulement une répétition exacte, un élément hors sujet ou inutilisable : g=-1 et why explicite. "
+        "Sinon why vide. Ne supprime pas une voix minoritaire. "
+        'Format : {"assignments":{"ID fourni":{"g":0,"o":0,"why":""}}}. Remplace chaque ID par un ID réel.',
+        {'subjects': catalogue['subjects'], 'phrases': planning}, schema, tokens=2200)
+    return {**catalogue, **assigned}
 
 
 def validate_request(request):
@@ -64,6 +112,7 @@ def summarize(request, runtime=None):
     agenda = [s.strip() for s in request.get('agenda', []) if isinstance(s, str) and s.strip()]
     agenda_ids = {f'A{i+1}': title for i, title in enumerate(agenda)}
     checkpoint = {'version': VERSION, 'candidates': [], 'parts': [], 'rejected': [],
+                  'grouping_contract': GROUPING_CONTRACT,
                   'alerts': [], 'grouping': None, 'all_sources': utterances, 'explicit_omissions': [],
                   'reference_manifest': []}
     work = Path(request['workspace'])
@@ -198,32 +247,16 @@ def summarize(request, runtime=None):
 
     candidates = {c['id']: c for c in checkpoint['candidates'] if c['status'] == 'candidate'}
     if candidates:
-        grouping_schema = object_schema({'topics': {'type': 'array', 'maxItems': len(candidates),
-            'items': object_schema({'title': {'type': 'string', 'minLength': 3, 'maxLength': 100},
-                'agenda_id': enum([*agenda_ids, 'outside']), 'sentences': {
-                    'type': 'array', 'maxItems': len(candidates), 'items': enum(candidates)}})},
-            'omitted': {'type': 'array', 'maxItems': len(candidates),
-                'items': object_schema({'id': enum(candidates), 'reason': TEXT})}})
         # Compact planning payload reuses prose; quotes remain in the ledger and critic.
         planning = [{'id': c['id'], 'topic': c['topic'], 'agenda_id': c['agenda_id'], 'speaker': reverse[c['speaker']],
-                     'section': c['section'], 'text': c['template'],
+                     'section': c['section'], 'kind': c['kind'], 'discourse': c['discourse'], 'text': c['template'],
                      'start_ms': min(sources[e['id']]['start_ms'] for e in c['evidence'])} for c in candidates.values()]
-        plan = runtime.call('group-000',
-            "Organise ces phrases déjà rédigées en paragraphes cohérents par sujet précis. Réutilise leurs IDs, sans réécriture. "
-            "L'ordre du jour guide l'ordre. Rapproche des arguments non consécutifs portant sur le même objet, "
-            "sans mélanger des contextes ou des référents différents. Un grand thème unique ne suffit pas pour fusionner. "
-            "Dans chaque sujet : contexte, arguments opposés, propositions. Ordre lisible des phrases. Titres nominaux neutres, "
-            "sans accusation affirmée, décision, nom ou précision ajoutés. N'omets que les répétitions exactes, "
-            "éléments hors sujet ou inutilisables, avec un motif explicite. Chaque ID apparaît exactement une fois, "
-            "soit dans topics.sentences, soit dans omitted. Ne supprime pas une voix minoritaire. "
-            'Format : {"topics":[{"title":"Sujet précis","agenda_id":"outside","sentences":["ID de phrase"]}],'
-            '"omitted":[{"id":"ID écarté","reason":"Motif bref"}]}. Utilise les IDs fournis, jamais ceux de cet exemple.',
-            {'agenda': agenda_ids, 'phrases': planning}, grouping_schema, tokens=4500)
+        assigned = group_candidates(runtime, agenda_ids, planning)
         try:
-            validate_dispositions(plan, candidates)
+            plan = plan_from_catalogue(assigned, candidates)
         except ValueError:
             # Failed planning does not erase candidate prose or hide a partial plan.
-            checkpoint['failed_grouping'] = plan
+            checkpoint['failed_grouping'] = assigned
             plan = {'topics': [], 'omitted': []}
             for c in candidates.values():
                 key = (c['block'], c['topic'], c['agenda_id'])
@@ -235,11 +268,20 @@ def summarize(request, runtime=None):
             for t in plan['topics']:
                 del t['_key']
             checkpoint['alerts'].append({'subject': 'Regroupement', 'reason': 'grouping_failed_local_groups_preserved', 'priority': 'high'})
+        checkpoint['raw_grouping_assignments'] = assigned
     else:
         plan = {'topics': [], 'omitted': []}
     agenda_order = {key: index for index, key in enumerate(agenda_ids)}
     plan['topics'].sort(key=lambda topic: agenda_order.get(topic['agenda_id'], len(agenda_order)))
     checkpoint['grouping'] = plan
+    assigned_count = sum(len(topic['sentences']) for topic in plan['topics'])
+    singletons = sum(len(topic['sentences']) == 1 for topic in plan['topics'])
+    checkpoint['grouping_statistics'] = {'assigned_candidates': assigned_count,
+        'subjects': len(plan['topics']), 'single_candidate_subjects': singletons,
+        'semantic_grouping_validated': False}
+    if assigned_count >= 4 and singletons > assigned_count / 2:
+        checkpoint['alerts'].append({'subject': 'Organisation des sujets', 'priority': 'high',
+            'reason': 'fragmented_grouping_requires_review', 'statistics': checkpoint['grouping_statistics']})
     for topic in plan['topics']:
         for cid in topic['sentences']:
             candidates[cid]['initial_topic'] = candidates[cid]['topic']
@@ -389,6 +431,7 @@ def summarize(request, runtime=None):
                      for c in checkpoint['candidates'] if c['id'] in written]
     return {'strategy': 'contextual-topic-paragraphs-v1', 'claims': public_claims, 'topics': topics,
         'diagnostics': {'experimental_strategy': VERSION, 'summary_length': request.get('summary_length', 'standard'),
+            'grouping_contract': GROUPING_CONTRACT,
             'rejected_claims': sum(c['status'] == 'rejected' for c in checkpoint['candidates']),
             'rejection_events': len(checkpoint['rejected']),
             'omitted_claims': sum(c['status'] == 'omitted' for c in checkpoint['candidates']),

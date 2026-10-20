@@ -1,0 +1,235 @@
+{
+  "scope": "same 670 utterances, stored voices and lexicon; sequential native CPU; no new ASR/diarization",
+  "input_rows_sha256": "f477e051bafc3f100755422611deddefd76ceb71060e628fc5b7e1f68232b26b",
+  "input_rows": 670,
+  "legacy": {
+    "wall_seconds": 1985.427,
+    "cpu_seconds": 7539.546875,
+    "qwen_calls": 46,
+    "phases": {
+      "heading": {
+        "calls": 14,
+        "wall_seconds": 368.69500000000005,
+        "cpu_seconds": null
+      },
+      "write": {
+        "calls": 24,
+        "wall_seconds": 1338.767,
+        "cpu_seconds": null
+      },
+      "check": {
+        "calls": 8,
+        "wall_seconds": 274.185,
+        "cpu_seconds": null
+      }
+    },
+    "paragraphs": 5,
+    "registry_before": {
+      "source_segments": 670,
+      "source_segments_with_candidate_citation": 508,
+      "source_segments_without_candidate_citation": 162,
+      "information_entries": 355,
+      "eligible_information_entries": 41,
+      "to_verify_information_entries": 314,
+      "excluded_information_entries": 0,
+      "semantic_coverage_measured": false
+    },
+    "registry_after": {
+      "source_segments": 670,
+      "source_segments_with_candidate_citation": 508,
+      "source_segments_without_candidate_citation": 162,
+      "information_entries": 355,
+      "eligible_information_entries": 41,
+      "to_verify_information_entries": 314,
+      "excluded_information_entries": 0,
+      "semantic_coverage_measured": false
+    },
+    "subjects_written": [
+      "La mobilisation des lycées et les blocages devant les universités",
+      "Évaluation de l'ampleur du mouvement par différents acteurs (ministère, participants)",
+      "Nature des moyens de changement : comparaison entre une approche révolutionnaire (bouffée,",
+      "L'efficacité ou l'existence de systèmes de sélection alternatifs (ex : tirage au sort, ord",
+      "À classer"
+    ],
+    "diagnostics": {
+      "registry_strategy": "information-registry-v1",
+      "registry_coverage": {
+        "source_segments": 670,
+        "source_segments_with_candidate_citation": 508,
+        "source_segments_without_candidate_citation": 162,
+        "information_entries": 355,
+        "eligible_information_entries": 41,
+        "to_verify_information_entries": 314,
+        "excluded_information_entries": 0,
+        "semantic_coverage_measured": false
+      },
+      "blocks": 13,
+      "supported_claims": 41,
+      "rejected_claims": 0,
+      "topics_not_written": [
+        "La présence et le parcours de Louise Montangon, étudiante en master de philosophie à l'Unv",
+        "Conséquences sur les élèves : perturbations des horaires de cours, fatigue, impact sur les",
+        "La question de la sélection dans les parcours universitaires",
+        "La parole des groupes anti-blocage et leur origine politique ou militante",
+        "Évolution du mouvement au fil du temps (de l'initiative locale à une mobilisation nation",
+        "La perception du laxisme du gouvernement dans les politiques éducatives et la réponse des⻘",
+        "brûlures de lycées) et une approche par dialogue, débat et tranquillité",
+        "Origine du mouvement : début dans un lycée rural à Mayotte",
+        "Origine du mouvement : début dans un lycée rural à Mayotte"
+      ],
+      "omitted_claims": 346,
+      "summary_length": "standard",
+      "human_factual_validation": "required_not_performed",
+      "unreliable_passages": []
+    },
+    "preparation_and_previous_verification_excluded": true
+  },
+  "direct": {
+    "wall_seconds": 1844.6123587000184,
+    "service_wall_seconds": 1846.9611907000071,
+    "cpu_seconds": 7031.296875,
+    "qwen_calls": 10,
+    "phases": {
+      "context": {
+        "fresh_calls": 5,
+        "cached_calls": 0,
+        "wall_seconds": 966.5217741000233,
+        "cpu_seconds": 3681.40625
+      },
+      "group": {
+        "fresh_calls": 2,
+        "cached_calls": 0,
+        "wall_seconds": 162.6408171999501,
+        "cpu_seconds": 632.609375
+      },
+      "check": {
+        "fresh_calls": 3,
+        "cached_calls": 0,
+        "wall_seconds": 711.4737702999846,
+        "cpu_seconds": 2714.765625
+      }
+    },
+    "paragraphs": 1,
+    "operator_alerts": 18,
+    "candidates": 33,
+    "sources_not_cited": 552,
+    "subjects_written": [
+      "Manifestations étudiantes et violence"
+    ],
+    "grouping_contract": "catalogue-then-required-assignments-v3",
+    "grouping_statistics": {
+      "assigned_candidates": 20,
+      "subjects": 2,
+      "single_candidate_subjects": 0,
+      "semantic_grouping_validated": false
+    },
+    "rejected_subjects": [
+      "Sélection universitaire et accessibilité"
+    ],
+    "grouping_fallback_used": false,
+    "single_sentence_paragraphs": 0,
+    "source_text_outside_quotes_rows": 553,
+    "diagnostics": {
+      "experimental_strategy": "direct-topics-025-v5",
+      "summary_length": "standard",
+      "grouping_contract": "catalogue-then-required-assignments-v3",
+      "rejected_claims": 24,
+      "rejection_events": 14,
+      "omitted_claims": 0,
+      "topics_not_written": [
+        "Sélection universitaire et accessibilité"
+      ],
+      "operator_alerts": 18,
+      "input_rows": 670,
+      "all_source_text_preserved": true,
+      "semantic_quality_validated": false
+    }
+  },
+  "human_reference": {
+    "status": "awaiting user annotation",
+    "excerpts_prepared": 12,
+    "human_annotations": 0
+  },
+  "quality_scores": {
+    "theme_coverage": null,
+    "grouping": null,
+    "fidelity": null,
+    "important_omissions": null,
+    "attribution": null,
+    "writing": null
+  },
+  "source_preservation": {
+    "source_db_unchanged": true,
+    "copied_rows_unchanged": true,
+    "registry_unchanged": true,
+    "draft_history_preserved": true
+  },
+  "model_sha256": "3605803b982cb64aead44f6c1b2ae36e3acdb41d8e46c8a94c6533bc4c67e597",
+  "runtime_sha256": "8154608e1e7ecaf7dd200f8c36080d1b3d60226f7fa555928f4b0080455ced8a",
+  "decoding": {
+    "legacy": {
+      "temperature": 0,
+      "seed_requested": 42
+    },
+    "direct_runtime_arguments": [
+      "-ngl",
+      "0",
+      "-t",
+      "4",
+      "-c",
+      "12288",
+      "--temp",
+      "0.7",
+      "--top-p",
+      "0.8",
+      "--top-k",
+      "20",
+      "--min-p",
+      "0",
+      "--seed",
+      "42",
+      "--offline"
+    ],
+    "same_decoding_parameters": false
+  },
+  "direct_output_budget": {
+    "length": "standard",
+    "maximum_sentences_per_context": 7,
+    "contexts": 5,
+    "all_input_rows_preserved": true,
+    "semantic_coverage_measured": false
+  },
+  "cold_definition": "new processes; empty application response caches; Windows disk cache not flushed",
+  "host_isolated_for_benchmark": false,
+  "commercial_validation": false,
+  "clean_offline_windows_validation": false,
+  "legacy_fresh_preparation": {
+    "status": "completed",
+    "wall_seconds": 3750.575,
+    "cpu": {
+      "user_seconds": 13885.546875,
+      "kernel_seconds": 237.59375,
+      "processes": 92,
+      "active": 0
+    },
+    "qwen_calls_completed": 45,
+    "coverage": {
+      "source_segments": 670,
+      "source_segments_with_candidate_citation": 508,
+      "source_segments_without_candidate_citation": 162,
+      "information_entries": 270,
+      "eligible_information_entries": 0,
+      "to_verify_information_entries": 270,
+      "excluded_information_entries": 0,
+      "semantic_coverage_measured": false
+    },
+    "currently_eligible_for_writing": 0,
+    "additional_verification_or_human_work_required": true,
+    "approvals_simulated": false
+  },
+  "resume": {
+    "fresh_calls": 0,
+    "cached_calls": 10,
+    "native_calls_wall_seconds": 0.08056790014961734
+  }
+}

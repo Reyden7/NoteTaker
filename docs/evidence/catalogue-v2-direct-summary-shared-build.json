@@ -1,0 +1,15 @@
+{
+  "development_only": true,
+  "models_included": false,
+  "version": "0.2.5.dev0",
+  "qualification": "QUALITY UNDER EVALUATION; NOT VALIDATED ON CLEAN OFFLINE WINDOWS",
+  "asset_storage": "verified immutable payload NTFS hardlinks; development only",
+  "source_bundle_preserved": true,
+  "linked_files": 530,
+  "linked_bytes": 420312233,
+  "copied_files": 1,
+  "copied_bytes": 1443233,
+  "started_at": "2026-10-19T19:36:24.546290+00:00",
+  "finished_at": "2026-10-19T19:37:02.138447+00:00",
+  "benchmark_host_activity": "build during grouping-only catalogue probe; developer PC not isolated; no other fresh Qwen inference"
+}

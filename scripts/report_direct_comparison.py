@@ -21,6 +21,7 @@ p.add_argument('--output', type=Path, required=True)
 args = p.parse_args()
 read = lambda path: json.loads(path.read_text(encoding='utf-8'))
 old, new = read(args.legacy/'report.json'), read(args.direct/'cold-report.json')
+integrity = read(args.direct/'report.json')
 assert old['status'] == new['status'] == 'completed'
 old_response, old_request = read(args.legacy/'stdout.json'), read(args.legacy/'request.json')
 run_id = new['service_result']['run_id']
@@ -68,11 +69,16 @@ report = {'scope': 'same 670 utterances, stored voices and lexicon; sequential n
         'phases': dict(phases), 'paragraphs': new['paragraphs'], 'operator_alerts': new['operator_alerts'],
         'candidates': new['candidates'], 'sources_not_cited': new['sources_not_cited'],
         'subjects_written': [point['title'] for point in new_draft['points']],
+        'grouping_contract': record['result']['ledger'].get('grouping_contract', 'array-plan-v1'),
+        'grouping_statistics': record['result']['ledger'].get('grouping_statistics'),
+        'rejected_subjects': record['result']['diagnostics'].get('topics_not_written', []),
+        'grouping_fallback_used': 'failed_grouping' in record['result']['ledger'],
+        'single_sentence_paragraphs': sum(len(point.get('narrative', [])) == 1 for point in new_draft['points']),
         'source_text_outside_quotes_rows': sum(bool(row.get('uncited_text')) for row in inventory),
         'diagnostics': record['result']['diagnostics']},
     'human_reference': {'status': 'awaiting user annotation', 'excerpts_prepared': 12, 'human_annotations': 0},
     'quality_scores': {key: None for key in ('theme_coverage', 'grouping', 'fidelity', 'important_omissions', 'attribution', 'writing')},
-    'source_preservation': {key: new[key] for key in ('source_db_unchanged', 'copied_rows_unchanged', 'registry_unchanged', 'draft_history_preserved')},
+    'source_preservation': {key: integrity[key] for key in ('source_db_unchanged', 'copied_rows_unchanged', 'registry_unchanged', 'draft_history_preserved')},
     'model_sha256': new['profile']['runtime']['model_sha256'],
     'runtime_sha256': new['profile']['runtime']['binary_sha256'],
     'decoding': {'legacy': {'temperature': 0, 'seed_requested': 42},
@@ -90,7 +96,9 @@ if args.prepare and (args.prepare/'report.json').exists():
     if prep['status'] == 'completed':
         result = read(args.prepare/'stdout.json')['result']['registry']
         report['legacy_fresh_preparation']['coverage'] = coverage(result)
-        report['legacy_fresh_preparation']['writing_without_human_work_available'] = coverage(result)['eligible_information_entries'] > 0
+        report['legacy_fresh_preparation']['currently_eligible_for_writing'] = coverage(result)['eligible_information_entries']
+        report['legacy_fresh_preparation']['additional_verification_or_human_work_required'] = coverage(result)['eligible_information_entries'] == 0
+        report['legacy_fresh_preparation']['approvals_simulated'] = False
 resume_path = args.direct/'resume-profile.json'
 if resume_path.exists():
     warm = read(resume_path)
@@ -122,6 +130,13 @@ lines = ['# Comparaison expérimentale 0.2.4 / 0.2.5 — documents non validés'
     '| Étape | Appels neufs | Temps écoulé natif | CPU natif |', '|---|---:|---:|---:|']
 for stage, stats in phases.items():
     lines.append(f"| {stage} | {stats['fresh_calls']} | {stats['wall_seconds']:.2f} s | {stats['cpu_seconds']:.2f} s |")
+if report['direct']['grouping_fallback_used']:
+    lines += ['', '**Le plan global a été refusé pour affectations incohérentes. Les groupes locaux sont conservés '
+              'avec une alerte. Ce résultat ne satisfait pas l’objectif de regroupement global par sujet.**', '']
+if report['direct']['rejected_subjects']:
+    lines += ['', '**Des sujets du plan ont été refusés par les contrôles :** ' +
+              ', '.join(report['direct']['rejected_subjects']) + '. Les candidats et motifs restent consultables. '
+              'Le document restant peut donc être très incomplet ; sa durée ne démontre aucun gain de produit.', '']
 lines += ['', 'Le CPU par sous-étape 0.2.4 n’est pas disponible avec ce worker conservé ; '
           'son CPU total est mesuré par Job Windows. Ses durées par appel sont dans le JSON.', '',
           '## Référence indépendante et limites', '',

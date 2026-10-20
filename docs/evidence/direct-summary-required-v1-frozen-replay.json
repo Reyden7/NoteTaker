@@ -1,0 +1,18 @@
+{
+  "scope": "actual frozen worker on all 670 rows, explicit strict response cache; not a cold performance run",
+  "rows": 670,
+  "fresh_native_calls": 0,
+  "cached_calls": 9,
+  "cold_source_run_fresh_calls": 9,
+  "seconds": 2.488621799973771,
+  "result_equal_except_measured_duration": true,
+  "cache_results_unchanged": true,
+  "source_draft_registry_reviews_unchanged": true,
+  "python_network_attempts": 0,
+  "ascii_protocol": true,
+  "worker_sha256": "b52eb455fb18db15dad3d2eee79156306c459db3f876b09e5db098cb8920f674",
+  "bundle": "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\dist\\direct-summary-assignment\\NoteTaker",
+  "human_review_created": false,
+  "quality_validated": false,
+  "clean_offline_windows_validation": false
+}

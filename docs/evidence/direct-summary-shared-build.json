@@ -5,11 +5,11 @@
   "qualification": "QUALITY UNDER EVALUATION; NOT VALIDATED ON CLEAN OFFLINE WINDOWS",
   "asset_storage": "verified immutable payload NTFS hardlinks; development only",
   "source_bundle_preserved": true,
-  "linked_files": 529,
-  "linked_bytes": 420309835,
-  "copied_files": 2,
-  "copied_bytes": 1445631,
-  "started_at": "2026-10-19T08:30:45.119279+00:00",
-  "finished_at": "2026-10-19T08:31:53.988384+00:00",
-  "benchmark_host_activity": "build during direct-cold-03; development PC not isolated; Qwen pipelines sequential"
+  "linked_files": 530,
+  "linked_bytes": 420312233,
+  "copied_files": 1,
+  "copied_bytes": 1443233,
+  "started_at": "2026-10-19T19:41:51.181758+00:00",
+  "finished_at": "2026-10-19T19:42:27.037691+00:00",
+  "benchmark_host_activity": "build during grouping-only two-stage catalogue probe; no parallel fresh Qwen inference; final cold run not started"
 }

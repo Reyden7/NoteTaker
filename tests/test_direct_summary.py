@@ -8,7 +8,7 @@ import uuid
 import pytest
 from notetaker.domain.direct_summary import (contexts, resolve_quote, validate_dispositions,
     source_inventory, test_workspace as require_test_workspace, MARKER, fingerprint, risk_reasons,
-    VERSION, reference_spans, normalize_voice_template)
+    VERSION, reference_spans, normalize_voice_template, plan_from_assignments, plan_from_catalogue)
 from notetaker.engines.direct_summary import summarize, critic_payload
 from notetaker.infrastructure.atomic import atomic_json, sha256_file
 from notetaker.services.storage import SessionStore
@@ -40,10 +40,12 @@ class AuthoredRuntime:
                  't': '{{'+unit['speaker']+'}} propose une consultation des habitants.',
                  'r': ['NOT_IN_CONTEXT' if self.bad_quote else unit['parts'][0]['id']]}],
                 'budget_reached': self.budget}
-        if label.startswith('group'):
+        if label == 'group-catalogue':
+            return {'subjects': [{'title': 'Consultation des habitants', 'agenda_id': 'A1'}]}
+        if label == 'group-000':
             ids = [p['id'] for p in inputs['phrases']]
-            return {'topics': [{'title': 'Consultation des habitants', 'agenda_id': 'A1',
-                                'sentences': [] if self.bad_plan else ids}], 'omitted': []}
+            return {'assignments': {} if self.bad_plan else {cid: {
+                'g': 0, 'o': i, 'why': ''} for i,cid in enumerate(ids)}}
         return {'checks': {key: {'verdict': 'not_explicit' if self.rejected and key.startswith('D') else 'supported',
                                  'reason': 'Cas de test rédigé manuellement'} for key in schema['properties']['checks']['properties']}}
 
@@ -142,11 +144,11 @@ def test_unknown_or_other_voice_is_rejected_even_with_a_valid_reference(tmp_path
     assert result['ledger']['rejected'][0]['reason'] == 'unbound_voice_alias'
 
 
-def test_valid_direct_chain_uses_one_context_one_group_one_targeted_check(tmp_path):
+def test_valid_direct_chain_uses_one_context_catalogue_assignment_and_targeted_check(tmp_path):
     runtime = AuthoredRuntime()
     result = run_fixture(tmp_path, runtime)
     assert len(result['topics']) == 1 and len(result['claims']) == 1
-    assert [label for label, _ in runtime.calls] == ['context-000', 'group-000', 'check-000']
+    assert [label for label, _ in runtime.calls] == ['context-000', 'group-catalogue', 'group-000', 'check-000']
     assert runtime.calls[0][1]['agenda'] == {'A1': 'Consultation'}
     assert result['ledger']['inventory'][0]['written_ids']
     assert result['diagnostics']['semantic_quality_validated'] is False
@@ -186,10 +188,12 @@ def test_agenda_order_is_enforced_even_when_the_model_returns_reversed_groups(tm
                 second = copy.deepcopy(result['sentences'][0])
                 second['agenda_id'] = 'A2'
                 result['sentences'].append(second)
-            if label.startswith('group'):
+            if label == 'group-catalogue':
+                result['subjects'] = [{'title': 'Consultation des habitants', 'agenda_id': aid} for aid in ('A2', 'A1')]
+            if label == 'group-000':
                 ids = [row['id'] for row in inputs['phrases']]
-                result['topics'] = [{'title': 'Consultation des habitants', 'agenda_id': aid, 'sentences': [cid]}
-                                    for aid, cid in [('A2', ids[1]), ('A1', ids[0])]]
+                result['assignments'] = {cid: {'g': i, 'o': i, 'why': ''}
+                    for i,(aid,cid) in enumerate([('A2', ids[1]), ('A1', ids[0])])}
             return result
     result = summarize({'experimental_direct': True, 'pipeline_version': VERSION, 'test_root': str(tmp_path), 'workspace': str(tmp_path),
         'utterances': [row()], 'agenda': ['Premier point', 'Second point', 'Troisième point'], 'lexicon': []}, ReversedAgenda())
@@ -214,6 +218,81 @@ def test_incomplete_grouping_keeps_every_candidate_in_local_groups_with_alert(tm
         a['reason'] for a in result['ledger']['alerts']}
     with pytest.raises(ValueError, match='INVENTORY'):
         validate_dispositions({'topics': [], 'omitted': []}, ['D1'])
+
+
+def test_keyed_grouping_preserves_every_id_and_separates_justified_omissions():
+    result = {'assignments': {
+        'D1': {'g': 'Consultation', 'a': 'A1', 'o': 1, 'why': ''},
+        'D2': {'g': 'Consultation', 'a': 'A1', 'o': 0, 'why': ''},
+        'D3': {'g': '', 'a': 'outside', 'o': 2, 'why': 'Répétition exacte explicitement conservée.'}}}
+    plan = plan_from_assignments(result, ['D1','D2','D3'])
+    assert plan['topics'] == [{'title': 'Consultation', 'agenda_id': 'A1', 'sentences': ['D2','D1']}]
+    assert plan['omitted'][0]['id'] == 'D3'
+    validate_dispositions(plan, ['D1','D2','D3'])
+    with pytest.raises(ValueError, match='INVENTORY'):
+        plan_from_assignments(result, ['D1','D2','D3','D4'])
+    result['assignments']['D3']['why'] = ''
+    with pytest.raises(ValueError, match='OMISSION_REASON'):
+        plan_from_assignments(result, ['D1','D2','D3'])
+
+
+def test_native_group_schema_cannot_drop_ids_or_repeat_dispositions_in_lists(tmp_path):
+    from jsonschema import validate, ValidationError
+    class GroupSchemaProbe(AuthoredRuntime):
+        def call(self, label, instruction, inputs, schema, tokens):
+            result = super().call(label, instruction, inputs, schema, tokens)
+            if label == 'group-000':
+                validate(result, schema)
+                first = next(iter(result['assignments']))
+                missing = copy.deepcopy(result)
+                del missing['assignments'][first]
+                with pytest.raises(ValidationError): validate(missing, schema)
+                invalid_index = copy.deepcopy(result)
+                invalid_index['assignments'][first]['g'] = len(inputs['subjects'])
+                with pytest.raises(ValidationError): validate(invalid_index, schema)
+                # Reproduces the old array-plan defect: selected twice and omitted.
+                duplicated = {'topics':[{'title':'Consultation','agenda_id':'A1','sentences':[first,first]}],
+                              'omitted':[{'id':first,'reason':'Doublon'}]}
+                with pytest.raises(ValidationError): validate(duplicated, schema)
+            return result
+    result = run_fixture(tmp_path, GroupSchemaProbe())
+    assert 'failed_grouping' not in result['ledger']
+    assert len(result['topics']) == 1
+
+
+def test_shared_subject_catalogue_groups_nonconsecutive_ids_and_preserves_exclusions():
+    result = {'subjects': [{'title': 'Consultation', 'agenda_id': 'A1'},
+                           {'title': 'Autre objet', 'agenda_id': 'outside'}], 'assignments': {
+        'D1': {'g': 0, 'o': 0, 'why': ''}, 'D2': {'g': 1, 'o': 1, 'why': ''},
+        'D3': {'g': 0, 'o': 2, 'why': ''}, 'D4': {'g': -1, 'o': 3, 'why': 'Répétition exacte.'}}}
+    plan = plan_from_catalogue(result, ['D1', 'D2', 'D3', 'D4'])
+    assert plan['topics'][0]['sentences'] == ['D1', 'D3']
+    assert plan['topics'][1]['sentences'] == ['D2']
+    assert plan['omitted'] == [{'id': 'D4', 'reason': 'Répétition exacte.'}]
+    for invalid in (-2, 2, True):
+        bad = copy.deepcopy(result); bad['assignments']['D1']['g'] = invalid
+        with pytest.raises(ValueError, match='INVENTORY'):
+            plan_from_catalogue(bad, ['D1', 'D2', 'D3', 'D4'])
+    del result['assignments']['D4']
+    with pytest.raises(ValueError, match='INVENTORY'):
+        plan_from_catalogue(result, ['D1', 'D2', 'D3', 'D4'])
+
+
+def test_fragmented_plan_is_visible_without_forcing_merges_or_dropping_sources(tmp_path):
+    class Fragmented(AuthoredRuntime):
+        def call(self, label, instruction, inputs, schema, tokens):
+            result = super().call(label, instruction, inputs, schema, tokens)
+            if label == 'group-catalogue':
+                result['subjects'] = [{'title': f'Consultation partie {i}', 'agenda_id': 'A1'} for i in range(len(inputs['phrases']))]
+            if label == 'group-000':
+                ids = list(result['assignments'])
+                for i, cid in enumerate(ids): result['assignments'][cid]['g'] = i
+            return result
+    rows = [row(id=f's{i}', start=i*310000) for i in range(5)]
+    result = run_fixture(tmp_path, Fragmented(), rows)
+    assert result['ledger']['grouping_statistics']['single_candidate_subjects'] == 5
+    assert any(a['reason'] == 'fragmented_grouping_requires_review' for a in result['ledger']['alerts'])
+    assert len(result['ledger']['inventory']) == len(result['claims']) == 5
 
 
 def test_exact_duplicate_is_kept_in_ledger_without_redundant_critic_or_written_sentence(tmp_path):

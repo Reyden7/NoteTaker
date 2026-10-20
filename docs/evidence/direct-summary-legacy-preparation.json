@@ -1,0 +1,39 @@
+{
+  "report": {
+    "status": "completed",
+    "pipeline": "0.2.4 preserved frozen worker",
+    "worker_sha256": "d5e0fdd75a8b1e9190f4510fd6a8af8ed3d7ba52f3b26bddbacae2f3fd74009b",
+    "input_rows": 670,
+    "preparation_included": true,
+    "prior_registry_verification_included": false,
+    "input_rows_sha256": "f477e051bafc3f100755422611deddefd76ceb71060e628fc5b7e1f68232b26b",
+    "cold_scope": "empty response cache; new processes; OS disk cache not flushed",
+    "human_reference": false,
+    "quality_scores": null,
+    "wall_seconds": 3750.575,
+    "cpu": {
+      "user_seconds": 13885.546875,
+      "kernel_seconds": 237.59375,
+      "processes": 92,
+      "active": 0
+    },
+    "qwen_calls_completed": 45,
+    "exit_code": 0
+  },
+  "coverage": {
+    "source_segments": 670,
+    "source_segments_with_candidate_citation": 508,
+    "source_segments_without_candidate_citation": 162,
+    "information_entries": 270,
+    "eligible_information_entries": 0,
+    "to_verify_information_entries": 270,
+    "excluded_information_entries": 0,
+    "semantic_coverage_measured": false
+  },
+  "all_source_units_inspected": true,
+  "inspected_units": 184,
+  "python_network_attempts": 0,
+  "verification_policy": "on_request",
+  "human_approvals_simulated": false,
+  "quality_validated": false
+}

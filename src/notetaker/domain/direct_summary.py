@@ -151,6 +151,58 @@ def validate_dispositions(plan, expected):
         raise ValueError('DIRECT_OMISSION_REASON_REQUIRED')
 
 
+def plan_from_assignments(result, expected):
+    """One required object key per candidate prevents duplicated dispositions.
+
+    Ranking is layout only. A tied rank keeps the original candidate order;
+    it never implies a relation, a consensus or evidential support.
+    """
+    assignments = result.get('assignments', {})
+    if set(assignments) != set(expected):
+        raise ValueError('DIRECT_GROUPING_INVENTORY_INVALID')
+    plan = {'topics': [], 'omitted': []}
+    ordered = sorted(enumerate(expected), key=lambda pair: (assignments[pair[1]]['o'], pair[0]))
+    groups = {}
+    for _, cid in ordered:
+        row = assignments[cid]
+        title = row['g'].strip()
+        if not title:
+            if not row['why'].strip():
+                raise ValueError('DIRECT_OMISSION_REASON_REQUIRED')
+            plan['omitted'].append({'id': cid, 'reason': row['why']})
+            continue
+        if len(title) < 3:
+            raise ValueError('DIRECT_GROUPING_INVENTORY_INVALID')
+        key = row['a'], title
+        if key not in groups:
+            groups[key] = {'title': title, 'agenda_id': row['a'], 'sentences': []}
+            plan['topics'].append(groups[key])
+        groups[key]['sentences'].append(cid)
+    validate_dispositions(plan, expected)
+    return plan
+
+
+def plan_from_catalogue(result, expected):
+    """Resolve a shared subject catalogue, then apply the same inventory gate.
+
+    Catalogue membership is a provisional model classification, never evidence
+    of agreement, a logical relationship or faithful paraphrasing.
+    """
+    subjects = result.get('subjects', [])
+    assignments = result.get('assignments', {})
+    if set(assignments) != set(expected) or len(subjects) > len(expected):
+        raise ValueError('DIRECT_GROUPING_INVENTORY_INVALID')
+    converted = {}
+    for cid, row in assignments.items():
+        index = row['g']
+        if type(index) is not int or index < -1 or index >= len(subjects):
+            raise ValueError('DIRECT_GROUPING_INVENTORY_INVALID')
+        subject = subjects[index] if index >= 0 else {'title': '', 'agenda_id': 'outside'}
+        converted[cid] = {'g': subject['title'], 'a': subject['agenda_id'],
+                          'o': row['o'], 'why': row['why']}
+    return plan_from_assignments({'assignments': converted}, expected)
+
+
 def source_inventory(utterances, claims, retained):
     """Literal citation accounting, never semantic completeness."""
     result = []

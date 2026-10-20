@@ -18,6 +18,7 @@ REASONS = {'generation_budget_reached': 'Des informations peuvent manquer : budg
     'unbound_voice_alias': 'La notation de la voix ne correspond pas à l’auteur déclaré. Vérifier l’attribution et les sources.',
     'agenda_item_not_represented_in_document': 'Ce point de l’ordre du jour n’a pas de paragraphe rédigé. Vérifier s’il a été abordé ; aucune absence n’est déduite.',
     'grouping_failed_local_groups_preserved': 'Regroupement global incohérent : les groupes locaux sont conservés.',
+    'fragmented_grouping_requires_review': 'Le plan reste très fragmenté : examiner les sujets avant de retenir cette synthèse.',
     'rejected_or_uncertain_information': 'Des formulations ont été écartées ou des voix restent incertaines.',
     'uncited_sources_preserved': 'Passages sans citation dans le document : texte intégral conservé ; couverture à évaluer.',
     'potential_decision_requires_operator': 'Décision évoquée : contrôler puis saisir dans Décisions et votes.',

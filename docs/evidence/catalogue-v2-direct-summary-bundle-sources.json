@@ -1,0 +1,33 @@
+{
+  "version": "0.2.5.dev0",
+  "bundle": "C:\\Users\\quent\\Documents\\repos\\NoteTaker\\dist\\direct-summary-catalogue\\NoteTaker",
+  "both_executables_match_tested_sources": [
+    "notetaker",
+    "notetaker.main",
+    "notetaker.engines.direct_summary",
+    "notetaker.engines.direct_runtime",
+    "notetaker.domain.direct_summary",
+    "notetaker.services.direct_summary",
+    "notetaker.services.storage",
+    "notetaker.services.evidence",
+    "notetaker.ui.direct_summary",
+    "notetaker.ui.window",
+    "notetaker.infrastructure.atomic",
+    "notetaker.infrastructure.cpu_profile",
+    "notetaker.infrastructure.windows_job",
+    "notetaker.infrastructure.process",
+    "notetaker.workers.probe",
+    "notetaker.engines.registry_summary",
+    "notetaker.engines.topic_summary"
+  ],
+  "executables_sha256": {
+    "NoteTaker.exe": "7db51bf70447b217d0fa4e3db83ec352cce9b9693d994293da95a2776c101de0",
+    "NoteTaker-worker.exe": "12f71db6f54f234c289babad2dd79aa0300047bdc39304f5c4cf82f522154527"
+  },
+  "new_schema_matches": true,
+  "all_manifest_model_hashes_checked": true,
+  "payload_shared_only_after_exact_hash_match": true,
+  "clean_offline_windows_validation": false,
+  "quality_validated": false,
+  "commercial_validation": false
+}

@@ -119,6 +119,17 @@ ordonne leurs IDs sans réécriture. Chaque ID est retenu une fois ou écarté a
 motif. Un plan incomplet/dupliqué conserve les groupes locaux avec une alerte
 visible ; cela ne valide pas leur pertinence.
 
+Le premier rejeu complet v5 a effectivement rencontré ce défaut d'inventaire :
+certains IDs apparaissaient plusieurs fois ou dans les retenus et les exclusions.
+La réponse de plan utilise désormais `assignments`, avec une propriété obligatoire
+par candidat : sujet `g`, point d'ordre du jour `a`, rang `o`, motif `why`. Une
+exclusion impose un sujet vide et un motif non vide. Le logiciel reconstruit le
+plan puis exécute encore `validate_dispositions` : aucun contrôle n'est supprimé.
+Un rang identique garde l'ordre initial ; il n'implique aucune relation logique.
+Les réponses brutes et toutes les exclusions restent conservées. Le sous-contrat
+est inscrit dans les diagnostics. Le changement de prompt et de schéma invalide
+le cache du plan ; il ne change pas les entrées des contextes.
+
 Toutes les phrases passent les contrôles statiques existants : citations
 exactes, même voix, modalités, montants, attribution, rôles acteur/patient,
 identités, votes et cohérence narrative. Le contrôle LLM est groupé sur les
@@ -187,3 +198,73 @@ Les tests automatisés utilisent des réponses **rédigées comme fixtures** pou
 tester les contrats ; ce ne sont pas des mesures de qualité IA. Les rejeux natifs
 sont rapportés séparément. Windows vierge déconnecté, qualification commerciale,
 licences du payload final et installateur unique restent ouverts.
+
+### Catalogue de sujets — ajustement en qualification
+
+Le plan à clés obligatoires de `direct-cold-04` affecte vingt candidats à dix-neuf
+sujets avant les contrôles. Son intégrité structurelle ne résout donc pas la
+fragmentation. Cette mesure a terminé, ses sources et sorties restent conservées.
+
+L'ajustement construit d'abord un catalogue de sujets partagés, puis
+affecte chaque candidat à un indice de ce catalogue (ou à une exclusion motivée).
+Les titres locaux sont des indications à réexaminer, pas des catégories immuables.
+Un objet débattu peut réunir arguments opposés, questions et propositions ; un
+domaine général ne permet toujours pas de fusionner des objets incompatibles.
+Aucun quota arbitraire de sujets ni réduction des entrées. Les clés obligatoires,
+le contrôle exhaustif des dispositions, les citations, les contrôles ciblés et
+la relecture restent requis. `plan_from_catalogue` résout les indices et réutilise
+`plan_from_assignments` puis le contrôle exhaustif `validate_dispositions`.
+Les indices absents, négatifs autres que -1 ou incompatibles sont refusés.
+Le premier sous-contrat `required-catalogue-assignments-v2` a été refusé lors de
+l'essai réel : douze sujets, mais indices renvoyés jusqu'à quatorze. Aucun indice
+n'a été deviné ou remappé ; le brut et le profil sont dans `group-catalogue-probe-01`.
+Le sous-contrat actuel est `catalogue-then-required-assignments-v3` : un appel
+établit le catalogue, puis un second utilise un enum limité aux indices réellement
+créés. Ce coût supplémentaire est comptabilisé. Les intitulés locaux restent
+dans le registre de génération et les contrôles, mais ne sont plus donnés comme
+catégories au planificateur, qui reçoit le contenu de tous les candidats.
+Sans migration SQLite ni modification des artefacts historiques ; les anciens
+plans restent consultables. La version publique v5 reste compatible.
+Un plan comportant au moins quatre candidats et une majorité de sujets à un seul
+candidat déclenche une alerte de fragmentation : c'est un signal de relecture,
+pas une mesure sémantique ni une obligation de fusionner.
+
+**268 tests réussis en 8,79 s**, dont catalogue partagé, regroupement non consécutif,
+exclusion motivée, indices invalides et fragmentation visible. Le bundle distinct
+`dist/direct-summary-catalogue-final/NoteTaker` démarre, se ferme normalement et
+contient les modèles locaux vérifiés. L'essai `group-catalogue-probe-02` termine
+deux appels natifs en 162,528 s : vingt candidats affectés à deux sujets, sans
+indice invalide, sans vérification sémantique complète ni création de brouillon.
+Ce plan peut contenir des groupes trop larges ou mal classés ; ce n'est ni une
+mesure de fidélité ni un temps complet à froid. Le rejeu complet `direct-cold-05`
+a ensuite été exécuté avec un nouveau répertoire et ses contrôles ciblés.
+
+### Résultat complet du dernier contrat — insuffisant
+
+Sur les 670 mêmes passages : **1 844,612 s écoulées worker, 7 031,297 s CPU cumulées,
+dix inférences neuves**, cinq contextes complets. Contextes : 966,522 s ; organisation
+en deux appels : 162,641 s ; trois contrôles : 711,474 s. Aucun cache de réponses
+réutilisé à froid. Rejeu distinct compilé : dix réponses en cache, zéro inférence,
+2,470 s, résultat identique hors durée ; ne pas comparer ce temps au calcul neuf.
+
+**Un seul paragraphe de neuf phrases**, 24 propositions refusées, 18 alertes.
+Le contrôle de cohésion a refusé le deuxième sujet et ses onze candidats ; ils
+restent consultables avec leur motif. 552 passages sans citation dans le document,
+texte hors citation conservé : aucune mesure de couverture sémantique.
+Le regroupement est structurellement cohérent mais la restitution est insuffisante.
+Ni amélioration de fidélité, ni réduction du travail humain, ni gain de produit
+démontrés. Le débat et son unique point d'ordre du jour général ne qualifient pas
+un procès-verbal municipal. La référence humaine indépendante est la prochaine
+étape d'évaluation ; ne pas multiplier les ajustements en les appelant validés.
+
+Toutes les anciennes lignes SQLite sont identiques, 17 révisions de registre et
+quatre brouillons précédents compris ; un brouillon non relu est ajouté. Les
+22 421 caractères non blancs sont retrouvés dans les prompts réels, provenance
+et citations valides, réouverture identique. Les deux exports réellement tentés
+sans nouvelle relecture sont refusés. Les cinq vues Qt sur copie secondaire sont
+inspectées visuellement ; aucune écoute audio n'est déduite de ces captures.
+
+Lancer la copie avec `output/direct-summary/direct-cold-05/Ouvrir-NoteTaker-0.2.5.cmd`.
+Lire `output/direct-summary/reference-humaine/A_LIRE_ET_ANNOTER.md` avant les réponses
+Qwen de `output/direct-summary/comparaison-0.2.5.md`. Le formulaire reste vierge.
+Windows vierge déconnecté et qualification commerciale demeurent non validés.
