@@ -4,7 +4,76 @@ Dernier lot sources : **0.2.5.dev0, laboratoire de synthèse directe en qualific
 Plan préalable : `direct-summary-0.2.5-plan.md` ; utilisation et limites :
 `direct-summary-0.2.5.md`. Le parcours 0.2.4 et le schéma SQLite v5 sont conservés.
 
-## Bilan actuel — expérimentation livrée, résultat rédactionnel insuffisant
+## Diagnostic Parcoursup isolé — 20 octobre 2026
+
+Expérience **hors pipeline applicatif**, scripts dans
+`experiments/parcoursup_20261020/`. Rapport détaillé, trois synthèses brutes,
+tableau de comparaison/CSV/JSON, références audio et diagnostic des 24 refus :
+`output/diagnostic-parcoursup/2026-10-20-01/comparaison-v2/rapport-comparatif.md`.
+La référence narrative humaine du Desktop est conservée ; l’utilisateur a ensuite
+fourni `correction.txt` après la demande de correction sur écoute. Copie exacte,
+SHA-256, provenance et différences archivés. Aucune écoute revendiquée par l’agent.
+
+Fenêtre 17:31.960–20:37.580 : A original sauvegardé = 109 passages ; B correction
+humaine = 103 ; six fragments absents inventoriés, aucun original remplacé.
+C = B strictement identique + 58 passages du contexte original avant l’extrait.
+**Ce contexte supplémentaire n’est pas corrigé à l’écoute** ; aucun contexte
+transcrit après 20:37.580 n’existe dans les 670 passages. Le contexte propre des
+deux côtés n’a donc pas été testé. Les horodatages ASR sont conservés, sans
+ré-alignement des mots corrigés. A garde ses anciennes attributions/corrections :
+il n’est pas présenté comme une sortie Whisper brute jamais modifiée.
+
+Trois inférences CPU réellement terminées, mêmes instruction/schéma/paramètres,
+4 threads, GPU 0 couche, contexte 12288, budget 3000, graine 42, aucun cache de
+réponses. Tours consécutifs regroupés sans perte de mots ni sélection d’entrées,
+correspondance Txxx → segments/horaires conservée. Référence humaine non transmise
+à Qwen ; pas de Qwen utilisé comme juge.
+
+| Variante | Durée native écoulée | CPU user + kernel | Tokens entrée / génération |
+|---|---:|---:|---:|
+| A original | 397,251 s | 1542,422 s | 2586 / 2628 |
+| B correction humaine | 322,237 s | 1250,016 s | 2350 / 2303 |
+| C correction + contexte original | 513,590 s | 1986,531 s | 3569 / 2841 |
+
+Une mesure par condition, cache disque Windows non purgé, poste non isolé.
+Premier A à fragments séparés : **échec par délai à 900,409 s natives**,
+3526,922 s CPU, sortie partielle conservée. Ce protocole antérieur n’est pas
+mélangé à la comparaison commune v2.
+
+**Constats, selon l’analyse des sources humaines par Codex :** ouverture de places
+et sectorisation présentes dans les trois essais. Centralisation des vœux correcte
+dans A, transformée en maintien obligatoire de Parcoursup dans B, perdue dans C.
+B attribue à Manès la sélection faible affirmée par Louise. C transforme une
+question de Louise en proposition d’abrogation et rattache abusivement un propos
+politique du contexte à Parcoursup. Il restitue mieux l’exception des lettres de
+motivation, mais les relations et les propositions restent peu fiables.
+Audit mécanique : 0 / 5 / 8 signalements ; zéro erreur littérale ne démontre pas
+le soutien sémantique. Tableau justifié sur onze points narratifs et deux points
+de la copie humaine ; pas de score global de fidélité ni d’amélioration mesurée.
+Ce codage analytique n’est pas une nouvelle notation humaine aveugle des sorties.
+
+24 refus étudiés individuellement : **18 justifiés en l’état, six motifs
+potentiellement excessifs/mixtes**, selon cette analyse, aucun réintroduit.
+Pertes à l’extraction (centralisation, cours/ramassage +1 h), groupes hétérogènes
+et erreurs sémantiques distinguées. Les six motifs ne sont pas six phrases
+déclarées admissibles. Recommandation : conserver 4B comme référence expérimentale,
+tester des règles générales de prompt et un autre modèle Instruct local en
+contre-épreuve avant choix du moteur ; aucun autre modèle testé ici.
+
+**10 tests de protocole réussis en 0,33 s** : copie exacte, inventaire, regroupement
+sans perte, noyau B/C identique, parseur, PCM exact, résolution des citations et
+conservation. Une erreur initiale d’import de test puis une erreur de répertoire
+temporaire sandbox ont été corrigées/contournées avec traces conservées.
+**61 contrôles finaux de conservation vrais**, dont sources applicatives, ancienne
+base/résultat/bundle, audio et correction humaine. Suite applicative 268 tests
+non relancée, aucun code de production modifié, aucune migration/base de séance
+écrite, aucun nouveau bundle. Whisper/sherpa inchangés, biométrie non commencée,
+relecture/export applicatifs non appelés. Aucun document approuvé ou vote créé.
+
+La qualité d’un PV municipal et la recette Windows vierge hors ligne restent
+non validées. Les sections suivantes conservent le bilan antérieur 0.2.5.
+
+## Bilan antérieur — expérimentation livrée, résultat rédactionnel insuffisant
 
 Bundle de travail : **`dist/direct-summary-catalogue-final/NoteTaker`**.
 Lancement sur la copie du débat :
