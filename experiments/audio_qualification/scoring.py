@@ -53,9 +53,11 @@ def lexical_clock(segments,*,combined=False):
         expected=tokens(segment['text'])
         if [w['text'] for w in candidate]!=expected:
             candidate=[{'text':word,'start':None,'end':None} for word in expected]
-        for word in candidate:
+        from .normalization import numeric_prefixes
+        prefixes=numeric_prefixes(segment['text'])
+        for index,word in enumerate(candidate):
             output.append({**word,'segment_start':segment['start'],'segment_end':segment['end'],
-                           'speaker':segment.get('speaker')})
+                           'speaker':segment.get('speaker'),'numeric_prefix':prefixes.get(index)})
     return output
 
 
@@ -158,11 +160,14 @@ def evaluate(project,dataset,display_mode='exclusive',wer_plan=None):
     word_zones=[z for z in project['zones'] if all(review_valid(z,d,audio_hash) for d in ('text','diarization','word_times'))]
     from .wer_plan import wer_units
     wer_eligible,scope,coverage_diagnostics,proposals=wer_units(project,dataset,wer_plan)
+    from .normalization import normalize,numeric_prefixes,VERSION,RULES
+    from .audit_metrics import qualified_activity,summarize_wer,aggregate_by_zone,selected_raw,audit_boundaries
+    qualified_zones,unknown_activity,activity_basis=qualified_activity(project,wer_plan)
     # Only the SAME explicitly reviewed sequential portions for all candidates.
     # ASR word clocks are reused, never human word-by-word timings.
     asr_clocks={key:lexical_clock(chain['asr']) for key,chain in dataset['chains'].items()}
     for key,chain in dataset['chains'].items():
-        counts={k:0 for k in ('reference_words','hypothesis_words','equal','substitute','delete','insert')};per_zone=[]
+        counts={k:0 for k in ('reference_words','hypothesis_words','equal','substitute','delete','insert')};per_zone=[];normalized_rows=[]
         for z in wer_eligible:
             words,_=words_in_zone(asr_clocks[key],z);ref=tokens(z['verbatim']);hyp=[w['text'] for w in words]
             detail=edit_alignment(ref,hyp)
@@ -170,7 +175,15 @@ def evaluate(project,dataset,display_mode='exclusive',wer_plan=None):
             per_zone.append({'id':z['id'],'source_zone':z['source_zone'],'start':z['start'],'end':z['end'],**detail,'reference':ref,'hypothesis':hyp,
                              'reference_token_range':z['reference_token_range'],'portion_review':z['portion_review'],
                              'tags':z['tags'],'hypotheses_seen_before_review':z['reviews']['text']['hypotheses_seen_before_review']})
+            nr=normalize(ref,numeric_prefixes(selected_raw(project,z)))
+            nh=normalize(hyp,{i:w['numeric_prefix'] for i,w in enumerate(words) if w.get('numeric_prefix')})
+            normalized_rows.append({'id':z['id'],'source_zone':z['source_zone'],'start':z['start'],'end':z['end'],
+                **edit_alignment(nr['tokens'],nh['tokens']),'reference':nr['tokens'],'hypothesis':nh['tokens'],
+                'reference_normalization':nr,'hypothesis_normalization':nh})
         der=diarization_scores(diar_zones,chain['diarization'])
+        qualified_der=diarization_scores(qualified_zones,chain['diarization'])
+        qualified_der.update(scope='partial_explicit_human_activity_only',excluded_unknown_activity=unknown_activity,
+                             explicit_silence_basis=activity_basis,unknown_intervals_never_treated_as_silence=True)
         der['coverage_status']='incomplete_reference_activity' if any(hole['speech_detected_by'] for d in coverage_diagnostics for hole in d['uncovered']) else 'no_detected_uncovered_speech'
         strata={}
         for tag in ('interruption','chevauchement','passage court','nom propre'):
@@ -183,18 +196,24 @@ def evaluate(project,dataset,display_mode='exclusive',wer_plan=None):
                 'same_global_mapping_as_overall_DER':True}
         results[key]={'name':chain['name'],'transcription':{**counts,
             'WER':(counts['substitute']+counts['delete']+counts['insert'])/counts['reference_words'] if counts['reference_words'] else None,
-            'zones':per_zone,'evaluated_audio_seconds':sum(z['end']-z['start'] for z in wer_eligible)},
-            'diarization':der,'alignment_and_word_attribution':clock_scores(word_zones,chain,der['mapping'],display_mode),
+            'errors':counts['substitute']+counts['delete']+counts['insert'],
+            'zones':per_zone,'by_source_zone':aggregate_by_zone(per_zone),'evaluated_audio_seconds':sum(z['end']-z['start'] for z in wer_eligible)},
+            'transcription_normalized':{**summarize_wer(normalized_rows),'zones':normalized_rows,'by_source_zone':aggregate_by_zone(normalized_rows),'normalization_version':VERSION},
+            'diarization':der,'diarization_qualified':qualified_der,'alignment_and_word_attribution':clock_scores(word_zones,chain,der['mapping'],display_mode),
             'difficult_cases':strata}
     for z in project['zones']:
         if not any(review_valid(z,d,audio_hash) for d in DOMAINS):scope.append({'zone':z['id'],'reason':'Non annotée ou non validée humainement ; exclue de tous les scores.'})
-    return {'schema':2,'evaluation_protocol_version':'sequential-portions-v2','generated_utc':utc(),'reference_sha256':digest(project),'audio_sha256':audio_hash,
+    return {'schema':3,'evaluation_protocol_version':'audited-sequential-v3','generated_utc':utc(),'reference_sha256':digest(project),'audio_sha256':audio_hash,
+        'boundary_audit':audit_boundaries(project,dataset,wer_eligible,wer_plan),
+        'normalization':{'version':VERSION,'rules':RULES},
         'wer_plan':wer_plan,'wer_plan_sha256':digest(wer_plan) if wer_plan else None,
         'wer_proposals':proposals,'coverage_diagnostics':coverage_diagnostics,
         'results':results,'scope':scope,'protocol':{
             'WER':'Unicode NFC, casse et ponctuation ignorées, apostrophes/accents/chiffres conservés ; somme S+D+I divisée par les mots humains des zones exploitables.',
             'WER_boundaries':'Portions séquentielles : bornes audio et sélection du verbatim validées humainement si découpage nécessaire. Aucun horaire de mot humain requis. Milieu du mot hypothèse dans [début,fin), horloge lexicale Large-v3 identique avec/sans WhisperX.',
             'DER':'pyannote.metrics, collerette 0 s, chevauchements inclus, UEM explicite, appariement global optimal par enregistrement ; diarisation brute.',
+            'DER_qualified':'Union des tours humains revus et silences explicitement confirmés ; trous inconnus exclus indépendamment des moteurs. Permutation optimale globale recalculée sur ce seul masque commun. DER conditionnel, couverture partielle : ne mesure pas la détection sur les trous exclus.',
+            'WER_normalized':f'Règles symétriques {VERSION}, table complète et provenance des transformations dans le JSON. Aucun mot du verbatim enregistré n’est modifié.',
             'WhisperX':'Texte reconnu et tours Community-1 identiques : mêmes WER/DER bruts que Large-v3. Horaires et attributions des mots finaux évalués séparément.',
             'reference_origin':'Annotations manuelles revues à l’audio, jamais préremplies depuis les moteurs. Exposition aux hypothèses conservée pour chaque relecture.',
             'cpWER':None,'cpCER':None},
@@ -203,6 +222,9 @@ def evaluate(project,dataset,display_mode='exclusive',wer_plan=None):
             'WER_audio_seconds':sum(z['end']-z['start'] for z in wer_eligible),
             'WER_pending_portions':sum('portion' in item for item in scope),'DER_audio_seconds':sum(z['end']-z['start'] for z in diar_zones),
             'total_audio_seconds':project['audio']['duration'],
+            'DER_qualified_audio_seconds':sum(z['end']-z['start'] for z in qualified_zones),
+            'DER_unknown_audio_seconds':sum(z['seconds'] for z in unknown_activity),
+            'human_reviewed_reference_words':sum(len(tokens(z['verbatim'])) for z in text_zones),
             'text_reviewed_before_hypotheses_seen':sum(not z['reviews']['text']['hypotheses_seen_before_review'] for z in text_zones)},
         'performance':dataset.get('performance',{}),
         'recommendation_status':'Pending human-scored coverage and representativeness review; no automatic engine selection.'}
@@ -210,7 +232,8 @@ def evaluate(project,dataset,display_mode='exclusive',wer_plan=None):
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('reference',type=Path);p.add_argument('output',type=Path)
-    p.add_argument('--variant',choices=['standard','exclusive'],default='exclusive');p.add_argument('--plan',type=Path);args=p.parse_args()
+    p.add_argument('--variant',choices=['standard','exclusive'],default='exclusive');p.add_argument('--plan',type=Path)
+    p.add_argument('--baseline-report',type=Path);p.add_argument('--operator-events',type=Path);args=p.parse_args()
     os.environ.update(HF_HUB_OFFLINE='1',TRANSFORMERS_OFFLINE='1',PYANNOTE_METRICS_ENABLED='0',HF_HUB_DISABLE_TELEMETRY='1')
     attempts=[]
     import sys
@@ -222,8 +245,22 @@ def main():
     from .wer_plan import load_saved_plan
     plan=read(args.plan) if args.plan else load_saved_plan(project)[1]
     report=evaluate(project,dataset,args.variant,plan);report['python_network_attempts']=len(attempts)
+    from .corrections import operator_summary,tasks
+    events=read(args.operator_events) if args.operator_events else []
+    events=[e for e in events if e['audio_sha256']==project['audio']['sha256']]
+    report['operator_review']=operator_summary(events)
+    latest={e['task']['id']:e for e in events if e['outcome']!='important_attribution'}
+    report['operator_review']['tasks_remaining']=[t for t in tasks(project,dataset,plan) if not (
+        (e:=latest.get(t['id'])) and e['outcome'] in ('corrected','verified_unchanged') and e['task'].get('context_sha256')==t.get('context_sha256'))]
+    if args.baseline_report:
+        from .audit_metrics import compare_baseline
+        from .core import sha
+        report['baseline_comparison']={**compare_baseline(report,read(args.baseline_report)),
+            'report_path':str(args.baseline_report),'report_sha256':sha(args.baseline_report)}
     # New directory per report, never overwrite the human reference or benchmark.
     args.output.mkdir(parents=True,exist_ok=False)
+    from .audit_export import listening_pack
+    listening_pack(project,report,args.output)
     (args.output/'scores.json').write_text(json.dumps(report,ensure_ascii=False,indent=2,allow_nan=False),encoding='utf-8')
     from .export import write_report
     write_report(project,report,args.output)

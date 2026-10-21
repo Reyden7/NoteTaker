@@ -11,6 +11,11 @@ PLAN_PATH=WORK/'decoupages-wer.sqlite'
 EPS=1e-7
 
 
+def project_plan_path(project):
+    from pathlib import Path
+    return Path(project.get('lab_workspace',str(WORK)))/'decoupages-wer.sqlite'
+
+
 def merge(ranges):
     result=[]
     for a,b in sorted(ranges):
@@ -181,9 +186,9 @@ class PlanStore:
         return rid
 
 
-def load_saved_plan(project,path=PLAN_PATH):
+def load_saved_plan(project,path=None):
     from pathlib import Path
-    path=Path(path)
+    path=Path(path) if path is not None else project_plan_path(project)
     if not path.exists():return None,None
     c=sqlite3.connect(path.resolve().as_uri()+'?mode=ro',uri=True)
     try:

@@ -74,7 +74,10 @@ class QualificationWindow(QMainWindow):
     def __init__(self,store_path=WORK/'reference-humaine.sqlite',*,dataset=None,project=None,media=True):
         super().__init__();self.setWindowTitle('NoteTaker · laboratoire de qualification audio')
         self.resize(1580,1000);self.store=ReferenceStore(store_path)
+        self.workspace=self.store.path.parent;self.plan_path=self.workspace/'decoupages-wer.sqlite'
         self.revision,self.project=self.store.load()
+        if self.project is not None and project is not None and self.project['audio']['sha256']!=project['audio']['sha256']:
+            raise QualificationError('Cette référence appartient à un autre audio. Choisissez le fichier de référence propre à ce test.')
         if self.project is None:
             self.project=copy.deepcopy(project) if project is not None else initial_project()
             self.revision=self.store.save(self.project,None,'','Création : référence humaine vide')
@@ -83,7 +86,7 @@ class QualificationWindow(QMainWindow):
             self.revision=self.store.save(retained,self.revision,'','Conservation de l’exposition passée aux hypothèses');self.project=retained
         self.dataset=dataset if dataset is not None else load_dataset(self.project)
         self.zone_id=None;self.loading=False;self.dirty=False;self.last_report=None;self.scoring_process=None;self.last_draft_saved=False
-        self.report_markdown='';self.report_reference_hash=None
+        self.report_markdown='';self.report_reference_hash=None;self.report_plan_hash=None;self.report_operator_hash=None
         self.media_enabled=media;self.player=QMediaPlayer(self);self.audio=QAudioOutput(self)
         self.player.setAudioOutput(self.audio);self.audio.setVolume(0.65)
         self.build_ui()
@@ -130,6 +133,11 @@ class QualificationWindow(QMainWindow):
         self.cancel_button=QPushButton('Annuler le calcul');self.cancel_button.setEnabled(False);self.cancel_button.clicked.connect(self.cancel_scoring);bar.addWidget(self.cancel_button)
         self.open_report_button=QPushButton('Ouvrir le rapport');self.open_report_button.setEnabled(False);self.open_report_button.clicked.connect(lambda:QDesktopServices.openUrl(QUrl.fromLocalFile(str(self.last_report))));bar.addWidget(self.open_report_button)
         outer.addLayout(bar)
+        workflow=QHBoxLayout()
+        repairs=QPushButton('Corrections ciblées…');repairs.clicked.connect(lambda:self.try_action(self.open_corrections));workflow.addWidget(repairs)
+        municipal=QPushButton('Nouveau test municipal / ouvrir un test…');municipal.clicked.connect(lambda:self.try_action(self.open_municipal));workflow.addWidget(municipal)
+        sampling=QPushButton('Choisir quelques extraits…');sampling.setEnabled('municipal_source' in self.project);sampling.clicked.connect(lambda:self.try_action(self.open_sampling));workflow.addWidget(sampling)
+        workflow.addWidget(QLabel('BFMTV reste un projet distinct. Les nouvelles références sont vierges et non validées.'));workflow.addStretch();outer.addLayout(workflow)
         middle=QSplitter();outer.addWidget(middle,1)
         left=QWidget();ll=QVBoxLayout(left);ll.setContentsMargins(0,0,4,0)
         ll.addWidget(QLabel('Zones à annoter'));self.zone_list=QListWidget();self.zone_list.currentItemChanged.connect(self.zone_changed);ll.addWidget(self.zone_list)
@@ -184,11 +192,12 @@ class QualificationWindow(QMainWindow):
             box=QCheckBox(tag);box.toggled.connect(self.changed);tags.addWidget(box);self.tag_boxes[tag]=box
         tags.addStretch();nl.addLayout(tags)
         line=QHBoxLayout();self.note_chain=QComboBox();self.note_chain.addItems(['commun','small','large','whisperx']);line.addWidget(self.note_chain)
-        self.note_type=QComboBox();self.note_type.addItems(['transcription','attribution','alignement','nom propre','interruption','chevauchement']);line.addWidget(self.note_type)
+        self.note_type=QComboBox();self.note_type.addItems(['transcription','attribution','alignement','nom propre','interruption','chevauchement','proposition','délibération','vote effectif','vote absent / non couvert']);line.addWidget(self.note_type)
         self.note_text=QLineEdit();self.note_text.setPlaceholderText('Écart précis constaté à l’écoute, avec le passage concerné');line.addWidget(self.note_text,1)
         add_note=QPushButton('Ajouter');add_note.clicked.connect(lambda:self.try_action(self.add_note));line.addWidget(add_note);nl.addLayout(line)
         self.notes=QPlainTextEdit();self.notes.setReadOnly(True);nl.addWidget(self.notes);self.tabs.addTab(note_page,'4 · Écarts et cas difficiles')
         self.results=QTextBrowser();self.results.setPlainText('Les scores resteront non mesurés tant que les domaines correspondants ne sont pas annotés et validés humainement.')
+        self.results.setOpenLinks(False);self.results.anchorClicked.connect(self.open_result_link)
         self.tabs.addTab(self.results,'5 · Résultats de comparaison')
         self.tabs.setTabText(2,'3 · Mots horodatés (facultatif)')
         self.review_status=QLabel();self.review_status.setWordWrap(True);el.addWidget(self.review_status)
@@ -313,9 +322,23 @@ class QualificationWindow(QMainWindow):
     def update_report_view(self,force_stale=False):
         if not self.report_markdown:return
         stale=force_stale or self.dirty or self.report_reference_hash!=digest(self.project)
+        if not stale:
+            from .wer_plan import load_saved_plan
+            _,current_plan=load_saved_plan(self.project,self.plan_path)
+            stale=self.report_plan_hash!=(digest(current_plan) if current_plan is not None else None)
+        if not stale and self.report_operator_hash is not None:
+            from .corrections import read_task_log
+            stale=self.report_operator_hash!=digest(read_task_log(self.project,self.workspace/'corrections.sqlite'))
         banner='> **Rapport d’une ancienne révision. Les corrections récentes ne sont pas évaluées : relancez le calcul.**\n\n' if stale else ''
         self.results.setMarkdown(banner+self.report_markdown)
         self.open_report_button.setText('Ouvrir le rapport précédent' if stale else 'Ouvrir le rapport')
+    def open_result_link(self,url):
+        if not self.last_report:return
+        base=self.last_report.parent.resolve()
+        resolved=QUrl.fromLocalFile(str(base)+os.sep).resolved(url)
+        if not resolved.isLocalFile():return  # Qualification stays offline.
+        path=Path(resolved.toLocalFile()).resolve()
+        if path.is_relative_to(base) and path.is_file():QDesktopServices.openUrl(QUrl.fromLocalFile(str(path)))
     def update_statuses(self):
         if not self.zone_id:return
         z=self.zone();h=self.project['audio']['sha256'];labels={'text':'Texte','diarization':'Voix','word_times':'Alignement des mots (facultatif pour WER)'}
@@ -351,12 +374,15 @@ class QualificationWindow(QMainWindow):
     def toggle_play(self):
         if self.player.playbackState()==QMediaPlayer.PlayingState:self.player.pause()
         else:
-            if self.zone_id and self.player.position()>=round(self.zone()['end']*1000)-10:self.seek(self.zone()['start'])
+            if self.zone_id and (self.player.position()<round(self.zone()['start']*1000) or self.player.position()>=round(self.zone()['end']*1000)-10):self.seek(self.zone()['start'])
             if self.media_enabled:self.player.play()
     def on_position(self,position):
         seconds=position/1000;self.clock.setText(stamp(seconds));self.slider.setValue(position)
         if self.show_hypotheses.isChecked():
             for view in self.views.values():view.position(seconds,self.follow.isChecked())
+        if getattr(self,'preview_end',None) is not None:
+            if seconds>=self.preview_end:self.player.pause()
+            return
         if self.zone_id and seconds>=self.zone()['end'] and self.player.playbackState()==QMediaPlayer.PlayingState:
             if self.loop.isChecked():self.seek(self.zone()['start'])
             else:self.player.pause()
@@ -418,7 +444,7 @@ class QualificationWindow(QMainWindow):
             identifier='Z'+uuid.uuid4().hex[:8];candidate=copy.deepcopy(self.project);candidate['zones'].append(blank_zone(identifier,*bounds))
             candidate['zones'].sort(key=lambda z:z['start']);self.commit(candidate,'Nouvelle zone humaine vide');self.select_zone_id(identifier)
     def export_reference(self):
-        self.save();verify_inputs(self.project);folder=WORK/'references-exportees'/uuid.uuid4().hex
+        self.save();verify_inputs(self.project);folder=self.workspace/'references-exportees'/uuid.uuid4().hex
         save_reference(self.project,folder);self.status.setText('Référence humaine exportée avec sa provenance : '+str(folder))
         return folder
     def show_history(self):
@@ -433,29 +459,46 @@ class QualificationWindow(QMainWindow):
         interpreter=ROOT/'.venv-lab-b/Scripts/python.exe'
         if not interpreter.is_file():raise QualificationError('L’environnement isolé de calcul .venv-lab-b est absent. Aucun téléchargement automatique ne sera effectué.')
         from .wer_plan import prepare,load_saved_plan,approved
-        _,plan=load_saved_plan(self.project)
+        _,plan=load_saved_plan(self.project,self.plan_path)
         if prepare(self.project,self.dataset)['blocks'] and not (plan and any(approved(b) for b in plan['blocks'])):
             if not self.review_wer_portions():return
-            _,plan=load_saved_plan(self.project)
-        export=self.export_reference();self.run_folder=WORK/'comparaisons'/uuid.uuid4().hex
+            _,plan=load_saved_plan(self.project,self.plan_path)
+        export=self.export_reference();self.run_folder=self.workspace/'comparaisons'/uuid.uuid4().hex
         if plan is not None:(export/'wer-plan.json').write_text(json.dumps(plan,ensure_ascii=False,indent=2),encoding='utf-8')
+        from .corrections import read_task_log
+        (export/'operator-events.json').write_text(json.dumps(read_task_log(self.project,self.workspace/'corrections.sqlite'),ensure_ascii=False,indent=2),encoding='utf-8')
         process=QProcess(self);self.scoring_process=process;process.setWorkingDirectory(str(ROOT))
         env=QProcessEnvironment.systemEnvironment();env.insert('PYTHONUTF8','1');env.remove('HF_TOKEN');env.remove('HUGGING_FACE_HUB_TOKEN');process.setProcessEnvironment(env)
         process.finished.connect(self.scoring_finished);process.errorOccurred.connect(self.scoring_error)
         self.score_button.setEnabled(False);self.cancel_button.setEnabled(True)
         arguments=['-m','experiments.audio_qualification.controller',str(export/'reference.json'),str(self.run_folder),'--variant',self.variant.currentData()]
         if plan is not None:arguments+=['--plan',str(export/'wer-plan.json')]
+        arguments+=['--operator-events',str(export/'operator-events.json')]
         process.start(str(ROOT/'.venv/Scripts/python.exe'),arguments)
         self.status.setText('Calcul local dans un processus limité à 2 GiB et 120 s. Les annotations non validées seront exclues.')
     def review_wer_portions(self):
         self.save();self.player.pause()
         from .wer_review import WERReviewDialog
-        dialog=WERReviewDialog(self.project,self.dataset,self)
+        from .wer_plan import PlanStore
+        dialog=WERReviewDialog(self.project,self.dataset,self,store=PlanStore(self.plan_path),media=self.media_enabled)
         if not dialog.plan['blocks']:
             self.status.setText('Aucun découpage WER supplémentaire nécessaire pour les zones validées. Les horaires des mots ne sont pas requis.');return True
         accepted=dialog.exec()==QDialog.Accepted
+        self.update_report_view()
         self.status.setText('Découpage WER conservé séparément ; verbatim, voix et relectures d’origine inchangés.')
         return accepted
+    def open_corrections(self):
+        self.save();self.player.pause()
+        from .correction_ui import CorrectionDialog
+        CorrectionDialog(self).exec();self.update_report_view()
+    def open_municipal(self):
+        self.save();self.player.pause()
+        from .municipal_ui import MunicipalDialog
+        MunicipalDialog(self).exec()
+    def open_sampling(self):
+        self.save();self.player.pause()
+        from .municipal_ui import SamplingDialog
+        SamplingDialog(self).exec();self.preview_end=None;self.player.pause()
     def cancel_scoring(self):
         if self.scoring_process:
             self.run_folder.mkdir(parents=True,exist_ok=True);(self.run_folder/'CANCEL').write_text('cancel',encoding='utf-8')
@@ -465,7 +508,9 @@ class QualificationWindow(QMainWindow):
         report=self.run_folder/'report/rapport.md'
         if exit_code==0 and report.is_file():
             self.last_report=report;self.open_report_button.setEnabled(True);self.status.setText('Comparaison enregistrée : '+str(report)+'. Les domaines non annotés restent non mesurés.')
-            self.report_markdown=report.read_text(encoding='utf-8');self.report_reference_hash=read(report.with_name('scores.json'))['reference_sha256']
+            self.report_markdown=report.read_text(encoding='utf-8');metadata=read(report.with_name('scores.json'))
+            self.report_reference_hash=metadata['reference_sha256'];self.report_plan_hash=metadata.get('wer_plan_sha256')
+            self.report_operator_hash=digest(metadata['operator_review']['events']) if 'operator_review' in metadata else None
             self.update_report_view();self.tabs.setCurrentWidget(self.results)
         else:self.status.setText('Calcul interrompu ou en erreur. Référence conservée ; diagnostic : '+str(self.run_folder/'process/stderr.txt'))
         if process:process.deleteLater()
@@ -489,9 +534,12 @@ class QualificationWindow(QMainWindow):
 
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--store',type=Path,default=WORK/'reference-humaine.sqlite');args=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('--store',type=Path);p.add_argument('--project',type=Path);args=p.parse_args()
     app=QApplication(sys.argv[:1]);app.setApplicationName('Qualification audio NoteTaker')
-    try:window=QualificationWindow(args.store)
+    try:
+        project=read(args.project) if args.project else None
+        store=args.store or (args.project.parent/'reference-humaine.sqlite' if args.project else WORK/'reference-humaine.sqlite')
+        window=QualificationWindow(store,project=project)
     except (QualificationError,ValueError,OSError,sqlite3.Error) as e:
         QMessageBox.critical(None,'Ouverture du laboratoire impossible',str(e));return 2
     window.show();return app.exec()

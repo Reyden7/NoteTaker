@@ -141,6 +141,34 @@ def test_edit_after_comparison_labels_report_as_old_reference(window):
     window.save();assert 'ancienne révision' in window.results.toPlainText()
 
 
+def test_changed_wer_selection_labels_report_as_old_even_if_reference_unchanged(window,monkeypatch):
+    from . import wer_plan
+    from .core import digest
+    window.report_markdown='# Rapport figé'
+    window.report_reference_hash=digest(window.project)
+    window.report_plan_hash=digest({'blocks':[]})
+    monkeypatch.setattr(wer_plan,'load_saved_plan',lambda project,*args:(None,{'blocks':[]}))
+    window.update_report_view()
+    assert 'ancienne révision' not in window.results.toPlainText()
+    monkeypatch.setattr(wer_plan,'load_saved_plan',lambda project,*args:(None,{'blocks':[{'last_token':43}]}))
+    window.update_report_view()
+    assert 'ancienne révision' in window.results.toPlainText()
+
+
+def test_report_audio_links_resolve_locally_without_network_or_path_escape(window,tmp_path,monkeypatch):
+    from PySide6.QtCore import QUrl
+    from .app import QDesktopServices
+    folder=tmp_path/'report';(folder/'audio').mkdir(parents=True)
+    clip=folder/'audio/portion.wav';clip.write_bytes(b'fixture')
+    window.last_report=folder/'rapport.md';opened=[]
+    monkeypatch.setattr(QDesktopServices,'openUrl',lambda url:opened.append(url.toLocalFile()))
+    window.open_result_link(QUrl('audio/portion.wav'))
+    window.open_result_link(QUrl('https://example.org/'))
+    outside=tmp_path/'other.wav';outside.write_bytes(b'fixture')
+    window.open_result_link(QUrl('../other.wav'))
+    assert len(opened)==1 and __import__('pathlib').Path(opened[0]).resolve()==clip.resolve()
+
+
 def test_restore_cannot_erase_exposure_to_hypotheses(window):
     before=copy.deepcopy(window.project)
     window.show_hypotheses.setChecked(True);assert window.zone()['hypotheses_seen']

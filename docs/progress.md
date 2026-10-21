@@ -1264,3 +1264,254 @@ Guide opérateur actualisé : `experiments/audio_qualification/README.md`.
 Enregistrer puis relancer le comparateur pour charger le nouveau bouton.
 L'étape humaine restante porte sur les bornes et le texte de chaque portion,
 pas sur les horaires individuels de chaque mot. Aucun gain de précision annoncé.
+
+## Audit et fiabilisation du benchmark E11/E12 — 21 octobre 2026
+
+### Conservation et protocole
+
+Travail limité à `experiments/audio_qualification` et à la documentation. Aucun
+moteur de production modifié, aucun modèle téléchargé ou exécuté, aucune séance
+ouverte pour modification. Les sorties Small, Large-v3, Community-1 et WhisperX
+déjà calculées sont réutilisées. La référence utilisateur et le plan WER sont
+lus en SQLite lecture seule, puis copiés dans un dossier d'audit neuf :
+
+`output/audio-qualification/2026-10-20-01/audit-20261021/21f4bec280774828ab47468b8414a2af/`.
+
+Le dossier conserve `reference.json`, `wer-plan.json`, le plan de l'ancien
+rapport et `before.json`. Aucune approbation n'est donnée par l'agent.
+
+### Défauts identifiés
+
+- **E11-P01 : 60 mots sélectionnés, 91 mots Large-v3.** Le verbatim humain
+  comporte ensuite **39 mots [60,99)** de « non non atendez… » à « mais avant »
+  qui ne sont sélectionnés dans aucune portion. P01 couvre pourtant les deux
+  premiers tours humains, jusqu'à 1113.697 s, sans chevauchement réel. Les
+  alignements contextuels retrouvent 23 de ces mots dans les bornes avec Small
+  et 32 avec Large. Cela soutient fortement une omission de sélection, mais ne
+  certifie pas les paroles ou les frontières : écoute ciblée requise avant tout ajout.
+- E12-P01 omet « c'est une vrai question » de sa sélection alors que les sorties
+  en placent une partie dans ses bornes. E12-P04 et la frontière P05/P06 montrent
+  aussi des mots sélectionnés hors bornes et des mots voisins non sélectionnés
+  à l'intérieur. Le rapport détaille les onze portions, leurs mots sources et
+  chaque mot moteur traversant une frontière ; ces indices ne sont pas une vérité audio.
+- Toutes les portions WER validées excluent effectivement les chevauchements
+  humains : **0 s** de chevauchement inclus dans chacune. On ne rejette pas les
+  passages voisins. La sélection du milieu du mot moteur reste le protocole
+  strict ; aucun horaire n'est déplacé pour améliorer les taux.
+- Le plan courant n'est pas celui du rapport cité : **E12-P03 [21,43)** au lieu
+  de **[21,42)**, donc « divers » est désormais inclus. Ce changement était
+  enregistré avant l'audit ; il ne provient pas du nouveau normaliseur. L'interface
+  signale maintenant un rapport périmé aussi lorsque seul le découpage change.
+
+### Calculs ajoutés et résultats
+
+WER strict conservé ; WER normalisé français version `fr-conservative-v1`,
+symétrique, avec trace des transformations. Liste fermée d'accents/ligatures,
+élisions préservant les négations, alias explicite parcours sup/Parcoursup,
+entiers isolés 0–9999 et notation Nh. Pas de correction floue, d'accords ou de
+typos humaines ; accents distinctifs conservés. Règles complètes dans le rapport
+et `normalization.py`. Les dénominateurs distincts sont affichés.
+
+| Chaîne | WER strict courant | WER normalisé courant | DER historique | DER qualifié partiel |
+|---|---:|---:|---:|---:|
+| Small + sherpa | 59,23 % | 56,38 % | 40,70 % | 30,45 % |
+| Large-v3 + Community-1 | 58,54 % | 54,70 % | 59,53 % | 21,32 % |
+| Large-v3 + WhisperX + Community-1 | 58,54 % | 54,70 % | 59,53 % | 21,32 % |
+
+Courant : **287 mots stricts** (170 / 168 / 168 erreurs) et **298 tokens
+normalisés** (168 / 163 / 163 erreurs). Les variations entre strict et normalisé
+ne sont pas un gain de reconnaissance. Les deux variantes Large partagent
+exactement les mêmes textes et tours ; leur égalité est attendue.
+
+**Reproduction historique vérifiée séparément**, avec le plan du rapport cité :
+286 mots, WER **59,79 % / 59,09 % / 59,09 %**, exactement identiques aux valeurs
+antérieures. WER normalisés sur ce plan : **56,90 % / 55,22 % / 55,22 %**, N=297.
+Ne pas mélanger les deux sélections dans une comparaison de moteur.
+
+Le DER qualifié utilise seulement les tours humains revus et les silences
+explicitement confirmés ; le silence de E12-P02 est inclus, la parole validée
+pour le WER dans les autres trous n'apporte aucune identité. UEM identique
+pour toutes les chaînes, permutation optimale globale sur ce masque, collerette
+0, chevauchements conservés. **16,389 s inconnues exclues**, dont la fin E12
+**20:25.251–20:37.580 (12,329 s)**. Le DER historique reste disponible, avec ses
+fausses alarmes potentiellement artificielles dans ces trous.
+
+- Couverture WER : **70,034 s / 1240,017 s = 5,65 %** du fichier, 87,54 %
+  des 80 s E11/E12. Sélection lexicale : 287 / 383 mots humains = 74,93 %,
+  avec anomalies de rattachement non corrigées et mots simultanés hors WER.
+- Couverture DER qualifiée : **63,611 s = 5,13 %** du fichier, 79,51 % des
+  zones E11/E12 ; 73,507 secondes de voix avec les doubles voix comptées.
+- Small qualifié : confusion **10,642 s**, omission **11,350 s**, fausse alarme
+  **0,391 s**. Large/WhisperX : **5,291 / 2,665 / 7,715 s** respectivement.
+  Le meilleur taux partiel de Large coexiste avec davantage de fausses alarmes.
+  Il ne mesure pas les erreurs dans les plages exclues, ni le reste du débat.
+
+### Livrables et tests réellement exécutés
+
+- `resultats-courants/report/{audit.md,rapport.md,scores.json,wer-strict-normalise.csv}` :
+  tableaux par zone/portion, audit des bornes, corrections à confirmer, UEM
+  qualifié et exclusions, provenance des normalisations et référence figée.
+- `reproduction-historique/report/` : ancien plan reproduit, résultats d'origine
+  conservés. Les premiers essais intermédiaires de cet audit sont aussi conservés.
+- Onze WAV d'écoute ciblée avec contexte, copies PCM sans réencodage. Chaque
+  échantillon a été comparé aux trames correspondantes de l'original : identiques.
+  Horloge absolue et indices de trames documentés ; **aucune écoute acoustique
+  humaine effectuée par l'agent** et aucune annotation automatiquement corrigée.
+- **56 tests réussis** : 36 unittest numériques (1,831 s) dans le processus
+  isolé 2 GiB / 120 s ; 20 pytest PySide6 (2,54 s). WER strict/normalisé séparés,
+  négations, accents distinctifs, nombres signés, alias limités, provenance,
+  cas 60 contre 91 mots, mots traversant une borne, silence explicite et trous
+  exclus, DER avec chevauchements, historique/concurrence, rapport périmé après
+  changement de découpage et liens audio locaux sans accès réseau/traversée.
+  Preuves : `tests-numeriques-final/` et `tests-ui-verifies.xml` dans le dossier d'audit.
+- Calcul courant : environ 3 s, zéro tentative réseau Python, sans inférence.
+  Mesures précises CPU/mémoire dans `resultats-courants/process/measurement.json` ;
+  les temps des moteurs restent ceux du benchmark initial, pas ces temps de score.
+- Rendu PySide6 du nouveau tableau inspecté sur une base de test séparée,
+  avec police chargée seulement pour la recette offscreen. Le premier rendu
+  offscreen avait des glyphes manquants ; il est conservé, pas présenté comme
+  une validation visuelle. Preuve lisible : `qa-rapport-police/rapport.png`.
+- Premiers échecs de fixtures conservés : trois références artificielles avaient
+  été modifiées sans invalider leurs validations ; les fixtures passent par
+  `update_zone`. Un test de lien comparait des chaînes Windows avec séparateurs
+  différents ; il compare maintenant les chemins résolus. Contrôles de production inchangés.
+
+**Conclusion : indice mesuré favorable à Large sur le masque DER qualifié, mais
+gain global de qualité non établi.** Priorités humaines : vérifier le passage
+non sélectionné de E11-P01, les rattachements E12-P01/P04/P05/P06 et les voix de
+la fin E12 ; recalculer ensuite sur une nouvelle révision validée. Pas de
+correction automatique ni de remplacement du moteur opérationnel.
+
+Contrôle final de conservation : référence, totalité des révisions et plan WER
+inchangés ; **178 fichiers antérieurs** (dont les bases d'annotation) et **49
+fichiers Python de production** inchangés par empreintes. Toutes les entrées de
+la référence vérifiées ; reproduction exacte des trois couples WER/DER
+historiques et aucun chevauchement humain dans les onze portions WER.
+Preuve : `verification-integrite.json` dans le dossier d'audit.
+Calcul courant final : **3,022 s écoulées, 2,469 s CPU**, pic mémoire engagée
+Job Windows **1 450 684 416 octets**, zéro tentative réseau Python.
+
+## Reprise ciblée BFMTV et premier cas municipal — 21 octobre 2026
+
+### Fonctionnalités du laboratoire
+
+Modifications limitées à `experiments/audio_qualification` et aux documents.
+Les moteurs, les séances et les fichiers de production ne sont pas modifiés.
+Les modèles déjà présents sont réutilisés ; aucun téléchargement ni installation.
+
+- **Corrections ciblées…** : six vérifications préparées pour la référence BFMTV
+  actuelle : E11-P01 et ses 39 mots hors sélection, deux ensembles de frontières
+  E12, trois plages sans voix attribuée. Accès direct au passage audio et à la
+  portion dans l'assistant. Une sélection élargie peut être préparée explicitement,
+  mais l'ouverture ne change ni sélection ni approbation. Verbatim en lecture seule.
+- Ajout local de tours manquants avec nom du relecteur et confirmation d'écoute.
+  Les tours existants et la validation du texte restent inchangés ; la relecture
+  complémentaire conserve la provenance de la relecture antérieure dans une
+  nouvelle révision. Pas de prétention à une nouvelle écoute intégrale de la zone.
+- Conservation des validations WER inchangées **uniquement après confirmation
+  explicite** (case décochée au départ). Refus si texte, bornes ou audio changent ;
+  une portion devenue chevauchante ou contradictoire reste à revoir avec la raison.
+  Plans/révisions d'origine conservés. Aucun transfert ou nouvelle approbation
+  réalisé par l'agent sur la référence utilisateur.
+- Journal local séparé : contrôles corrigés, inchangés ou différés, temps écoulé
+  déclaré et attributions importantes par chaîne. Les annotations initiales ne
+  comptent pas comme corrections moteur. Les nombres restent déclaratifs, non
+  exhaustifs ; un rapport périmé est signalé si référence, plan **ou journal** change.
+- **Nouveau test municipal / ouvrir un test…** : import WAV/MP3/M4A via PyAV
+  local, original copié et haché, WAV PCM commun 16 kHz mono. Projets, paliers,
+  essais, références, plans et journaux isolés de BFMTV. Chaque essai est neuf.
+- Exécution 60 s → 180 s → fichier complet, cinq composants par palier dans
+  leurs environnements existants : Small, sherpa, Large-v3, Community-1, WhisperX.
+  La reconnaissance Large et la diarisation Community sont partagées par B/B+X.
+  Jobs Windows annulables : 4 GiB A, 12 GiB B, 900 s pilote, 3600 s complet.
+  Sorties vides/horaires invalides/erreur moteur bloquent la suite et restent conservés.
+- Route CPU obligatoire pour A, choix CPU/CUDA explicite pour B, aucun faux
+  succès GPU après repli. Aucun nombre d'intervenants imposé.
+- Six extraits temporels vierges de 25 s proposés, avec sélection humaine
+  possible d'au plus six plages non recouvrantes. Indices ASR « proposition »,
+  « délibération », « vote » et changements de voix clairement hypothétiques.
+  Leur origine assistée est conservée ; aucune identité ni décision n'est déduite.
+  Le sélecteur refuse de remplacer une référence déjà annotée.
+
+Protocole réel/simulation jouée, situations simples, changements de voix,
+propositions, délibération et vote : `docs/protocole-qualification-municipale.md`.
+Il demande de constater ou marquer absent un vote, jamais d'en inventer un résultat.
+
+### Enregistrement municipal fourni et traitements réellement exécutés
+
+Fichier utilisateur : `Conseil municipal du 02 Octobre 2026 Maximi sur la  vente
+de véhicules.mp3`, traité localement. Durée décodée **336,0391875 s (5 min 36 s)**,
+donc **hors cible 10–15 min**. Pas d'étirement, de complétion ni d'annotation
+inventée pour atteindre la cible. La présence d'un vote effectif et la couverture
+des situations du protocole restent à vérifier humainement.
+
+Dossier distinct :
+`output/audio-qualification/municipal/e7f3eb95a94d49c48020b40cde29bddd/`.
+Essai réel : `runs/e4edeb00b2d94601ad4b86b39eb7ec5a/`.
+
+Les **15 invocations réelles isolées** ont terminé : cinq composants sur chacun
+des trois paliers. Zéro tentative réseau Python dans les quinze sorties.
+Les trois portes techniques sont passées ; aucune porte de qualité humaine
+n'est considérée passée. Le texte reconnu Large est préservé après WhisperX.
+
+| Chaîne complète | Route | Temps écoulé | Temps CPU cumulé | Pic mémoire engagée hôte |
+|---|---|---:|---:|---:|
+| Small + sherpa | CPU | 128,681 s | 373,016 s | 949 751 808 octets |
+| Large-v3 + Community-1 | CUDA | 84,199 s | 79,250 s | 7 595 474 944 octets |
+| Large-v3 + WhisperX + Community-1 | CUDA | 110,077 s | 103,688 s | 7 595 474 944 octets |
+
+Temps des composants complets, distincts des paliers pilotes. Somme des durées
+séquentielles, maximum des pics hôte, sans double inférence des composants
+partagés. VRAM maximale non mesurée par ce compteur. Session de développement,
+caches OS non purgés, pas une mesure « à froid » ni une comparaison à matériel
+égal entre CPU et GPU. Aucun gain de précision déduit de ces durées.
+
+`full/project.json` et `full/Ouvrir-ce-test.cmd` ouvrent la référence propre à
+cet essai. Les six extraits sont vierges, sans voix nominative ni validation.
+Les **WER strict/normalisé et DER qualifié municipaux restent non mesurés**.
+Les quatre groupes Small et deux Community ne sont pas des scores de précision.
+
+### Tests et recette
+
+Preuves dans :
+`output/audio-qualification/2026-10-20-01/qualification-municipale-20261021/589b0403cbce40a1bcafb52cb1589b7d/`.
+
+- **73 tests réussis**, sans sommer les répétitions : 46 unittest numériques,
+  2,130 s (`tests-numeriques-recette/`), 27 pytest PySide6, 4,03 s
+  (`ui-tests-livraison.xml`). Non-régressions WER/DER, verbatim et tours antérieurs
+  conservés, correction locale explicitement autorisée, transfert WER interdit
+  sans accord, nouveau chevauchement invalidant la portion, projets/plans
+  indépendants, historique/journal, échec bloquant les paliers, sélection sans
+  annotation inventée et sans écrasement, rapport périmé après journal modifié.
+- Import réellement exécuté depuis **QProcess/PySide6**, fixture technique WAV
+  48 kHz stéréo → 16 kHz mono, sans lancer de modèle et sans modifier l'original.
+  La fixture silencieuse ne mesure pas la qualité des moteurs.
+- Défaut découvert puis corrigé : un gestionnaire `finished` dans `QDialog`
+  entrait en collision avec son signal Qt natif. Le processus terminait, mais
+  l'interface ne libérait pas son état occupé. Renommé `process_finished`, puis
+  recette réelle réussie. Premier échec conservé dans `ui-tests-recette.xml`.
+- Un test a révélé des connexions SQLite de journal non fermées à la sortie
+  d'un bloc transactionnel ; fermeture explicite ajoutée et tests Windows passés.
+  Les premiers essais utilisaient le temporaire restreint du bac à sable ; les
+  temporaires finaux sont dans le workspace, preuves d'échec conservées.
+- Rendus de la file de six corrections et des trois colonnes municipales
+  inspectés sur des **copies de référence de test**. Décodage réel du WAV
+  municipal, même source, transport 65 789 → 66 555 ms, son coupé, sans erreur.
+  Cela ne constitue pas une écoute acoustique humaine ni une annotation.
+  Preuves : `qa-interface/result.json` et PNG.
+- Rapport municipal initial généré et contrôlé : tous les taux de qualité sont
+  non mesurés et les six annotations restent à faire (`rapport-municipal-initial/`).
+- Conservation vérifiée : référence BFMTV, tête, toutes les révisions et plan
+  inchangés ; **301 fichiers antérieurs** et **49 fichiers Python de production**
+  inchangés par empreintes. Audio/hypothèses BFMTV et municipales vérifiés,
+  original MP3 utilisateur identique à la copie. Preuve : `preservation-et-benchmark.json`.
+
+### Reste à faire humainement
+
+Corriger ou confirmer les quelques points BFMTV proposés, puis annoter quelques
+extraits municipaux en conservant la référence indépendante. Examiner surtout
+les attributions qui changent le sens d'une proposition ou d'un vote. Compléter
+la cible 10–15 min et les situations absentes si cet extrait ne les couvre pas.
+Recalculer ensuite les taux et l'effort de correction sur une portée commune.
+**Aucun choix automatique de moteur, aucune précision municipale déclarée validée,
+aucune intégration produit ni recompilation.**

@@ -146,6 +146,12 @@ def write_report(project,report,folder):
         '- **Redistribution / hors ligne** : réserves du dossier `docs/audio-benchmark-20261020-licenses.md` inchangées '
         '(DLL NVIDIA/FFmpeg, données NLTK, notices). Tests sur Windows vierge déconnecté toujours requis. '
         'Les modèles téléchargés et le benchmark sont conservés ; aucun installateur construit.','']
+    if report.get('boundary_audit'):
+        from .audit_export import lines as audit_lines,write_tables
+        audit=audit_lines(project,report)
+        lines[3:3]=audit+['---','']
+        (folder/'audit.md').write_text('# Audit audio NoteTaker — '+report['evaluation_protocol_version']+'\n\n'+'\n'.join(audit),encoding='utf-8')
+        write_tables(report,folder)
     (folder/'rapport.md').write_text('\n'.join(lines),encoding='utf-8')
     with (folder/'wer-par-zone.csv').open('w',encoding='utf-8-sig',newline='') as f:
         writer=csv.writer(f);writer.writerow(['chaine','zone','start','end','N','S','D','I','WER','hypotheses_vues_avant_validation'])

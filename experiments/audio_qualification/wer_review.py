@@ -25,7 +25,7 @@ def readonly_reference(path=WORK/'reference-humaine.sqlite'):
 
 
 class WERReviewDialog(QDialog):
-    def __init__(self,project,dataset,parent=None,store=None,media=True):
+    def __init__(self,project,dataset,parent=None,store=None,media=True,focus=None,suggested_range=None):
         super().__init__(parent);self.project=copy.deepcopy(project);self.dataset=dataset;self.store=store or PlanStore()
         self.revision,self.plan=self.store.load(project)
         if self.plan is None:
@@ -59,6 +59,10 @@ class WERReviewDialog(QDialog):
         self.player.positionChanged.connect(self.position);self.player.errorOccurred.connect(lambda *a:self.explanation.setText('Lecture impossible : '+self.player.errorString()+'. Les références sont conservées.'))
         self.full_text=QPlainTextEdit();self.full_text.setReadOnly(True);self.full_text.setMinimumHeight(150);el.addWidget(self.full_text)
         select=QPushButton('Utiliser les mots sélectionnés du verbatim humain');select.clicked.connect(lambda:self.safe(self.select_text));el.addWidget(select)
+        self.suggested_range=suggested_range
+        if suggested_range is not None:
+            suggestion=QPushButton('Préparer la sélection élargie proposée (validation à refaire)')
+            suggestion.clicked.connect(lambda:self.safe(self.use_suggestion));el.addWidget(suggestion)
         self.snippet=QPlainTextEdit();self.snippet.setReadOnly(True);self.snippet.setMaximumHeight(85);el.addWidget(self.snippet)
         flags=QHBoxLayout();self.classification=QComboBox();self.classification.addItem('Parole séquentielle','sequential');self.classification.addItem('Silence vérifié','silence');self.classification.currentIndexChanged.connect(self.class_changed);flags.addWidget(self.classification)
         self.heard=QCheckBox('J’ai écouté : bornes, absence de voix simultanées et mots sélectionnés sont exacts.');flags.addWidget(self.heard);el.addLayout(flags)
@@ -69,7 +73,9 @@ class WERReviewDialog(QDialog):
         bottom=QHBoxLayout();self.status=QLabel();self.status.setWordWrap(True);bottom.addWidget(self.status,1)
         self.calculate=QPushButton('Calculer les portions validées');self.calculate.clicked.connect(lambda:self.safe(self.accept));bottom.addWidget(self.calculate)
         close=QPushButton('Fermer sans calcul');close.clicked.connect(lambda:self.safe(self.reject));bottom.addWidget(close);layout.addLayout(bottom)
-        self.fill_table();self.table.setCurrentCell(0,0)
+        self.fill_table();self.table.setCurrentCell(next((i for i,b in enumerate(self.plan['blocks']) if b['id']==focus),0),0)
+    def use_suggestion(self):
+        self.first,self.last=self.suggested_range;self.update_selection();self.changed()
     def safe(self,fn):
         try:return fn()
         except (QualificationError,ValueError,OSError,sqlite3.Error) as e:QMessageBox.warning(self,'Découpage à vérifier',str(e))

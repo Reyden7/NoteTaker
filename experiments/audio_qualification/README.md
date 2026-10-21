@@ -1,10 +1,56 @@
 # Qualification humaine de la transcription et des voix
 
-Outil **séparé** de NoteTaker, utilisant les résultats figés du benchmark du
-20 octobre 2026. Aucun modèle n'est chargé par l'interface ou le calcul des
+Outil **séparé** de NoteTaker, conservant les résultats figés BFMTV et permettant
+des essais municipaux distincts. Aucun modèle n'est chargé par l'interface ou le calcul des
 scores, aucun fichier de séance n'est modifié, aucun téléchargement n'est prévu.
 Les dépendances PySide6 de `.venv` et pyannote.metrics de `.venv-lab-b` sont
 réutilisées sans nouvelle installation. Les modèles acquis restent en place.
+
+## Reprise BFMTV et nouveau conseil municipal
+
+Voir le protocole complet `docs/protocole-qualification-municipale.md`.
+
+- **Corrections ciblées…** prépare les six contrôles BFMTV prioritaires :
+  E11-P01, deux ensembles de frontières E12 et trois plages sans voix attribuée.
+  La sélection élargie des 39 mots est une proposition explicitement déclenchée,
+  jamais une modification ou approbation au simple affichage. Les mots restent
+  ceux du verbatim en lecture seule.
+- Les tours manquants peuvent être ajoutés sans retaper le texte. La validation
+  locale conserve la provenance de la relecture antérieure et crée une nouvelle
+  révision. La case permettant de conserver les accords WER inchangés est
+  décochée par défaut ; les accords devenus incompatibles restent à revoir.
+- **Nouveau test municipal / ouvrir un test…** copie un WAV/MP3/M4A dans un
+  projet neuf, puis exécute les trois chaînes avec les modèles existants.
+  Source, WAV commun, paliers, essais, référence, plans et journal sont séparés
+  de BFMTV dans `output/audio-qualification/municipal/<id>/`.
+- Le parcours teste 60 s, 180 s puis le fichier complet. Chaque composant tourne
+  dans un processus isolé annulable : 4 GiB pour Small/sherpa, 12 GiB pour les
+  candidats, 900 s par pilote et 3600 s par composant complet. Les échecs ne
+  deviennent pas des résultats simulés. A reste CPU ; la route B CPU/CUDA est
+  choisie explicitement, sans prétendre qu'un repli CPU est une mesure GPU.
+- **Choisir quelques extraits…** propose six plages temporelles de 25 s et
+  quelques repères ASR/voix, non validés. Choisir au plus six plages non
+  recouvrantes, par exemple deux contrôles temporels et des événements réellement
+  présents. Une référence déjà annotée ne peut pas être remplacée par ce sélecteur.
+- Le journal distingue les corrections de protocole, les annotations initiales
+  et les attributions importantes signalées par chaîne. Ces comptes ne sont pas
+  des taux exhaustifs. Les rapports changés par le seul journal sont marqués périmés.
+
+Chaque essai complet possède `full/Ouvrir-ce-test.cmd`, ou :
+
+```powershell
+.venv\Scripts\python.exe -m experiments.audio_qualification.app --project chemin/essai/full/project.json
+```
+
+Le fichier municipal fourni le 21 octobre dure **336,039 s (5 min 36 s)**,
+donc ne couvre pas encore la cible 10–15 min. Les trois chaînes ont réellement
+réussi les trois paliers ; aucune référence humaine municipale n'a été approuvée.
+Les WER/DER municipaux restent non mesurés. Les mots « voter » dans une hypothèse
+ne prouvent ni un vote effectif ni un résultat ; confirmer ou déclarer absent.
+
+Tests complémentaires : `test_workflow.py` (services) et `test_workflow_ui.py`
+(PySide6). Placer les dossiers temporaires numériques dans le workspace Windows
+pour éviter les restrictions du répertoire temporaire du bac à sable.
 
 ## Ouvrir
 
@@ -203,6 +249,59 @@ Le WER est calculé par Levenshtein local, testé sur cas connus ; jiwer n'est
 pas installé pour cet outil. Le DER utilise la bibliothèque pyannote déjà installée.
 
 ## Décision produit
+
+### Audit du 21 octobre : strict, normalisé et DER qualifié
+
+Les nouveaux rapports conservent le WER strict précédent et ajoutent un
+**WER normalisé français** distinct. Les règles versionnées sont dans
+`normalization.py` et intégralement reprises dans les rapports ; chaque
+transformation conserve les indices de ses mots stricts dans `scores.json`.
+
+- NFC et casse/ponctuation : protocole strict conservé.
+- Élisions connues séparées sans effacer leurs composants ni les négations.
+- Ligatures œ/oe et æ/ae ; accents corrigés seulement selon une liste fermée
+  publiée (notamment selection/séléction/sélection). **a/à, ou/où, sur/sûr,
+  du/dû et élevé/élève restent distincts.** Aucun correcteur orthographique.
+- Alias explicite « parcours sup » / « Parcoursup ». « parcoursuc » n'est pas
+  corrigé ; aucune identité ou ressemblance phonétique n'est extrapolée.
+- Entiers isolés 0–9999 écrits en lettres, signes plus/moins conservés, notation
+  Nh explicitée ; pluriels numériques conventionnels traités. Pas de nombres
+  décimaux reconstitués depuis les tokens ; séquences numériques adjacentes
+  conservées et signalées. Les fautes « uner », « acceuille », les accords et
+  répétitions humaines ne sont pas réparés automatiquement.
+- N strict et N normalisé affichés séparément : le changement de tokenisation
+  interdit d'interpréter une simple baisse du WER normalisé comme un progrès moteur.
+
+Le **DER historique** reste inchangé. Le **DER qualifié partiel** utilise un
+masque commun aux chaînes : union des tours de voix humains revus et des silences
+explicitement écoutés/validés. Les trous ne deviennent jamais du silence par
+défaut. Une portion WER approuvée comme parole n'ajoute pas d'identité vocale.
+Les confusions, omissions et fausses alarmes sont séparées en secondes de voix ;
+la permutation optimale est globale sur ce seul masque, chevauchements inclus.
+Les erreurs dans les plages inconnues exclues ne sont donc pas mesurées.
+
+Les rapports ajoutent les WER par zone et portion, les couvertures, les mots
+humains hors sélection et les frontières traversant un mot moteur. Ces derniers
+indices viennent d'alignements textuels avec les sorties existantes : **écouter
+avant de corriger**, sans prendre l'accord de Small et Large pour une vérité.
+WhisperX n'est pas une troisième confirmation indépendante.
+
+Chaque portion signalée dispose d'un WAV PCM de contrôle, copié sans réencodage
+avec 1,5 s de contexte disponible de chaque côté. Le rapport donne son origine
+absolue ; le lecteur du comparateur conserve le WAV complet d'origine. Les liens
+audio de l'onglet résultats ouvrent uniquement des fichiers locaux du rapport.
+Les écoutes et validations humaines restent à faire ; aucune annotation n'est
+modifiée par le calcul.
+
+Option CLI de comparaison historique (référence/plan JSON figés et sortie neuve) :
+
+```powershell
+.venv\Scripts\python.exe -m experiments.audio_qualification.controller chemin/reference.json chemin/nouveau-calcul --plan chemin/wer-plan.json --baseline-report chemin/ancien/scores.json
+```
+
+Une différence de sélection est signalée séparément. L'interface marque aussi
+un rapport périmé lorsque le plan WER change sans changer le verbatim humain.
+Tests supplémentaires : `.venv-lab-b\Scripts\python.exe -m unittest experiments.audio_qualification.test_audit -v`.
 
 Les rapports de comparaison produisent les mesures disponibles et exposent les
 domaines non mesurés. Ils ne sélectionnent aucun moteur. Une recommandation finale
