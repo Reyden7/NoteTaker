@@ -15,7 +15,7 @@ de distribution n'est approuvé aujourd'hui.
 | llama.cpp b11681 | MIT | Notices du moteur et dépendances réellement livrées |
 | Qwen3 4B GGUF officiel | Apache-2.0 | Inclure LICENSE, NOTICE si fourni, provenance et modifications ; modèle Q4_K_M précisément identifié |
 | pyannote.audio 4.0.2 | MIT | Télémétrie désactivée explicitement ; ne pas inclure la voie cloud |
-| Community-1 | CC-BY-4.0, usage commercial et redistribution permis avec attribution | Accès HF conditionné aux coordonnées/conditions ; poids non acquis, pas de validation du lot complet |
+| Community-1 | CC-BY-4.0, usage commercial et redistribution permis avec attribution | Accès HF conditionné aux coordonnées/conditions ; poids acquis et testés dans le laboratoire du 20/10 après accord utilisateur ; aucune intégration ni validation du lot commercial |
 | sherpa-onnx 1.13.8 et core | Apache-2.0 | Notices et audit du binaire Windows et ONNX Runtime inclus |
 | pyannote segmentation 3.0 convertie ONNX | MIT ; archive contient LICENSE CNRS | Inclure licence, origine du modèle et conversion ; acquisition publique depuis la release sherpa documentée |
 | 3D-Speaker ERes2Net base 3dspeaker 16k | Fiche des poids originaux : Apache License 2.0 | Conserver fiche originale, licence, conversion ONNX et hash exact ; ne pas confondre avec la licence du seul dépôt de code |
@@ -270,3 +270,12 @@ isolé réussit, mais l'essai de transcription naturelle de 30 secondes dépasse
 le délai de 600 secondes (`evidence/ctranslate2-cpu-smoke.json`). La variante
 n'est donc pas qualifiée ni intégrée. Cette compilation ne lève pas les obligations MIT/tiers du code,
 la redistribution Visual C++ ni les autres réserves FFmpeg/Qt.
+
+## Laboratoire audio indépendant du 20 octobre 2026
+
+Community-1 a été acquis après acceptation des conditions par l'utilisateur et
+authentification HF locale. Large-v3, Community-1, l'aligneur français de WhisperX
+et MOSS sont figés, vérifiés et séparés des modèles de production. Les inférences
+locales réussies ne lèvent pas les réserves de redistribution des dépendances
+natives ni des données entraînées NLTK. Audit détaillé :
+[audio-benchmark-20261020-licenses.md](audio-benchmark-20261020-licenses.md).

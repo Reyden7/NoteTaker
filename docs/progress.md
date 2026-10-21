@@ -972,3 +972,295 @@ ligne. Ergonomie à valider par les agents ; aucun Setup commercial produit.
 La base civile reste sous les permissions Windows, sans coffre chiffré ni
 habilitations avancées ; le lot 2 n'est pas commencé. Les limites précédentes
 des moteurs et de redistribution restent ouvertes. Voir `directory-stage1.md`.
+
+## Laboratoire transcription/diarisation — 20 octobre 2026
+
+Expérience indépendante : `experiments/audio_benchmark_20261020`. Aucun moteur
+applicatif modifié, aucune base/séance ouverte en écriture et aucune recompilation.
+Les essais comparatifs de synthèse Qwen/Gemma restent distincts de ce laboratoire.
+
+### Corpus et références conservés
+
+- Même PCM BFMTV, durée réelle **20 min 40,017 s**, SHA-256
+  `95da1f0787fd22ad313acfd367fda3012b47587660cb9b1a2d6e6001bf0e708a`.
+  Copies exactes 60 s à 18:00, puis 180 s à 17:31,960, puis totalité ; aucune
+  réduction arbitraire du fichier long. MP3 d'origine jamais remplacé.
+- Référence narrative et correction humaine Parcoursup copiées sans modification.
+  Douze formulaires initiaux encore non annotés avec frontières/verbatim exacts :
+  **WER, DER, cpWER et cpCER non mesurés**, conformément à la clarification utilisateur.
+- Comparaison **textuelle** aux documents humains effectuée ; douze vues avec audio,
+  transcriptions A/B et sorties C disponibles préparées dans `review`. Aucune
+  écoute par l'agent revendiquée. Interruptions et chevauchements non certifiés.
+  Aucune autre réunion naturelle française fournie.
+
+### Exécutions réelles
+
+Poste : i5-14600KF, 14 cœurs / 20 threads, 31,79 GiB RAM ; RTX 5070 12 227 MiB,
+pilote 616.92, Windows 10.0.26300. CUDA réellement exécuté avec Torch 2.8.0+cu128
+compatible sm_120. Trois environnements A/B/C séparés, quatre threads demandés,
+processus neufs dans un Job Windows limité à 12 GiB engagés avant démarrage,
+annulation et préservation des résultats partiels.
+
+| Chaîne | 60 s | 180 s | 20 min 40 s |
+|---|---|---|---|
+| A — Small + sherpa actuel, CPU | Réussite | Réussite | Réussite, **616,85 s** écoulées cumulées |
+| B — Large-v3 + Community-1, CUDA | Réussite | Réussite | Réussite, **154,66 s** sans WhisperX |
+| B — avec alignement WhisperX, CUDA | Réussite | Réussite | Réussite, **188,62 s** étapes cumulées |
+| C — MOSS officiel 0.9B, CUDA/SDPA | Réussite | Réussite, **89,19 s** | **Échec CUDA OutOfMemoryError**, 25,96 s |
+| B et C, contrôles CPU | Réussites réelles | Non exécuté CPU | Non qualifié CPU long |
+
+CPU 60 s : Large-v3 68,61 s, Community-1 26,15 s, WhisperX 13,37 s ; MOSS FP32
+83,00 s. Ce sont des tests d'inférence réels, pas des tests d'import uniquement.
+Le fichier long MOSS réclame une allocation CUDA supplémentaire de 15,96 GiB
+sur une carte de 11,91 GiB utilisables ; aucune transcription longue n'est annoncée.
+Pas de découpage caché ni de troncature présentée comme une réussite.
+
+Mesures conservées par étape : durée écoulée, CPU utilisateur/noyau du Job,
+pic engagé noyau et RSS échantillonnée. Le temps actif des kernels GPU et le pic
+VRAM global ne sont pas mesurés ; les intervalles CUDA et pics d'allocateur Torch
+de MOSS sont conservés avec leur portée limitée. Tailles logiques des dépendances :
+A 330 783 618 B, B 8 065 430 665 B, C 7 941 748 579 B, hors modèles/interpréteurs.
+Les liens physiques uv peuvent partager les blocs disque. Détails dans les inventaires.
+
+Les étapes longues GPU et contrôles CPU ultérieurs sont séquentiels, mais A long
+a chevauché des pilotes GPU courts : contention possible. Aucun rapport de vitesse
+CPU/GPU à matériel égal. Pas de répétitions statistiques ni de purge des caches
+OS/CUDA/JIT ; « processus neuf » ne signifie pas mesure à froid complète.
+
+### Observations et limites de qualité
+
+- A complet : 583 segments ASR, 442 tours diarisation, cinq groupes ; rapprochement
+  692 interventions, dont **47 de durée nulle**, 285 signalées incertaines. Le nombre
+  diffère des 670 passages historiques édités ; les sources ne sont pas modifiées.
+- B complet : 476 segments ASR, 206 tours standard/167 exclusifs, cinq groupes.
+  Quatre variantes avec/sans WhisperX et standard/exclusif conservées. Avec WhisperX,
+  zéro intervention de durée nulle, **dix segments à alignement incomplet conservés
+  en entier et signalés** ; tout le texte reconnu préservé à espaces près.
+- C trois minutes : 54 segments, six groupes ; fusion de Sonia et Louise sous S01,
+  et fragmentation de réponses brèves. C n'est pas précis du seul fait de six groupes.
+- Contre-exemples humains documentés : A fusionne Arthur/Manès ; B complet fusionne
+  l'intervenante évoquant l'Outre-mer avec Louise et fragmente des réponses au mot près.
+  B trois minutes écrit « noms » au lieu de « notes », mais le fichier complet écrit
+  « notes ». C écrit « premier serviteur » et « on approche » face à « premier servi »
+  et « on abroge » humains. Pas de score de gain, ni jugement d'un moteur utilisé
+  comme vérité terrain. Les voix naturelles et chevauchements restent non validés
+  acoustiquement tant que l'écoute humaine annotée n'est pas réalisée.
+
+Recommandation **expérimentale** : approfondir B avec WhisperX sur ce matériel,
+en conservant A en production ; priorité aux annotations de changements de voix
+E01/E04/E09/E10/E12 et à une réunion municipale naturelle. La préférence technique
+ne valide ni la qualité, ni le repli CPU long, ni un remplacement applicatif.
+
+### Incidents conservés, tests et licences
+
+TorchCodec ne charge pas ses DLL de décodage FFmpeg sur ce Windows. L'entrée
+tenseur officielle Community-1 fonctionne réellement, comme le WAV en mémoire
+de WhisperX ; le décodeur direct n'est pas qualifié. Community-1 acquis après
+acceptation HF par l'utilisateur, sans jeton dans le dépôt, commandes ou résultats.
+Acquisition explicite séparée des inférences locales avec blocage Python réseau.
+PC connecté de développement : pas de recette Windows vierge physiquement déconnecté.
+
+Tests ciblés finaux : **8 réussites en 1,93 s**, rapport
+`output/audio-benchmark/2026-10-20-01/tests-lab-06.xml`. Quota mémoire natif avec
+allocation effectivement refusée, annulation du processus détenu, copies PCM
+exactes, hashes, préservation des textes sur les trois portées et des segments
+sans mots alignés, absence de scores de précision injustifiés. Pas de suite
+applicative/recompilation revendiquée pour cette expérience sans changement produit.
+
+Les incidents du contrôleur et des tests restent archivés : constante Python
+`CREATE_SUSPENDED` non exposée corrigée avant A-v2 ; répertoire temporaire partagé
+Windows inaccessible contourné par un dossier neuf dans le laboratoire ; assertion
+incorrecte sur le compteur de pic mémoire remplacée par la vérification du quota
+configuré **et du refus réel d'allocation avant 128 MiB de charge utile**. Pas de
+relèvement de la limite native pour obtenir des tests verts. Premier adaptateur
+WhisperX avec mots accolés archivé en `*-spacing-pilot`, correction des séparateurs
+couverte par les tests ; aucun texte brut d'inférence réécrit.
+
+Révisions, SHA LFS et licences des modèles acquis vérifiés. Licences des paquets
+archivées ; réserves NVIDIA/FFmpeg et données entraînées NLTK documentées dans
+`audio-benchmark-20261020-licenses.md`. Aucun lot commercial approuvé.
+Vérification finale des hashes de sources Python, manifestes produit, références,
+audio et actifs acquis : tous identiques aux empreintes enregistrées.
+
+Livrables dans `output/audio-benchmark/2026-10-20-01/` :
+`rapport-comparatif.md`, `mesures.json`/`.csv`, `chain-totals.json`, `model-sizes.json`,
+`transcriptions.md`, `uncertitudes.json`, `diagnostic.json`, `review/index.md`,
+`preservation.json`, sorties brutes et traces dans `runs`, variantes B dans `combined`.
+
+## Qualification humaine comparative — interface du 20 octobre 2026
+
+Outil autonome dans `experiments/audio_qualification`, séparé du produit et des
+résultats précédents. Lancement : `Ouvrir-le-comparateur.cmd` dans ce dossier ou
+`.venv\Scripts\python.exe -m experiments.audio_qualification.app` depuis le dépôt.
+Guide complet et conventions : `experiments/audio_qualification/README.md`.
+Aucun modèle ni pipeline applicatif modifié ; aucun nouveau modèle téléchargé,
+aucune base utilisateur ouverte, aucune recompilation ni installation de dépendances.
+
+### Fonctionnel et réellement vérifié
+
+- Trois colonnes : Small+sherpa, Large-v3+Community-1, Large-v3+WhisperX+Community-1.
+  Même WAV PCM du benchmark, même SHA, horloge absolue commune. Douze zones
+  proposées, limites ajustables ; création de zones supplémentaires sans double
+  comptage. Les identifiants techniques restent propres à chaque chaîne.
+- Lecture commune, recherche, retour/avance de 2 s, vitesse, boucle, suivi et
+  surlignage des passages. Double-clic pour relire une intervention. Choix de la
+  sortie audio et du volume. Les interventions longues s'affichent intégralement.
+- Éditeur humain séparé : verbatim, voix avec noms confirmés ou pseudonymes,
+  tours de parole pouvant se chevaucher, horaires des mots facultatifs,
+  catégories interruption/chevauchement/passage court/nom propre et observations
+  par chaîne et type d'erreur. Aucun texte ou horaire moteur ne préremplit la référence.
+- Hypothèses masquées au départ pour réduire le biais d'annotation. L'exposition
+  est conservée dans la provenance des validations ; masquer après coup ne
+  l'efface pas et ne transforme pas une annotation assistée en annotation aveugle.
+- Base SQLite **distincte**, identifiant d'application vérifié, transactions,
+  révisions avec parent/hash/date/auteur ; contrôle de concurrence. Autosauvegarde
+  et brouillon brut avant interprétation des cellules : saisie numérique incomplète
+  récupérée réellement à la fermeture/réouverture. Refus d'ouvrir une base étrangère.
+  Les révisions antérieures ne sont jamais réécrites. Les changements pertinents
+  retirent les validations, et un rapport d'une ancienne référence porte un bandeau.
+- Export de la référence figée : JSON avec provenance, UEM/RTTM des zones voix
+  revues, verbatim revu et mots TSV. Les fichiers du benchmark restent en lecture seule.
+
+### Mesures préparées, pas de précision annoncée
+
+Calcul annulable dans `.venv-lab-b`, processus limité à 2 GiB engagés et 120 s,
+sans chargement de modèle ; empreintes des hypothèses/audio vérifiées et réseau
+Python interdit. Rapports par révision dans
+`output/audio-qualification/2026-10-20-01/comparaisons/<id>/report/` :
+`scores.json`, `rapport.md`, CSV par zone, référence exportée et traces séparées.
+Le rapport est également affiché dans l'interface.
+
+- **WER** : seulement verbatim exhaustif revu, normalisation française explicite,
+  S/D/I et mots erronés consultables. Portée commune aux trois chaînes ; blocage
+  d'une frontière sans horaires de mots exploitables. Pas de WER linéaire sur
+  paroles simultanées. Une zone silencieuse contribue des insertions, sans
+  fabriquer un taux lorsqu'il n'y a aucun mot humain au dénominateur.
+- **DER brut** : pyannote.metrics, UEM des seules zones activité/voix revues,
+  collerette 0 s, chevauchements inclus, permutation optimale globale sur le même
+  enregistrement, pas par extrait. Confusion, parole manquée et fausses alarmes
+  présentées séparément, avec secondes de voix humaines et couverture.
+- **WhisperX** : même texte Large-v3 et mêmes tours Community-1 ; mêmes WER/DER
+  bruts par construction. Gains éventuels mesurés séparément sur les mots humains
+  horodatés : erreurs début/fin, bornes à ±100/250 ms avec couverture, erreur
+  conditionnelle d'attribution des mots corrects. Horaires absents jamais devinés.
+  Surcoût du benchmark conservé : **33,96 s / 21,96 %** des étapes B sans alignement,
+  une seule exécution ; pas un gain de précision ni un ratio CPU/GPU égalitaire.
+- Sous-ensembles des cas difficiles, erreurs de transcription et erreurs de voix
+  séparés. Aucune extrapolation aux portions non annotées ou aux autres réunions.
+  cpWER/cpCER restent non mesurés.
+
+### Tests exécutés et limites
+
+**23 tests ciblés réussis** : 13 éditeur/stockage/intégrité, 10 numériques.
+Preuves dans `output/audio-qualification/2026-10-20-01/` :
+
+- `editor-tests-04.xml` : 13 réussites, 2,26 s ; relecture et invalidation, versions,
+  concurrence, base étrangère inchangée, brouillon récupéré, synchronisation,
+  absence de préremplissage, sources modifiées bloquées, rapport périmé signalé,
+  exposition aux hypothèses non effaçable par restauration et sélection conservée
+  lorsqu'une révision antérieure ne contient pas la zone nouvellement créée.
+- `scoring-tests-03/{stderr.txt,measurement.json}` : 10 tests unittest réussis,
+  1,397 s pour la suite. Cas à vérité artificielle **uniquement pour vérifier
+  les algorithmes** : permutation globale, chevauchement, silence, zones partielles,
+  normalisation, mots manquants, catégories et dissociation WER/DER/alignement.
+- `qa/2adfd57cb34a4f8d953e66551d464cef/result.json` et PNG : rendu Qt inspecté,
+  décodage et recherche réels dans le WAV commun, progression 1 090 000 →
+  1 090 866 ms, trois colonnes synchronisées, sortie Logitech réelle, lecture
+  **son coupé**. Cela ne certifie pas une écoute humaine ni la fidélité acoustique.
+- Rapport lancé depuis l'interface et affiché dans son onglet de résultats,
+  référence vide : tous les WER/DER restent non mesurés ; zéro tentative réseau
+  Python, hypothèses inchangées. Les rapports de recette ne sont pas des résultats
+  d'annotation humaine du débat.
+
+Incident conservé : l'import oublié de DOMAINS dans le premier test numérique
+a été corrigé (rapport `scoring-tests-01`). La première recette de lecture avait
+un curseur avançant mais des erreurs de conversion FFmpeg sur le casque 7.1 :
+elle n'est pas une validation d'écoute. Le laboratoire utilise maintenant le
+backend **Windows Media Foundation** dans son seul processus ; la recette
+suivante sur le même casque donne BufferedMedia sans cette erreur. Aucun réglage
+système ni lecteur de production n'a été modifié.
+
+**Qualification de précision en cours** : aucune nouvelle référence exhaustive
+horodatée n'a été remplie par l'agent. Il reste à annoter et écouter les extraits,
+examiner les erreurs et la représentativité, puis recommander les routes CPU/GPU.
+La voie CPU longue des nouveaux moteurs, les réserves de redistribution
+(`audio-benchmark-20261020-licenses.md`) et la recette Windows vierge hors ligne
+restent ouvertes. Le logiciel de production et tous les modèles acquis sont conservés.
+
+## Correction du laboratoire WER sans horaires humains de mots — 20 octobre 2026
+
+### Cause et périmètre
+
+E11 et E12 ont bien un verbatim et des tours de voix validés humainement (2/3).
+Le WER ne nécessitait pas de troisième validation des mots horodatés, mais
+l'ancienne exclusion portait sur **tout l'extrait** dès qu'il contenait un
+chevauchement. Les nouveaux rapports identiques résultaient d'entrées inchangées.
+Le correctif porte exclusivement sur `experiments/audio_qualification` et sa
+documentation : aucun moteur de production, aucune séance, aucune annotation
+humaine ni ancien résultat n'est remplacé. Aucun modèle n'est téléchargé ou exécuté.
+
+### Fonctionnement ajouté
+
+- WER séquentiel sans horaires humains de mots : le texte et les voix revus
+  suffisent pour les zones sans chevauchement réel. Les bornes lexicales des
+  hypothèses utilisent les horaires déjà produits par les moteurs, communs pour
+  Large-v3 avec/sans WhisperX. Leur disponibilité est vérifiée pour les trois chaînes.
+- Les chevauchements sont isolés à partir des tours de **voix humaines distinctes**,
+  sans écarter le reste de la zone : E11 1119.139–1124.499 ; E12
+  1206.728–1211.158 et 1217.314–1217.490 secondes absolues.
+- Assistant « WER sans horaires de mots… » : écoute du WAV commun, ajustement
+  des bornes/scission, sélection de mots du verbatim original en lecture seule,
+  auteur et confirmation humaine explicite. Les présélections assistées restent
+  des propositions. Seules les portions approuvées entrent dans le score ; le
+  rapport garde les portions en attente et les exclusions visibles.
+- Découpages dans `decoupages-wer.sqlite`, base séparée avec versions, empreinte
+  de la référence et contrôle de concurrence. Une modification invalide
+  l'approbation concernée. Refus des chevauchements réels, doubles comptages et
+  validations transférées d'une autre référence. Rapport avec copie figée du plan.
+- Sept portions séquentielles et quatre trous de couverture proposés sur la
+  référence actuelle. Aucun de ces découpages n'a été approuvé par l'agent.
+  Le WER de cette référence reste donc **non mesuré avant validation du découpage**.
+- Trous explicitement signalés : E11 1113.697–1114.839 et 1125.791–1128.709 ;
+  E12 1201.380–1201.518 et **1225.251–1237.580 (12,329 s)**. Cette dernière
+  plage correspond à **20:25.251–20:37.580** : du texte humain existe, mais les
+  tours de voix s'arrêtent avant sa fin. Ces trous ne sont pas déclarés silencieux
+  automatiquement. Les détections des moteurs sont des alertes à écouter.
+- DER historique conservé avec avertissement **« indicatif, couverture incomplète »**
+  lorsque de la parole moteur se trouve dans ces trous. Ne pas interpréter ce
+  résultat comme une précision qualifiée tant que leur activité humaine manque.
+  Les WER/DER bruts Large-v3 et WhisperX restent identiques par construction ;
+  les diagnostics d'alignement restent séparés et facultatifs.
+
+### Tests réellement exécutés
+
+**39 tests réussis**, sans additionner les répétitions :
+
+- 21 tests numériques unittest, 2,044 s : WER avec 2/3 et sans horaires humains,
+  exclusion locale des chevauchements, approbation requise, portion partielle,
+  rejet du double comptage et des approbations périmées, versions/concurrence,
+  conservation du cas réel E12 avec trou de 12,329 s, non-régressions WER/DER.
+  Processus isolé sous Job Windows 2 GiB / 120 s, 2,599 s écoulées.
+  Preuves : `output/audio-qualification/2026-10-20-01/wer-correction/tests-numeriques-final/`.
+- 18 tests PySide6 pytest, 3,42 s : 13 tests éditeur existants et cinq tests
+  assistant (propositions non validées, sélection du texte humain, invalidation,
+  scission avec historique, refus de calculer sans approbation).
+  Preuve : `wer-correction/ui-tests-final.xml` dans le même dossier de qualification.
+- Nouveau rapport sur une copie figée de la référence réelle : calcul terminé
+  en 3,291 s, sans inférence ni approbation automatique. WER non mesuré et onze
+  propositions en attente affichées ; avertissements DER et trous de couverture.
+  Anciennes comparaisons conservées. Rapport :
+  `wer-correction/61e6673431804c52b93c427101638356/rapport-corrige/report/rapport.md`.
+- Recette Qt de l'assistant : rendu inspecté, recherche sur la fin E12 et
+  progression réelles, sortie Windows, **son coupé** ; ce test ne certifie aucune
+  écoute acoustique humaine. Images, JSON et base de test distincte dans
+  `wer-correction/61e6673431804c52b93c427101638356/qa-decoupage/`.
+- Conservation vérifiée par empreintes : référence humaine et toutes ses
+  révisions inchangées, 91 fichiers de résultats antérieurs inchangés, 54 fichiers
+  protégés du manifeste benchmark inchangés ; sources audio et hypothèses de la
+  référence vérifiées. Preuve en lecture seule de la base d'origine :
+  `wer-correction/61e6673431804c52b93c427101638356/preservation-after.json`.
+
+Guide opérateur actualisé : `experiments/audio_qualification/README.md`.
+Enregistrer puis relancer le comparateur pour charger le nouveau bouton.
+L'étape humaine restante porte sur les bornes et le texte de chaque portion,
+pas sur les horaires individuels de chaque mot. Aucun gain de précision annoncé.
