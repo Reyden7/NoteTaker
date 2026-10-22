@@ -3,8 +3,8 @@ import json
 import re
 import threading
 import uuid
+import time
 from pathlib import Path
-from notetaker.engines.router import run_with_fallback
 from notetaker.infrastructure.atomic import atomic_json, sha256_file
 from notetaker.infrastructure.paths import ModelPaths, session_directory
 from notetaker.infrastructure.process import run_worker, JobCancelled
@@ -225,11 +225,31 @@ class Pipeline:
             raise JobCancelled("JOB_CANCELLED")
         path = workspace / (request["engine"] + "-" + request.get("device", "cpu") + ".request.json")
         atomic_json(path, request)
-        response = run_worker(path, timeout=timeout, cancel=self.cancel)
+        stop=threading.Event()
+        def report_registry():
+            previous=None
+            while not stop.is_set():
+                try:
+                    progress_file=workspace/'summary-progress.json'
+                    value=json.loads(progress_file.read_text(encoding='utf-8'))
+                    if value!=previous:
+                        self.progress('REGISTRY_PROGRESS:'+json.dumps(value));previous=value
+                except (OSError,ValueError):pass
+                stop.wait(.4)
+        monitor=None
+        if request.get('task','').startswith('registry_'):
+            monitor=threading.Thread(target=report_registry,daemon=True);monitor.start()
+        try:
+            response = run_worker(path, timeout=timeout, cancel=self.cancel)
+        finally:
+            stop.set()
+            if monitor:monitor.join(timeout=1)
         atomic_json(path.with_suffix(".result.json"), response)
         return response["result"]
 
-    def analyse(self, sid, mode="cpu"):
+    def analyse(self, sid, mode=None):
+        from .audio_engine import GPUAudio, GPUUnavailable, select_engine, read_mode, community_data, preserve_simultaneous
+        started = time.perf_counter()
         store = SessionStore(self.root)
         jid = store.start_job(sid, "analysis")
         workspace = session_directory(self.root, sid) / "jobs" / jid
@@ -239,23 +259,45 @@ class Pipeline:
             takes = [t for t in state["takes"] if t.get("enabled", 1)]
             if not takes or any(t["status"] == "recording" for t in takes):
                 raise ValueError("STOP_RECORDING_OR_IMPORT_AUDIO_FIRST")
-            self.progress("Vérification des modèles locaux")
-            self.models.verify()
+            gpu = GPUAudio(getattr(self.models, 'root', None))
+            route = select_engine(mode or read_mode(self.root), gpu, workspace, self.cancel, self.progress)
+            atomic_json(workspace / 'audio-route.json', route)
+            self.progress('Moteur utilisé : ' + ('Large-v3 + Community-1 / CUDA' if route['device']=='cuda' else 'Small + sherpa / CPU'))
+            if route['device'] == 'cpu':
+                self.progress("Vérification des modèles CPU locaux — Small + sherpa")
+                self.models.verify()
             audio = prepare_audio(takes, workspace / "normalized.wav", self.progress)
-            self.progress("Transcription française en cours")
-            asr = run_with_fallback(lambda device: self._run(workspace, {"engine": "asr", "device": device, "audio": str(audio), "model": str(self.models.asr)}), mode)
+            if self.cancel.is_set():
+                raise JobCancelled('JOB_CANCELLED')
+            self.progress("Transcription française — " + ('Large-v3 / CUDA' if route['device']=='cuda' else 'Small / CPU'))
+            if route['device'] == 'cuda':
+                asr_data = gpu.run(workspace, 'asr', self.cancel)
+            else:
+                asr_data = self._run(workspace, {"engine": "asr", "device": "cpu", "audio": str(audio), "model": str(self.models.asr)})
             self.progress("Différenciation des voix et repérage des chevauchements possibles")
             diar_error = None
             try:
-                diar = self._run(workspace, {"engine": "diarization-sherpa", "device": "cpu", "audio": str(audio), "segmentation": str(self.models.segmentation), "embedding": str(self.models.embedding),
+                if route['device'] == 'cuda':
+                    self.progress('Diarisation Community-1 / CUDA — tours simultanés conservés')
+                    diar = community_data(gpu.run(workspace, 'diarization', self.cancel)['turns'])
+                    atomic_json(workspace / 'community-turns.json', diar)
+                else:
+                    diar = self._run(workspace, {"engine": "diarization-sherpa", "device": "cpu", "audio": str(audio), "segmentation": str(self.models.segmentation), "embedding": str(self.models.embedding),
                                            "refinement_embedding": str(getattr(self.models, 'refinement_embedding', self.models.embedding)), "overlap": True})
             except JobCancelled:
                 raise
             except Exception as error:
+                if route['device'] == 'cuda':
+                    if isinstance(error, GPUUnavailable):
+                        raise
+                    raise GPUUnavailable('GPU_INVALID_DIARIZATION_OUTPUT') from error
                 diar, diar_error = {"turns": []}, type(error).__name__
-            utterances, speakers = align_transcript(asr.value["segments"], diar)
+            utterances, speakers = align_transcript(asr_data["segments"], diar)
+            if route['device'] == 'cuda':
+                utterances = preserve_simultaneous(utterances, diar)
             for u in utterances:
                 u["source"]["normalized_audio"] = str(audio)
+                u['source']['audio_engine'] = route['device']
             # Bind old and new time coordinates before preserving human edits.
             digest = sha256_file(audio)
             protected_hashes = {}
@@ -272,13 +314,19 @@ class Pipeline:
             for u in utterances:
                 u['source']['audio_sha256'] = digest
             utterances = compact_rows(utterances)
+            if self.cancel.is_set():
+                raise JobCancelled('JOB_CANCELLED')
+            atomic_json(workspace / 'audio-timing.json', {'device': route['device'], 'status': 'prepared_before_commit',
+                'elapsed_seconds': round(time.perf_counter()-started, 3), 'selected_mode': route['selected']})
             store.save_analysis(sid, utterances, speakers, state["revision"])
             atomic_json(workspace / "analysis-diagnostics.json", {**diar.get("diagnostics", {}), "utterances": len(utterances),
                          "uncertain_utterances": sum(bool(u["uncertain"]) for u in utterances)})
             if diar_error:
                 raise RuntimeError("DIARIZATION_FAILED_TRANSCRIPT_PRESERVED")
             store.finish_job(jid, True)
-            return {"utterances": len(utterances), "speakers": len(speakers), "device": asr.device}
+            return {"utterances": len(utterances), "speakers": len(speakers), "device": route['device'],
+                    "engine": 'Large-v3 + Community-1' if route['device']=='cuda' else 'Small + sherpa',
+                    "elapsed_seconds": round(time.perf_counter()-started, 3), "route": route}
         except BaseException as error:
             store.finish_job(jid, False, "CANCELLED" if isinstance(error, JobCancelled) else type(error).__name__)
             raise
@@ -287,6 +335,10 @@ class Pipeline:
 
     def prepare_registry(self,sid):
         return self._registry_work(sid,'registry_prepare')
+
+    def automatic_report(self,sid):
+        from .automatic_report import generate
+        return generate(self,sid)
 
     def verify_information(self,sid,information_id):
         return self._registry_work(sid,'registry_verify',information_id)
@@ -309,11 +361,15 @@ class Pipeline:
                 'binary':str(self.models.llama),'model':str(self.models.llm),'workspace':str(workspace),
                 'registry':original['content'],'utterances':state['utterances'],
                 'lexicon':state['metadata'].get('lexicon',[])},timeout=1800 if task=='registry_verify' else 14400)
+            from .registry_workflow import preparation_report
+            report=preparation_report(result['registry'],state,original['content'])
+            report['reused_preparation']=result.get('reused',False)
+            if task=='registry_prepare':result['registry']['processing']['preparation_report']=report
             service.save(sid,result['registry'],expected_id=original['id'],actor='Qwen CPU — contrôle provisoire',
                 reason='Préparation ou vérification demandée terminée ; aucune approbation humaine créée')
             store.finish_job(jid,True)
             from notetaker.domain.information_registry import coverage
-            return {**coverage(result['registry']),**({'focus_id':result['focus_id']} if result.get('focus_id') else {})}
+            return {**coverage(result['registry']),**report,**({'focus_id':result['focus_id']} if result.get('focus_id') else {})}
         except BaseException as error:
             checkpoint=workspace/'registry-checkpoint.json'
             if original and checkpoint.exists():

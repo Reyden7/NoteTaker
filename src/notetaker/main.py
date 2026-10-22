@@ -20,6 +20,8 @@ def main():
         return worker_main()
     if args.command == "gui":
         import sys
+        from .infrastructure.media import configure_media_backend
+        configure_media_backend()
         from PySide6.QtWidgets import QApplication, QMessageBox
         from PySide6.QtCore import QLockFile
         from .infrastructure.paths import default_data_root

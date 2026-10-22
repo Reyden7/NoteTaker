@@ -104,7 +104,8 @@ def _docx(content, metadata, path, votes, decisions, details=None):
     doc.add_paragraph(DISCLAIMER)
     doc.add_paragraph("Document de travail. La relecture ne vaut pas adoption officielle.")
     if details.get("preview"):
-        doc.add_paragraph("APERÇU TECHNIQUE NON VALIDÉ — aucune relecture humaine enregistrée")
+        doc.add_paragraph('BROUILLON NON RELU — aucune validation officielle' if details.get('working_draft') else
+            "APERÇU TECHNIQUE NON VALIDÉ — aucune relecture humaine enregistrée")
     doc.add_page_break()
     for heading, text in sections:
         if content.get("document_mode") == "transcript" and heading != "Points de contrôle avant utilisation":
@@ -116,7 +117,7 @@ def _docx(content, metadata, path, votes, decisions, details=None):
             for paragraph in text.split("\n\n"):
                 doc.add_paragraph(paragraph)
     footer = section.footer.paragraphs[0]
-    footer.add_run("NoteTaker | Projet | Page ")
+    footer.add_run("NoteTaker | "+('BROUILLON NON RELU | ' if details.get('working_draft') else 'Projet | ')+"Page ")
     field = OxmlElement("w:fldSimple")
     field.set(qn("w:instr"), "PAGE")
     footer._p.append(field)
@@ -161,7 +162,8 @@ def _pdf(content, metadata, path, votes, decisions, details=None):
             para(details.get("title", "Séance"), heading), para(metadata), Spacer(1, 28), para(DISCLAIMER, small),
             para("Document de travail. La relecture ne vaut pas adoption officielle.", small)]
     if details.get("preview"):
-        flow += [Spacer(1, 20), para("APERÇU TECHNIQUE NON VALIDÉ — aucune relecture humaine enregistrée", heading)]
+        flow += [Spacer(1, 20), para('BROUILLON NON RELU — aucune validation officielle' if details.get('working_draft') else
+            "APERÇU TECHNIQUE NON VALIDÉ — aucune relecture humaine enregistrée", heading)]
     flow.append(PageBreak())
     for h, text in sections:
         if content.get("document_mode") == "transcript" and h != "Points de contrôle avant utilisation":
@@ -176,7 +178,8 @@ def _pdf(content, metadata, path, votes, decisions, details=None):
             canvas.setStrokeColor(colors.HexColor("#cbd2d8"))
             canvas.line(54, A4[1] - 47, A4[0] - 54, A4[1] - 47)
             canvas.drawString(54, A4[1] - 36, metadata[:90])
-        canvas.drawString(54, 30, "NoteTaker | " + ("APERÇU NON VALIDÉ" if details.get("preview") else "Projet non officiel"))
+        canvas.drawString(54, 30, "NoteTaker | " + ('BROUILLON NON RELU' if details.get('working_draft') else
+            "APERÇU NON VALIDÉ" if details.get("preview") else "Projet non officiel"))
         canvas.drawRightString(A4[0] - 54, 30, f"Page {doc.page}")
         canvas.restoreState()
     SimpleDocTemplate(str(path), pagesize=A4, rightMargin=54, leftMargin=54, topMargin=66, bottomMargin=55,

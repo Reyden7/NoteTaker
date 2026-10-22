@@ -279,3 +279,26 @@ et MOSS sont figés, vérifiés et séparés des modèles de production. Les inf
 locales réussies ne lèvent pas les réserves de redistribution des dépendances
 natives ni des données entraînées NLTK. Audit détaillé :
 [audio-benchmark-20261020-licenses.md](audio-benchmark-20261020-licenses.md).
+
+## Intégration audio GPU du 21 octobre 2026
+
+## Références vocales et compte rendu automatique — 21 octobre 2026
+
+Le composant vocal réutilise exclusivement WeSpeaker ONNX adapté et sherpa CPU
+déjà présents dans le manifeste : aucune acquisition de modèle ou de corpus.
+Empreintes, provenance et modification de métadonnées demeurent celles de
+l’audit WeSpeaker ci-dessus. Aucun audio VoxCeleb n’est embarqué. L’accès aux
+prises réelles exige le cadre juridique de la collectivité, **non validé à ce
+jour selon sa réponse**, indépendamment de la licence des poids.
+Le [nouvel audit technique](automatic-report-architecture.md) référence les
+sources officielles vérifiées Apache-2.0 / CC-BY-4.0 et les obligations de notices.
+L’ensemble Windows commercial, les dépendances natives et le PC vierge restent
+non approuvés ; le coffre DPAPI ne lève aucune réserve de redistribution.
+
+### État du lot audio GPU
+
+Large-v3 + Community-1 est disponible dans l'application source avec runtime
+isolé ; le lot CPU reste distinct. L'[audit GPU](audio-gpu-licenses.md) détaille
+les preuves, attributions et points ouverts NVIDIA / FFmpeg / Python. L'option
+de build GPU reste une préparation de développement : aucune approbation
+commerciale ni qualification sur Windows vierge déconnecté.

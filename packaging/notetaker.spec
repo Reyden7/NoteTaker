@@ -2,11 +2,17 @@
 from pathlib import Path
 import json
 import os
-from PyInstaller.utils.hooks import collect_all, collect_data_files, collect_dynamic_libs, copy_metadata
+from PyInstaller.utils.hooks import collect_all, collect_data_files, collect_dynamic_libs, copy_metadata, get_package_paths
 
 root = Path(SPECPATH).parent
 datas = [(str(root / "src/notetaker/schemas"), "notetaker/schemas"), (str(root / "src/notetaker/assets"), "notetaker/assets")]
 binaries = []
+# Desktop playback deliberately uses Windows Media Foundation (Qt 6.8).
+# Keep its plugin explicitly even when PyInstaller hook collection changes.
+qt_windows_media = Path(get_package_paths('PySide6')[1]) / 'plugins/multimedia/windowsmediaplugin.dll'
+if not qt_windows_media.is_file():
+    raise RuntimeError('Required Windows Media Foundation Qt plugin is missing')
+binaries.append((str(qt_windows_media), 'PySide6/plugins/multimedia'))
 hidden = ["notetaker.workers.probe", "notetaker.engines.llama_adapter", "notetaker.engines.overlap", "backports.tarfile"]
 for package in ("faster_whisper", "sherpa_onnx"):
     d, b, h = collect_all(package)

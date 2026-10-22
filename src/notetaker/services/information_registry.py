@@ -82,6 +82,9 @@ class RegistryService:
             if entry['category']=='source':
                 # A source inventory row is immutable. Derive a new information instead.
                 entry=copy.deepcopy(entry);entry['id']=str(uuid.uuid4());entry['category']='information';entry['history']=[]
+                entry['derived_from_source_id']=entry_id
+                for field in ('unrepresented_text','candidate_ids','unlinked_candidate_ids','inspection'):
+                    entry.pop(field,None)
                 document['entries'].append(entry)
             entry.update(copy.deepcopy(updates))
             by_id={u['id']:u for u in state['utterances']}
@@ -96,6 +99,9 @@ class RegistryService:
             if entry['category']!='information':raise ValueError('REGISTRY_SOURCE_REQUIRES_INFORMATION')
             if evidence_issues(entry,state) or ambiguous_origin(entry,state):raise ValueError('REGISTRY_INVALID_SOURCE')
             if not entry['content'].strip():raise ValueError('REGISTRY_EDIT_INVALID')
+            from .registry_workflow import approval_blockers
+            blockers=approval_blockers(entry,state)
+            if blockers:raise ValueError('REGISTRY_APPROVAL_BLOCKED:'+','.join(blockers))
             entry['human_status']='approved'
         elif action=='exclude':entry['human_status']='excluded'
         elif action=='reopen':
@@ -104,6 +110,7 @@ class RegistryService:
         else:raise ValueError('REGISTRY_EDIT_INVALID')
         if entry['type'] not in TYPES:raise ValueError('REGISTRY_EDIT_INVALID')
         entry['human_lock']=True
+        entry.pop('previous_extraction',None)
         entry['history'].append({'action':action,'actor':actor,'reason':reason,'before':before})
         document['writing']={'status':'outdated_by_registry_edit','previous_revision_id':current['id'],
             'used_information_ids':[],'not_written_information_ids':[e['id'] for e in document['entries'] if e['category']=='information' and e['human_status']!='excluded']}

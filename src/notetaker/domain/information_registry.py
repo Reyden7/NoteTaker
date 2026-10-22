@@ -65,8 +65,10 @@ def evidence_issues(entry,state):
 
 def admissible(entry,state):
     if entry['category']!='information' or entry['human_status']=='excluded':return False
+    if entry.get('previous_extraction') and entry['human_status']!='approved':return False
     if entry['type']=='potential_decision':return False  # Remains a manual municipal decision.
     if evidence_issues(entry,state) or ambiguous_origin(entry,state):return False
+    if any(e.get('end_ms',0)<=e.get('start_ms',0) for e in entry['evidence']):return False
     if entry['speaker']=='unattributed':return False
     if entry['author_status'] in {'uncertain','unknown'} and entry['human_status']!='approved':return False
     # Approval may resolve a machine doubt, never a missing/wrong source.

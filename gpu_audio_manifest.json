@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "status": "development-only",
+  "assets": [
+    {
+      "path": "models/audio-lab/large/README.md",
+      "size_bytes": 2052,
+      "sha256": "39e96252229f5a3d0141dc81afb65a36fd205461ac21e5b70f2cd1248ef0082c",
+      "repo": "Systran/faster-whisper-large-v3",
+      "revision": "edaa852ec7e145841d8ffdb056a99866b5f0a478",
+      "license": "mit",
+      "redistribution": "pending-native-and-notice-audit"
+    },
+    {
+      "path": "models/audio-lab/large/config.json",
+      "size_bytes": 2394,
+      "sha256": "a9306624f5ec14270a014b647e5c316b6e03a662c369758d1b90697a7b0655b9",
+      "repo": "Systran/faster-whisper-large-v3",
+      "revision": "edaa852ec7e145841d8ffdb056a99866b5f0a478",
+      "license": "mit",
+      "redistribution": "pending-native-and-notice-audit"
+    },
+    {
+      "path": "models/audio-lab/large/model.bin",
+      "size_bytes": 3087284237,
+      "sha256": "69f74147e3334731bc3a76048724833325d2ec74642fb52620eda87352e3d4f1",
+      "repo": "Systran/faster-whisper-large-v3",
+      "revision": "edaa852ec7e145841d8ffdb056a99866b5f0a478",
+      "license": "mit",
+      "redistribution": "pending-native-and-notice-audit"
+    },
+    {
+      "path": "models/audio-lab/large/preprocessor_config.json",
+      "size_bytes": 340,
+      "sha256": "7ccc62c6f2765af1f3b46c00c9b5894426835a05021c8b9c01eecb6dfb542711",
+      "repo": "Systran/faster-whisper-large-v3",
+      "revision": "edaa852ec7e145841d8ffdb056a99866b5f0a478",
+      "license": "mit",
+      "redistribution": "pending-native-and-notice-audit"
+    },
+    {
+      "path": "models/audio-lab/large/tokenizer.json",
+      "size_bytes": 2480617,
+      "sha256": "6d8cbd7cd0d8d5815e478dac67b85a26bbe77c1f5e0c6d76d1ce2abc0e5f21ca",
+      "repo": "Systran/faster-whisper-large-v3",
+      "revision": "edaa852ec7e145841d8ffdb056a99866b5f0a478",
+      "license": "mit",
+      "redistribution": "pending-native-and-notice-audit"
+    },
+    {
+      "path": "models/audio-lab/large/vocabulary.json",
+      "size_bytes": 1068114,
+      "sha256": "c69260f2ab26d659b7c398f9a2b2b48ed0df16c3b47d7326782fd9cba71690c1",
+      "repo": "Systran/faster-whisper-large-v3",
+      "revision": "edaa852ec7e145841d8ffdb056a99866b5f0a478",
+      "license": "mit",
+      "redistribution": "pending-native-and-notice-audit"
+    },
+    {
+      "path": "models/audio-lab/community/README.md",
+      "size_bytes": 9978,
+      "sha256": "2db91f9265bd81f1653ff088b5bff22bf6aebebea03328513af65501643f8a31",
+      "repo": "pyannote/speaker-diarization-community-1",
+      "revision": "3533c8cf8e369892e6b79ff1bf80f7b0286a54ee",
+      "license": "cc-by-4.0",
+      "redistribution": "pending-native-and-notice-audit"
+    },
+    {
+      "path": "models/audio-lab/community/config.yaml",
+      "size_bytes": 444,
+      "sha256": "5ce2bfa9a938dc132cec1172592d65173cbb8f444ea1e4133f10f9391de155be",
+      "repo": "pyannote/speaker-diarization-community-1",
+      "revision": "3533c8cf8e369892e6b79ff1bf80f7b0286a54ee",
+      "license": "cc-by-4.0",
+      "redistribution": "pending-native-and-notice-audit"
+    },
+    {
+      "path": "models/audio-lab/community/embedding/README.md",
+      "size_bytes": 938,
+      "sha256": "fa9e5105ae95edb231d841476cdb91eef4be0621c372ed4f7d3421294b5f8ad7",
+      "repo": "pyannote/speaker-diarization-community-1",
+      "revision": "3533c8cf8e369892e6b79ff1bf80f7b0286a54ee",
+      "license": "cc-by-4.0",
+      "redistribution": "pending-native-and-notice-audit"
+    },
+    {
+      "path": "models/audio-lab/community/embedding/pytorch_model.bin",
+      "size_bytes": 26646242,
+      "sha256": "6f10ff60898a1d185fa22e1d11e0bfa8a92efec811f11bca48cb8cafebefd929",
+      "repo": "pyannote/speaker-diarization-community-1",
+      "revision": "3533c8cf8e369892e6b79ff1bf80f7b0286a54ee",
+      "license": "cc-by-4.0",
+      "redistribution": "pending-native-and-notice-audit"
+    },
+    {
+      "path": "models/audio-lab/community/plda/README.md",
+      "size_bytes": 220,
+      "sha256": "e1316dbbeb3261431478d48ceebbd4bba395c3587e7b80c254dbab00f1209d0a",
+      "repo": "pyannote/speaker-diarization-community-1",
+      "revision": "3533c8cf8e369892e6b79ff1bf80f7b0286a54ee",
+      "license": "cc-by-4.0",
+      "redistribution": "pending-native-and-notice-audit"
+    },
+    {
+      "path": "models/audio-lab/community/plda/plda.npz",
+      "size_bytes": 133852,
+      "sha256": "9b77bcd840692710dd3496f62ecfeed8d8e5f002fd991b785079b244eab7d255",
+      "repo": "pyannote/speaker-diarization-community-1",
+      "revision": "3533c8cf8e369892e6b79ff1bf80f7b0286a54ee",
+      "license": "cc-by-4.0",
+      "redistribution": "pending-native-and-notice-audit"
+    },
+    {
+      "path": "models/audio-lab/community/plda/xvec_transform.npz",
+      "size_bytes": 134376,
+      "sha256": "325f1ce8e48f7e55e9c8aa47e05d2766b7c48c4b25b8de8dd751e7a4cc5fbe8f",
+      "repo": "pyannote/speaker-diarization-community-1",
+      "revision": "3533c8cf8e369892e6b79ff1bf80f7b0286a54ee",
+      "license": "cc-by-4.0",
+      "redistribution": "pending-native-and-notice-audit"
+    },
+    {
+      "path": "models/audio-lab/community/segmentation/pytorch_model.bin",
+      "size_bytes": 5906507,
+      "sha256": "7ad24338d844fb95985486eb1a464e32d229f6d7a03c9abe60f978bacf3f816e",
+      "repo": "pyannote/speaker-diarization-community-1",
+      "revision": "3533c8cf8e369892e6b79ff1bf80f7b0286a54ee",
+      "license": "cc-by-4.0",
+      "redistribution": "pending-native-and-notice-audit"
+    }
+  ]
+}

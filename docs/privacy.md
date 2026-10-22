@@ -1,5 +1,25 @@
 # Principes de confidentialité et de validation
 
+## Évolution du 21 octobre 2026 — option vocale désactivée
+
+Le parcours sans identification nominative reste le défaut. Un composant
+facultatif de références vocales est désormais implémenté, décrit dans
+[automatic-report-architecture.md](automatic-report-architecture.md) et le
+[guide d’utilisation](automatic-report-guide.md). Ses prises et embeddings
+sont chiffrés par DPAPI du compte Windows courant dans une base séparée.
+Les descriptions historiques ci-dessous du fonctionnement sans profils
+permanents continuent à s’appliquer tant que cette option n’est pas activée.
+
+La collectivité a indiqué que le cadre juridique **n’est pas encore validé**
+et qu’aucun échantillon autorisé séparé n’est disponible. Aucun enrôlement
+nominatif réel ni activation opérationnelle n’a été effectué pour la recette.
+Le formulaire d’autorisation consigne une décision externe, sans déterminer
+la licéité, la base légale, l’exception applicable ni l’AIPD à la place du DPO.
+DPAPI ne constitue pas un contrôle de rôles fin entre utilisateurs du même
+compte Windows ; comptes individuels, sécurité du poste, sauvegardes et
+conservation sont à organiser avant déploiement. La précision nominative et
+le produit commercial restent non qualifiés.
+
 Le produit traite les séances localement. Il n'effectue aucune transmission
 au développeur, télémétrie, récupération de modèle ou authentification cloud.
 Les variables d'environnement hors ligne et de désactivation des métriques

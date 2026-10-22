@@ -70,6 +70,7 @@ for name in ('NoteTaker.exe', 'NoteTaker-worker.exe'):
 shutil.copytree(ROOT/'third_party', target/'third_party')
 for original, name in [('LICENSES-THIRD-PARTY.md', 'LICENSES-THIRD-PARTY.md'),
     ('docs/operator-guide.md', 'GUIDE-UTILISATEUR.md'), ('docs/field-test.md', 'RECETTE-TERRAIN.md'),
+    ('docs/registry-workflow-fix.md', 'registry-workflow-fix.md'),
     ('docs/information-registry-0.2.4.md', 'REGISTRE-INFORMATIONS.md'),
     ('docs/direct-summary-0.2.5.md', 'LABORATOIRE-SYNTHESE.md'),
     ('docs/direct-summary-human-evaluation.md', 'direct-summary-human-evaluation.md')]:

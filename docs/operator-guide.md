@@ -1,5 +1,58 @@
 # Utiliser NoteTaker 0.2.4 en recette
 
+## Nouveau parcours simplifié
+
+La page principale propose désormais **Importer un enregistrement → Générer
+le compte rendu → Corriger → Exporter le brouillon**, sans approbation préalable
+des fiches. Voir le [guide court](automatic-report-guide.md).
+Le mode avancé conserve les outils et la validation habituels.
+L’identification par empreintes reste **désactivée** dans la recette : la
+collectivité n’a pas encore validé son cadre juridique et aucun échantillon
+autorisé des participants n’a été fourni. Aucun taux de précision nominative
+n’est annoncé.
+
+## Lecture des citations et passages — correctif du 21 octobre 2026
+
+Fermer puis relancer la recette depuis `Ouvrir-la-recette.cmd` pour charger le
+lecteur Windows corrigé. Un ancien exécutable compilé n’est pas mis à jour.
+
+Dans le registre, sélectionner l’information puis une citation dans **Sources
+et contexte**, et cliquer **Écouter la citation sélectionnée**. Dans
+**Transcription et voix**, sélectionner une ligne puis **Écouter le passage**,
+ou double-cliquer la ligne. La lecture porte sur le passage source associé et
+s’arrête à sa fin, sans lire le passage suivant. Les horaires restent inchangés.
+L’onglet Audio propose **Lecture / pause** et **Arrêter la lecture**.
+
+En cas d’échec, le message donne l’action à effectuer : vérifier la sortie son
+Windows, restaurer le fichier source absent ou examiner des horaires invalides.
+La lecture ne relance aucun moteur et ne modifie aucune correction. Les
+extraits sont des copies PCM temporaires supprimées après lecture.
+Voir [audio-playback-fix.md](audio-playback-fix.md) pour le diagnostic,
+les preuves de lecture Windows et les limites de qualification.
+
+## Parcours registre / rédaction corrigé
+
+Voir [registry-workflow-fix.md](registry-workflow-fix.md) pour le parcours guidé,
+les vues Sources / Propositions / Corrections, le bilan d'extraction et les
+conditions d'approbation. Une source intégrale n'est pas une fiche à approuver.
+Après préparation, les informations proposées s'ouvrent directement. Écouter,
+corriger, puis approuver explicitement les fiches fidèles ; la relecture du projet
+reste obligatoire avant PDF/DOCX. Les anciennes propositions sont conservées.
+
+## Choix du moteur audio (intégration du 21 octobre 2026)
+
+Le bouton **Paramètres audio — CPU / GPU** propose Automatique, CPU Small +
+sherpa et GPU NVIDIA Large-v3 + Community-1. Automatique effectue un contrôle
+CUDA réel avant de choisir. Après un échec GPU, cliquer explicitement sur la
+relance CPU ; l'audio et les corrections restent conservés. Les chevauchements
+Community sont visibles avec leurs voix candidates et restent à attribuer à
+l'écoute. Les noms sont toujours confirmés humainement.
+
+Guide détaillé, ressources et limites : [audio-gpu-integration.md](audio-gpu-integration.md).
+Ce changement concerne la version source de développement ; un ancien bundle
+ne reçoit pas les nouvelles fonctions sans reconstruction. Aucun nouveau Setup
+commercial n'est déclaré validé.
+
 Le nouveau registre est décrit dans `REGISTRE-INFORMATIONS.md` dans le bundle,
 ou `information-registry-0.2.4.md` dans les sources. Utiliser un `--data-dir` de
 copie isolée pour la recette. La migration v5 conserve une sauvegarde préalable ;

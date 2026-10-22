@@ -34,7 +34,8 @@ def test_prepare_and_write_are_separate_actions_and_ambiguous_information_is_vis
     p.filter.setCurrentIndex(p.filter.findData('review'));app.processEvents()
     assert 'info' in [e['id'] for e in p.visible]
     click(p,'Préparer / reprendre le registre');assert prepared==[True] and written==[]
-    click(p,'Rédiger depuis ce registre');assert written==[True]
+    click(p,'Rédiger depuis ce registre');assert written==[]
+    assert not p.write_button.isEnabled() and 'Écouter et vérifier' in p.guide.text()
     assert store.get(sid)['draft'] is None
 
 
@@ -75,7 +76,7 @@ def test_missing_exact_evidence_never_displays_an_invented_zero_timestamp(page):
 def test_unsaved_text_cannot_be_silently_approved_and_missing_actor_is_actionable(page):
     p,store,sid,played,errors,prepared,written,app=page
     p.content.setPlainText('Correction non enregistrée');click(p,'Approuver cette information')
-    assert 'Enregistrez' in str(errors[-1])
+    assert not p.approve_button.isEnabled() and 'Enregistrez' in p.action_hint.text()
     p.discard_changes();click(p,'Approuver cette information');assert 'ACTOR_REASON' in str(errors[-1])
     assert p.service.latest(sid)['content']['entries'][-1]['human_status']=='pending'
 
@@ -150,7 +151,7 @@ def test_requested_qwen_check_uses_saved_information_and_does_not_drop_pending_e
     click(p,'Demander un contrôle Qwen de cette fiche');assert requested==['info']
     p.content.setPlainText('Correction non enregistrée')
     click(p,'Demander un contrôle Qwen de cette fiche')
-    assert requested==['info'] and 'Enregistrez la correction' in str(errors[-1])
+    assert requested==['info'] and not p.verify_button.isEnabled() and 'Enregistrez' in p.action_hint.text()
 
 
 def test_filter_reload_and_selection_do_not_silently_drop_unsaved_correction(page):
@@ -179,3 +180,59 @@ def test_qt_plain_text_whitespace_normalization_is_not_a_false_unsaved_change(pa
     p.load(sid);app.processEvents()
     assert not p.editor_changed()
     assert p.service.latest(sid)['content']['entries'][-1]['content']==text
+
+
+def test_prepare_returns_from_sources_to_actionable_information(page):
+    p,store,sid,played,errors,prepared,written,app=page
+    p.filter.setCurrentIndex(p.filter.findData('sources'))
+    p.preparation_complete({'created_information_entries':1,'proposed_information_entries':1})
+    assert p.filter.currentData()=='proposed' and p.entry['id']=='info'
+    assert 'créé 1' in p.banner.text() and p.approve_button.isEnabled()
+
+
+def test_source_cannot_be_approved_or_checked_as_information_and_links_are_accessible(page):
+    p,store,sid,played,errors,prepared,written,app=page
+    p.filter.setCurrentIndex(p.filter.findData('sources'))
+    assert not p.approve_button.isEnabled() and not p.verify_button.isEnabled()
+    assert 'source conservée' in p.action_hint.text()
+    assert p.linked_button.isVisible() and p.create_button.isVisible()
+    p.show_linked();assert p.entry['id']=='info' and p.filter.currentData()=='all'
+
+
+def test_review_view_keeps_raw_passages_separate(page):
+    p,store,sid,played,errors,prepared,written,app=page
+    p.filter.setCurrentIndex(p.filter.findData('review'))
+    assert all(e['category']=='information' for e in p.visible)
+    p.filter.setCurrentIndex(p.filter.findData('sources'))
+    assert all(e['category']=='source' for e in p.visible)
+
+
+def test_source_creation_is_explicit_and_keeps_the_original_verbatim(page):
+    p,store,sid,played,errors,prepared,written,app=page
+    p.filter.setCurrentIndex(p.filter.findData('sources'));source=copy.deepcopy(p.entry)
+    p.start_information()
+    assert not p.content.toPlainText() and p.sources.item(0,1).text()==source['content']
+    p.subject.setText('Consultation');p.content.setPlainText('Une consultation des habitants est demandée.')
+    p.kind.setCurrentIndex(p.kind.findData('proposal'));p.actor.setText('Fixture');p.justification.setText('Cas construit')
+    p.save_button.click();assert not errors and p.entry['category']=='information'
+    doc=p.service.latest(sid)['content']
+    assert next(e for e in doc['entries'] if e['id']==source['id'])==source
+
+
+def test_invalid_citation_displays_specific_reason_and_disables_approval(page):
+    p,store,sid,played,errors,prepared,written,app=page
+    record=p.service.latest(sid)
+    p.service.change(sid,record['id'],'info','edit',actor='Fixture',reason='Source insuffisante',
+        updates={'evidence':[{'id':'s0','quote':'Une citation inventée'}]})
+    p.load(sid);p.focus_entry('info')
+    assert not p.approve_button.isEnabled() and 'mot pour mot' in p.action_hint.text()
+    p.filter.setCurrentIndex(p.filter.findData('corrections'));assert p.entry['id']=='info'
+
+
+def test_human_approval_moves_guide_to_writing_without_validating_document(page):
+    p,store,sid,played,errors,prepared,written,app=page
+    p.actor.setText('Fixture');p.justification.setText('Contrôle de test, pas une réunion réelle')
+    p.approve_button.click()
+    assert not errors and p.write_button.isEnabled() and '5/6' in p.guide.text()
+    assert store.get(sid)['draft'] is None
+    p.write_button.click();assert written==[True]

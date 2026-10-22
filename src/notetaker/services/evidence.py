@@ -82,7 +82,11 @@ def draft_issues(content, state):
         # an old printed name merely because the structured UUID was retained.
         paragraphs=p.get('summary','').split('\n\n')
         claims=p.get('claims',[])
-        if claims and len(paragraphs)==len(claims):
+        # Bound templates already check printed names against current voices in
+        # narrative_problems. The legacy prose parser cannot interpret qualifiers
+        # such as "Intervenant non identifié (Voix 1)" correctly.
+        bound_names=bool(p.get('narrative')) and all('template' in row for row in p['narrative'])
+        if not bound_names and claims and len(paragraphs)==len(claims):
             for ci,(paragraph,c) in enumerate(zip(paragraphs,claims)):
                 if isinstance(c.get('text'),str) and paragraph.endswith(' : '+c['text']) and ' — ' in paragraph:
                     display=paragraph.split(' — ',1)[1][:-len(' : '+c['text'])]

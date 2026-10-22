@@ -25,14 +25,33 @@ def stop_tree(process):
         pass
     process.wait(timeout=5)
 
-def run_worker(request: Path, *, python: Path | None = None, timeout: float = 120, cancel=None) -> dict:
+def run_worker(request: Path, *, python: Path | None = None, timeout: float = 120, cancel=None,
+               module="notetaker.workers.probe") -> dict:
     env = dict(os.environ)
     env.update(OFFLINE_ENV)
+    for key in ("HF_TOKEN", "HUGGING_FACE_HUB_TOKEN"):
+        env.pop(key, None)
+    if module == "notetaker.workers.gpu_audio":
+        # A new empty cache per analysis job proves that client credentials/cache
+        # are unnecessary. Never inherit the build account's HF authentication.
+        env["HF_HOME"] = str(request.parent / "offline-cache")
+        env['HF_TOKEN_PATH'] = str(request.parent / 'offline-cache' / 'token')
+        env['HF_STORED_TOKENS_PATH'] = str(request.parent / 'offline-cache' / 'stored_tokens')
+        env['HF_HUB_DISABLE_IMPLICIT_TOKEN'] = '1'
+        for key in ('HF_HUB_CACHE', 'HUGGINGFACE_HUB_CACHE', 'TRANSFORMERS_CACHE'):
+            env[key] = str(request.parent / "offline-cache" / "hub")
+        env["TORCH_HOME"] = str(request.parent / "offline-cache" / "torch")
+        env["OMP_NUM_THREADS"] = env["MKL_NUM_THREADS"] = "4"
     env["PYTHONIOENCODING"] = "utf-8"
+    if python:
+        env.pop('PYTHONHOME', None)
+        env.pop('VIRTUAL_ENV', None)
+        env['PYTHONNOUSERSITE'] = '1'
     # Development path; frozen worker entry points will be built during phase 6.
-    env["PYTHONPATH"] = str(Path(__file__).resolve().parents[2])
-    command = ([str(python or sys.executable), "-m", "notetaker.workers.probe", str(request.resolve(strict=True))]
-               if not getattr(sys, "frozen", False) else [str(Path(sys.executable).with_name("NoteTaker-worker.exe")), str(request.resolve(strict=True))])
+    env["PYTHONPATH"] = (str(python.parent / "app") if python and ((python.parent / 'app').is_dir() or getattr(sys, "frozen", False))
+                         else str(Path(__file__).resolve().parents[2]))
+    command = ([str(python or sys.executable), "-m", module, str(request.resolve(strict=True))]
+               if python or not getattr(sys, "frozen", False) else [str(Path(sys.executable).with_name("NoteTaker-worker.exe")), str(request.resolve(strict=True))])
     try:
         if cancel is not None or os.name == 'nt':
             import time

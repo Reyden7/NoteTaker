@@ -101,7 +101,8 @@ def main():
         from notetaker.engines.registry_summary import extract_only as extract_registry,finalize as finalize_registry
         from notetaker.engines.registry_summary import verify_information as verify_registry_information
         from notetaker.engines.direct_summary import summarize as direct_summary
-        llm_task={'summary':summarize,'registry_prepare':prepare_registry,'registry_write':write_registry,
+        from notetaker.engines.automatic_report import summarize as automatic_report
+        llm_task={'automatic_report':automatic_report,'summary':summarize,'registry_prepare':prepare_registry,'registry_write':write_registry,
                   'registry_extract':extract_registry,'registry_finalize':finalize_registry,
                   'registry_verify':verify_registry_information,'direct_summary':direct_summary}.get(request.get('task'),select_sources)
         result = {"asr": transcribe, "diarization": diarize, "diarization-sherpa": diarize_sherpa,

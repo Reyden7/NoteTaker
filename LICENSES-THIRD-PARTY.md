@@ -23,9 +23,12 @@ distributions inventoriées, dont PySide6 6.8.3 et backports.tarfile 1.2.0, dans
 `third_party/asr`. La présence de ces textes ne constitue pas un SBOM exhaustif,
 une offre de sources LGPL complète ni une autorisation du lot commercial.
 
-Community-1 n'a pas été acquis. PyTorch et pyannote.audio ont servi à une étude
-de compatibilité ; leur présence dans un environnement de développement ne
-signifie pas leur inclusion dans le produit retenu.
+Situation initiale : Community-1 n'avait pas été acquis. Depuis le 20 octobre
+2026, le modèle acquis avec l'accord du titulaire du compte HF et son runtime
+PyTorch/pyannote font l'objet d'essais locaux. L'intégration GPU du 21 octobre
+est décrite dans [docs/audio-gpu-licenses.md](docs/audio-gpu-licenses.md), avec
+attributions dans `third_party/audio-gpu/NOTICE.md`. La redistribution du lot
+Windows complet reste non approuvée.
 
 Étude qualité 0.2 : WeSpeaker VoxCeleb ResNet34 (fiche de poids officielle
 Apache-2.0 ; adaptation des métadonnées tracée), Noto Sans Regular/Bold et

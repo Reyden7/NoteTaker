@@ -203,7 +203,7 @@ def test_diarization_failure_keeps_transcript_and_original(store, tmp_path, monk
         raise RuntimeError("Injected diarization failure; not an inference test")
     monkeypatch.setattr(pipeline, "_run", injected_stage)
     with pytest.raises(RuntimeError, match="TRANSCRIPT_PRESERVED"):
-        pipeline.analyse(sid)
+        pipeline.analyse(sid, 'cpu')
     assert store.get(sid)["utterances"][0]["uncertain"] == 1
     assert sha256_file(path) == digest
     assert store.jobs(sid)[0]["status"] == "failed"

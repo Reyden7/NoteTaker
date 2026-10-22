@@ -303,7 +303,9 @@ def identity_problem(text,claims,lexicon=()):
     for entry in lexicon:
         if any(variant.casefold() in source for variant in [entry['canonical'],*entry.get('variants',[])]):allowed.update(words(entry['canonical']))
     plain=TOKEN.sub('la personne',text)
-    for match in re.finditer(r'\b(?:[A-ZÀ-ÖØ-Ý][a-zà-öø-ÿ-]{2,}|[A-Z]{2,})\b',plain):
+    # Keep compounds/internal capitals whole: Clermont-Ferrand and ChatGPT
+    # must be compared to the exact source token, not rejected as fragments.
+    for match in re.finditer(r'\b[A-ZÀ-ÖØ-Ý][\wÀ-ÿ-]{2,}\b',plain):
         if match.start()>0 and match[0].casefold() not in allowed:return 'unsupported_proper_name'
     for match in re.finditer(r'\bparti\s+(?:politique\s+)?([\wÀ-ÿ-]+)',plain,re.I):
         if match[1].casefold() not in allowed:return 'unsupported_political_identity'

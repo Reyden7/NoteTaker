@@ -129,10 +129,14 @@ class DirectoryDialog(QDialog):
         self.history_button.clicked.connect(self.show_history)
         form_layout.addWidget(self.history_button)
         form_layout.addStretch()
-        form_layout.addWidget(label('Référence vocale : non activée\nL’attribution reste entièrement manuelle.'))
-        self.voice_button = QPushButton('Futur assistant d’enrôlement vocal')
+        form_layout.addWidget(label('Références vocales facultatives — autorisation juridique requise.\nL’annuaire reste utilisable sans biométrie.'))
+        policy_button=QPushButton('Autorisation et paramètres des références vocales…')
+        policy_button.clicked.connect(self.configure_voice)
+        form_layout.addWidget(policy_button)
+        self.voice_button = QPushButton('Enregistrer / gérer les références vocales')
         self.voice_button.setEnabled(False)
-        self.voice_button.setToolTip('Indisponible à cette étape. Aucune empreinte vocale n’est créée ou enregistrée.')
+        self.voice_button.setToolTip('Enregistrer d’abord la fiche, puis renseigner l’autorisation de la collectivité.')
+        self.voice_button.clicked.connect(self.open_voice)
         form_layout.addWidget(self.voice_button)
         split.addWidget(right)
         split.setSizes([670, 370])
@@ -153,6 +157,28 @@ class DirectoryDialog(QDialog):
         if not self.loading:
             self.dirty = True
             self.feedback.setText('Modifications non enregistrées')
+
+    def configure_voice(self):
+        from .voice_profiles import VoicePolicyDialog
+        VoicePolicyDialog(self.service.store.root,self).exec()
+        self.refresh_voice_state()
+
+    def refresh_voice_state(self):
+        from pathlib import Path
+        enabled=False
+        if self.pid and (Path(self.service.store.root)/'voice-vault.sqlite3').exists():
+            try:
+                from notetaker.services.voice_profiles import VoiceProfiles
+                vault=VoiceProfiles(self.service.store.root)
+                if vault.samples(self.pid):enabled=True  # deletion after revocation
+                else:vault.require_authorization();enabled=True
+            except Exception:pass
+        self.voice_button.setEnabled(enabled)
+
+    def open_voice(self):
+        if not self.pid or not self.can_leave():return
+        from .voice_profiles import VoiceEnrollmentDialog
+        VoiceEnrollmentDialog(self.service.store.root,self.service.get_person(self.pid),self).exec()
 
     def can_leave(self):
         if not self.dirty:
@@ -175,6 +201,7 @@ class DirectoryDialog(QDialog):
         self.history_button.setEnabled(person is not None)
         self.feedback.setText('Fiche archivée — historique conservé.' if person and person['archived'] else 'Les champs marqués * sont obligatoires.')
         self.loading, self.dirty = False, False
+        self.refresh_voice_state()
 
     def new_person(self):
         if self.can_leave():

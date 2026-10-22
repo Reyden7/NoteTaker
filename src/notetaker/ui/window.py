@@ -2,12 +2,13 @@ import json
 import shutil
 import threading
 import uuid
+import time
 from pathlib import Path
-from PySide6.QtCore import Qt, QThread, Signal, QTimer, QDate, QUrl
-from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
+from notetaker.ui.playback import LocalPlayback
+from PySide6.QtCore import Qt, QThread, Signal, QTimer, QDate
 from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QFormLayout, QPushButton, QLabel,
     QLineEdit, QTextEdit, QListWidget, QListWidgetItem, QTabWidget, QSplitter, QComboBox, QProgressBar,
-    QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView, QDateEdit, QMessageBox, QFileDialog, QInputDialog, QSpinBox, QDialog, QDialogButtonBox, QScrollArea)
+    QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView, QDateEdit, QMessageBox, QFileDialog, QInputDialog, QSpinBox, QDialog, QDialogButtonBox, QScrollArea, QCheckBox)
 from notetaker.domain.minutes import content_digest
 from notetaker.infrastructure.paths import session_directory
 from notetaker.services.storage import SessionStore
@@ -56,6 +57,13 @@ class MainWindow(QMainWindow):
             from notetaker.domain.direct_summary import test_workspace
             test_workspace(data_root)
         self.store = SessionStore(Path(data_root))
+        self.voice_vault_warning=None
+        if (Path(data_root)/'voice-vault.sqlite3').exists():
+            try:
+                from notetaker.services.voice_profiles import VoiceProfiles
+                VoiceProfiles(data_root).purge_expired()
+            except Exception:
+                self.voice_vault_warning='Le coffre vocal est inaccessible. Le compte rendu reste disponible sans identification ; vérifiez les droits du compte Windows.'
         interrupted = self.store.recover()
         self.sid = None
         self.state = None
@@ -64,7 +72,6 @@ class MainWindow(QMainWindow):
         self.recording_take = None
         self.edit_uid = None
         self.point_index = None
-        self.pending_seek = None
         self.loading = False
         self.setWindowTitle("NoteTaker — séances et procès-verbaux")
         self.resize(1280, 850)
@@ -81,6 +88,8 @@ class MainWindow(QMainWindow):
         self.transcript_timer.timeout.connect(self.save_utterance)
         if interrupted:
             self.status.setText(f"{interrupted} traitement(s) interrompu(s). Les prises originales sont conservées ; relancez l’analyse si nécessaire.")
+        elif self.voice_vault_warning:
+            self.status.setText(self.voice_vault_warning)
 
     def _build(self):
         shell = QWidget()
@@ -98,6 +107,8 @@ class MainWindow(QMainWindow):
         side.addWidget(self.new_button)
         self.directory_button = button('Annuaire des intervenants', self.open_directory)
         side.addWidget(self.directory_button)
+        self.audio_settings_button = button('Paramètres audio — CPU / GPU', self.audio_settings)
+        side.addWidget(self.audio_settings_button)
         self.search = QLineEdit()
         self.search.setPlaceholderText("Rechercher une séance…")
         self.search.textChanged.connect(self.reload_history)
@@ -145,9 +156,21 @@ class MainWindow(QMainWindow):
                 lambda: self.tabs.setCurrentIndex(3), self.play_registry_snapshot, self,
                 resume=self.generate_direct, reuse=self.reuse_direct)
             self.tabs.addTab(self.direct_page, 'Laboratoire de synthèse')
+        from notetaker.ui.simple_report import SimpleReportPage
+        self.simple_page=SimpleReportPage(self)
+        self.advanced_mode=QCheckBox('Mode avancé — transcription, registre, citations et validation')
+        body.addWidget(self.advanced_mode)
+        body.addWidget(self.simple_page,1)
         body.addWidget(self.tabs, 1)
+        self.advanced_mode.toggled.connect(self.toggle_advanced)
+        self.toggle_advanced(False)
         self.status = paragraph("Créez une séance ou rouvrez-la dans l’historique. Tous les traitements se font sur cet ordinateur.")
         body.addWidget(self.status)
+        self.engine_status = paragraph('Moteur audio : ' + self.audio_mode_label())
+        body.addWidget(self.engine_status)
+        self.cpu_retry = button('Relancer explicitement avec Small + sherpa sur CPU', lambda: self.analyse('cpu'))
+        self.cpu_retry.hide()
+        body.addWidget(self.cpu_retry)
         self.progress = QProgressBar()
         self.progress.hide()
         body.addWidget(self.progress)
@@ -209,16 +232,15 @@ class MainWindow(QMainWindow):
         play = QHBoxLayout()
         play.addWidget(button("Préparer / écouter toutes les prises", self.preview_audio))
         play.addWidget(button("Lecture / pause", self.toggle_playback))
-        play.addWidget(button("Arrêter la lecture", lambda: self.player.stop()))
+        play.addWidget(button("Arrêter la lecture", lambda: self.playback.stop()))
         layout.addLayout(play)
         self.playback_label = QLabel("Lecture locale")
         layout.addWidget(self.playback_label)
-        self.audio_output = QAudioOutput(self)
-        self.player = QMediaPlayer(self)
-        self.player.setAudioOutput(self.audio_output)
-        self.player.mediaStatusChanged.connect(self.media_ready)
-        self.player.positionChanged.connect(lambda pos: self.playback_label.setText(f"Lecture : {pos // 60000:02d}:{pos // 1000 % 60:02d}"))
-        self.player.errorOccurred.connect(lambda *args: self.status.setText("Lecture impossible : " + self.player.errorString()))
+        self.playback = LocalPlayback(self)
+        self.player = self.playback.player
+        self.audio_output = self.playback.output
+        self.playback.positionChanged.connect(lambda pos: self.playback_label.setText(f"Lecture : {pos // 60000:02d}:{pos // 1000 % 60:02d}"))
+        self.playback.message.connect(self.playback_message)
         self.refresh_devices()
         return page
 
@@ -382,6 +404,7 @@ class MainWindow(QMainWindow):
         QMessageBox.warning(self, "Action non effectuée", message)
 
     def enable_session(self, enabled):
+        self.simple_page.generate.setEnabled(enabled and not self.task)
         self.tabs.setEnabled(enabled)
         self.analyse_button.setEnabled(enabled)
         self.generate_button.setEnabled(enabled)
@@ -422,7 +445,7 @@ class MainWindow(QMainWindow):
             self.report_error(error)
             self.reload_history()
             return
-        self.player.stop()
+        self.playback.stop()
         self.sid = item.data(Qt.UserRole)
         self.load_session()
 
@@ -475,6 +498,7 @@ class MainWindow(QMainWindow):
             'ancienne relecture conservée — nouvelle relecture requise' if review else 'relecture requise')
         self.review_status.setText(f"Révision {s['draft']['revision']} — "+review_text if s['draft'] else 'Aucun brouillon généré')
         self.loading = False
+        self.simple_page.load(s)
         self.enable_session(True)
         self.pause_button.setEnabled(False)
         self.stop_button.setEnabled(False)
@@ -528,9 +552,56 @@ class MainWindow(QMainWindow):
             self.status.setText('Terminez la capture ou le traitement avant de modifier l’annuaire.')
             return
         self.flush_edits()
+        self.playback.stop()
         DirectoryDialog(self.store, self).exec()
         if self.sid:
             self.refresh_person_choices()
+
+    def toggle_advanced(self, enabled):
+        if hasattr(self,'simple_page') and self.simple_page.dirty:
+            self.simple_page.save()
+        self.tabs.setVisible(enabled)
+        self.simple_page.setVisible(not enabled)
+        self.analyse_button.setVisible(enabled)
+        self.generate_button.setVisible(enabled)
+        if not enabled and self.sid and hasattr(self,'draft_content'):
+            self.flush_edits()
+            self.simple_page.load(self.store.get(self.sid))
+
+    def open_review(self):
+        self.simple_page.save()
+        self.advanced_mode.setChecked(True)
+        self.tabs.setCurrentIndex(3)
+
+    def generate_automatic(self):
+        if not self.sid or self.task or self.recorder:return
+        self.flush_edits()
+        sid=self.sid
+        self.run_task('automatic',lambda progress,cancel:Pipeline(self.store.root,progress=progress,cancel=cancel).automatic_report(sid))
+
+    def export_working(self, extension):
+        if not self.sid:return
+        try:
+            self.flush_edits()
+            path,_=QFileDialog.getSaveFileName(self,'Exporter un brouillon NON OFFICIEL','Compte-rendu-BROUILLON.'+extension,extension.upper()+' (*.'+extension+')')
+            if path:
+                from notetaker.services.working_export import export_working_copy
+                export_working_copy(self.store,self.sid,Path(path))
+                self.status.setText('Brouillon NON RELU exporté ; aucune validation officielle créée.')
+        except Exception as error:self.report_error(error)
+
+    def show_automatic_diagnostics(self):
+        if not self.sid:return
+        jobs=[j for j in self.store.jobs(self.sid) if j['kind']=='automatic-report']
+        if not jobs:
+            self.status.setText('Aucun dossier de génération automatique pour cette séance.');return
+        directory=session_directory(self.store.root,self.sid)/'jobs'/jobs[-1]['id']
+        path=directory/'automatic-inventory.json'
+        dialog=QDialog(self);dialog.setWindowTitle('Génération — formulations, refus et sources non reprises');dialog.resize(850,650)
+        layout=QVBoxLayout(dialog);text=QTextEdit();text.setReadOnly(True)
+        if path.exists():text.setPlainText(json.dumps(json.loads(path.read_text(encoding='utf-8')),ensure_ascii=False,indent=2))
+        else:text.setPlainText('Le traitement est interrompu ou n’a pas encore produit son inventaire. Les sources et anciens brouillons sont conservés.\nDossier : '+str(directory))
+        layout.addWidget(text);close=QDialogButtonBox(QDialogButtonBox.Close);close.rejected.connect(dialog.reject);layout.addWidget(close);dialog.exec()
 
     def refresh_person_choices(self):
         selected = self.person_combo.currentData()
@@ -598,7 +669,7 @@ class MainWindow(QMainWindow):
         if shutil.disk_usage(str(directory.parent)).free < 512 * 1024**2:
             self.report_error("Espace libre inférieur à 512 Mo. Libérez de l’espace avant d’enregistrer.")
             return
-        self.player.stop()
+        self.playback.stop()
         self.recording_take = self.store.add_take(self.sid, "capture", directory, "recording")
         self.recorder = MicrophoneRecorder()
         try:
@@ -632,11 +703,14 @@ class MainWindow(QMainWindow):
         self.run_task("stop", stop)
 
     def import_recording(self):
-        if self.recorder or self.task or not self.sid:
+        if self.recorder or self.task:
             return
         path, _ = QFileDialog.getOpenFileName(self, "Importer un enregistrement", "", "Audio (*.wav *.mp3 *.m4a)")
         if not path:
             return
+        if not self.sid:
+            self.sid=self.store.create(Path(path).stem,{'date':QDate.currentDate().toString(Qt.ISODate),'agenda':[]})
+            self.reload_history();self.load_session()
         sid = self.sid
         directory = session_directory(self.store.root, sid)
         def perform(progress, cancel):
@@ -675,10 +749,11 @@ class MainWindow(QMainWindow):
         self.review_status.setText("Sélection audio modifiée — analyse et relecture à vérifier")
 
     def toggle_playback(self):
-        if self.player.playbackState() == QMediaPlayer.PlayingState:
-            self.player.pause()
-        else:
-            self.player.play()
+        self.playback.toggle()
+
+    def playback_message(self, message):
+        self.status.setText(message)
+        self.playback_label.setText(message)
 
     def populate_transcript(self):
         self.transcript_table.clearSelection()
@@ -775,8 +850,8 @@ class MainWindow(QMainWindow):
             row=sources.currentRow()
             if row>=0:self.play_source(sources.item(row,0).data(Qt.UserRole))
         sources.itemSelectionChanged.connect(selected);sources.cellDoubleClicked.connect(lambda *a:listen())
-        actions=QHBoxLayout();actions.addWidget(button('Écouter ce passage',listen));actions.addWidget(button('Arrêter l’écoute',self.player.stop));actions.addWidget(button('Fermer',dialog.close));layout.addLayout(actions)
-        dialog.finished.connect(lambda *a:self.player.stop())
+        actions=QHBoxLayout();actions.addWidget(button('Écouter ce passage',listen));actions.addWidget(button('Arrêter l’écoute',self.playback.stop));actions.addWidget(button('Fermer',dialog.close));layout.addLayout(actions)
+        dialog.finished.connect(lambda *a:self.playback.stop())
         sources.selectRow(0);selected();dialog.exec()
 
     def show_point_sources(self):
@@ -786,7 +861,7 @@ class MainWindow(QMainWindow):
         point = self.draft_content["points"][self.point_index]
         state = self.store.get(self.sid)
         if point.get('narrative'):
-            NarrativeSources(point,state,self.play_source,self,stop=self.player.stop).exec()
+            NarrativeSources(point,state,self.play_source,self,stop=self.playback.stop).exec()
             return
         sources = {u["id"]: u for u in state["utterances"]}
         rows = ["Références internes. Contrôlez le sens complet et l'attribution à l'écoute.\n"]
@@ -818,6 +893,10 @@ class MainWindow(QMainWindow):
         self.utterance_edit.setPlainText(u["text"])
         source = json.loads(u["source_json"])
         self.uncertainty.setText(("Chevauchement possible. Vérifiez les voix à l’écoute. " if source.get("possible_overlap") else "") + ("Attribution automatique à vérifier." if source.get("automatic_attribution", True) else "Attribution corrigée manuellement."))
+        if source.get('simultaneous_turns'):
+            voices = sorted({s for turn in source['simultaneous_turns'] for s in turn['speakers']})
+            self.uncertainty.setText(self.uncertainty.text() + ' Voix simultanées détectées : ' +
+                ', '.join(self.state['speakers'].get(s, 'Voix non attribuée') for s in voices) + '. Le texte commun reste à attribuer à l’écoute.')
         self.loading = False
 
     def schedule_transcript_save(self, *args):
@@ -891,24 +970,15 @@ class MainWindow(QMainWindow):
         self.play_registry_snapshot(self.state['utterances'][row])
 
     def play_registry_snapshot(self,u):
-        source = json.loads(u["source_json"])
-        path = Path(source.get("normalized_audio", ""))
-        if not path.is_file():
-            self.report_error("L’audio préparé est absent. Relancez l’analyse depuis les prises originales.")
-            return
-        url = QUrl.fromLocalFile(str(path))
-        if self.player.source() == url:
-            self.player.setPosition(u["start_ms"])
-            self.player.play()
-        else:
-            self.pending_seek = u["start_ms"]
-            self.player.setSource(url)
-
-    def media_ready(self, status):
-        if self.pending_seek is not None and status in (QMediaPlayer.LoadedMedia, QMediaPlayer.BufferedMedia):
-            self.player.setPosition(self.pending_seek)
-            self.pending_seek = None
-            self.player.play()
+        try:
+            source = json.loads(u["source_json"])
+            path = Path(source.get("normalized_audio", ""))
+            if not path.is_file():
+                raise ValueError('L’audio préparé associé à cette source est absent. Vérifiez son emplacement ou restaurez la copie audio conservée.')
+            self.playback.play(path, u['start_ms'], u['end_ms'])
+        except (ValueError, KeyError, TypeError) as error:
+            self.playback.stop()
+            self.playback_message('Lecture impossible : ' + str(error))
 
     def store_point_fields(self):
         if self.point_index is not None and 0 <= self.point_index < len(self.draft_content["points"]):
@@ -1006,6 +1076,7 @@ class MainWindow(QMainWindow):
 
     def flush_edits(self):
         if self.sid and not self.loading:
+            self.simple_page.save()
             self.participants_page.save_if_dirty()
             self.save_utterance()
             self.save_details()
@@ -1168,7 +1239,36 @@ class MainWindow(QMainWindow):
         except Exception as error:
             self.report_error(error)
 
-    def analyse(self):
+    def audio_mode_label(self):
+        from notetaker.services.audio_engine import read_mode
+        return {'auto':'Automatique — compatibilité CUDA vérifiée avant traitement',
+                'cpu':'CPU — Small + sherpa', 'gpu':'GPU NVIDIA — Large-v3 + Community-1'}[read_mode(self.store.root)]
+
+    def audio_settings(self):
+        from notetaker.services.audio_engine import read_mode, save_mode
+        dialog = QDialog(self)
+        dialog.setWindowTitle('Paramètres du traitement audio local')
+        dialog.resize(620, 250)
+        layout = QVBoxLayout(dialog)
+        layout.addWidget(paragraph('Le mode automatique vérifie les modèles locaux, les bibliothèques CUDA, un calcul réel et la mémoire GPU libre. Aucun téléchargement. Les noms restent attribués par un opérateur.'))
+        choice = QComboBox(dialog)
+        choice.setObjectName('audio_engine_choice')
+        for label, mode in [('Automatique (recommandé)', 'auto'), ('CPU — Compatible avec tous les PC pris en charge', 'cpu'), ('GPU NVIDIA — Meilleures performances potentielles', 'gpu')]:
+            choice.addItem(label, mode)
+        choice.setCurrentIndex(choice.findData(read_mode(self.store.root)))
+        layout.addWidget(choice)
+        layout.addWidget(paragraph('Après un échec GPU, le basculement CPU doit être demandé explicitement. Les performances dépendent du PC et de l’enregistrement.'))
+        actions = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
+        actions.button(QDialogButtonBox.Save).setText('Enregistrer')
+        actions.button(QDialogButtonBox.Cancel).setText('Annuler')
+        actions.accepted.connect(dialog.accept)
+        actions.rejected.connect(dialog.reject)
+        layout.addWidget(actions)
+        if dialog.exec() == QDialog.Accepted:
+            save_mode(self.store.root, choice.currentData())
+            self.engine_status.setText('Moteur audio : ' + self.audio_mode_label())
+
+    def analyse(self, mode=None):
         if not self.sid or self.recorder or self.task:
             return
         try:
@@ -1179,7 +1279,9 @@ class MainWindow(QMainWindow):
         if self.store.get(self.sid)["utterances"] and QMessageBox.question(self, "Nouvelle analyse", "Remplacer la transcription courante ? La version précédente et les prises brutes seront conservées.", QMessageBox.Yes | QMessageBox.No, QMessageBox.No) != QMessageBox.Yes:
             return
         sid = self.sid
-        self.run_task("analysis", lambda progress, cancel: Pipeline(self.store.root, progress=progress, cancel=cancel).analyse(sid, "cpu"))
+        self.cpu_retry.hide()
+        requested = mode if isinstance(mode, str) else None
+        self.run_task("analysis", lambda progress, cancel: Pipeline(self.store.root, progress=progress, cancel=cancel).analyse(sid, requested))
 
     def generate(self):
         if not self.sid or self.recorder or self.task:
@@ -1259,7 +1361,14 @@ class MainWindow(QMainWindow):
         if kind!='stop' and self.registry_page.editor_changed():
             self.status.setText('Enregistrez la correction du registre ou annulez la saisie avant de lancer ce traitement.');return
         self.task = Task(function, self)
+        self.task_started = time.monotonic()
+        self.task_kind = kind
+        self.active_audio_engine = 'Vérification en cours'
+        self.audio_settings_button.setEnabled(False)
+        self.cpu_retry.hide()
         self.tabs.setEnabled(False)
+        self.simple_page.setEnabled(False)
+        self.advanced_mode.setEnabled(False)
         self.history.setEnabled(False)
         self.new_button.setEnabled(False)
         self.archive_button.setEnabled(False)
@@ -1268,11 +1377,27 @@ class MainWindow(QMainWindow):
         self.cancel_button.setEnabled(kind not in {"stop", "import", "preview"})
         self.progress.setRange(0, 0)
         self.progress.show()
-        self.task.progress.connect(self.status.setText)
+        self.task.progress.connect(self.task_progress)
         self.task.succeeded.connect(lambda value: self.task_success(kind, value))
         self.task.failed.connect(lambda error: self.task_failure(kind, error))
         self.task.finished.connect(self.task_finished)
         self.task.start()
+
+    def task_progress(self, message):
+        if message.startswith('REGISTRY_PROGRESS:'):
+            data=json.loads(message.removeprefix('REGISTRY_PROGRESS:'))
+            completed,total=data.get('completed',0),data.get('total',0)
+            if isinstance(total,int) and total>0 and isinstance(completed,int):
+                self.progress.setRange(0,total);self.progress.setValue(min(total,completed))
+                phase_label={'automatic_report':'Rédaction du compte rendu','registry':'Extraction des informations','registry_grouping':'Classement des sujets',
+                    'registry_relations':'Contrôle des relations','registry_complete':'Préparation conservée'}.get(data.get('phase'),'Préparation du registre')
+                message=f"{phase_label} : {completed}/{total}"
+                if data.get('batch'):message+=f" — lot {data['batch']}/{data['batches']} en cours"
+                self.registry_page.guide.setText(message+' ; les propositions restent à vérifier.')
+            else:message='Préparation du registre : '+str(data.get('phase','contrôles'))
+        self.status.setText(message)
+        if message.startswith('Moteur utilisé : '):
+            self.active_audio_engine = message.removeprefix('Moteur utilisé : ')
 
     def cancel_task(self):
         if self.task:
@@ -1280,21 +1405,32 @@ class MainWindow(QMainWindow):
             self.status.setText("Arrêt du traitement demandé. Les enregistrements restent conservés.")
 
     def task_success(self, kind, value):
+        if kind == 'analysis':
+            self.engine_status.setText(self.audio_mode_label() + f" | Moteur utilisé : {value['engine']} — {value['device'].upper()} — {value['elapsed_seconds']:.1f} s")
         if kind == "stop":
             self.store.finish_take(self.recording_take, "interrupted" if value else "ready")
             self.recorder = None
             self.microphone.setEnabled(True)
             self.record_button.setEnabled(True)
         self.load_session()
-        if kind=='registry':self.tabs.setCurrentWidget(self.registry_page)
+        if kind=='automatic':
+            self.advanced_mode.setChecked(False)
+            self.status.setText(f"Brouillon généré : {value['points']} point(s). "+
+                f"{value.get('paraphrase_claims',0)} reformulation(s), {value.get('quoted_fallback_points',0)} extrait(s) à vérifier. "+
+                ('Transcription existante réutilisée. ' if value.get('transcription_reused') else '')+
+                'Relisez et corrigez ; aucune approbation automatique.')
+            return
+        if kind=='registry':
+            self.tabs.setCurrentWidget(self.registry_page)
+            self.registry_page.preparation_complete(value)
         if kind == 'direct':
             self.tabs.setCurrentWidget(self.direct_page)
         if kind=='registry_check':
             self.tabs.setCurrentWidget(self.registry_page)
             self.registry_page.focus_entry(value.get('focus_id',''))
         if kind == "preview":
-            self.player.setSource(QUrl.fromLocalFile(str(value)))
-            self.player.play()
+            self.playback.play(value)
+            return  # Keep any explicit playback error instead of overwriting it.
         self.status.setText({"stop": "Prise sauvegardée." if not value else f"Prise préservée avec incident : {value}", "import": "Original importé et vérifié. Vous pouvez lancer la transcription.",
             "analysis": "Transcription et voix disponibles. Relisez les textes et attribuez les noms avant de préparer le registre.",
             "registry":"Registre préparé. Consultez les informations À vérifier, les sources et les relations avant de rédiger.",
@@ -1304,8 +1440,14 @@ class MainWindow(QMainWindow):
         if kind == 'direct' and not value.get('draft_saved'):
             self.status.setText('Essai conservé, mais aucun nouveau brouillon : aucun paragraphe admissible. '
                                 'Consultez les rejets et les sources du laboratoire. Le brouillon précédent reste conservé.')
+        if kind=='registry':
+            self.status.setText(f"Préparation terminée : {value.get('created_information_entries',0)} nouvelle(s) fiche(s), "
+                f"{value.get('proposed_information_entries',0)} propositions à vérifier et {value.get('blocked_information_entries',0)} à corriger / rattacher. "
+                'Les passages sources sont dans une vue séparée. Écoutez puis approuvez les informations fidèles avant la rédaction.')
 
     def task_failure(self, kind, error):
+        if kind in ('analysis','automatic') and 'GPU_AUDIO_UNAVAILABLE' in str(error):
+            self.cpu_retry.show()
         if kind == "stop":
             self.store.finish_take(self.recording_take, "interrupted")
             self.recorder = None
@@ -1321,8 +1463,13 @@ class MainWindow(QMainWindow):
         self.new_button.setEnabled(True)
         self.cancel_button.setEnabled(False)
         self.progress.hide()
+        self.audio_settings_button.setEnabled(True)
+        self.simple_page.setEnabled(True)
+        self.advanced_mode.setEnabled(True)
 
     def tick(self):
+        if self.task and getattr(self, 'task_kind', '') == 'analysis':
+            self.engine_status.setText(self.audio_mode_label() + ' | ' + self.active_audio_engine + f" — traitement : {time.monotonic()-self.task_started:.0f} s")
         free = shutil.disk_usage(str(self.store.root)).free / 1024**3
         self.disk_label.setText(f"Espace libre : {free:.1f} Go. Prévoir environ 0,7 Go/heure pour une prise stéréo 48 kHz et de l’espace pour les copies de traitement.")
         if self.recorder:
@@ -1354,12 +1501,20 @@ class MainWindow(QMainWindow):
             self.report_error(error)
             event.ignore()
             return
-        self.player.stop()
+        self.playback.close()
         self.store.close()
         event.accept()
 
 def explain_error(error):
     text = str(error)
+    if 'REGISTRY_APPROVAL_BLOCKED:' in text:
+        from notetaker.ui.information_registry import REASONS
+        codes=text.split('REGISTRY_APPROVAL_BLOCKED:',1)[1].split(',')
+        return 'Cette information ne peut pas être approuvée : '+' '.join(REASONS.get(c,c) for c in codes)+' Corrigez la fiche ou ses sources, puis enregistrez-la.'
+    if 'GPU_AUDIO_UNAVAILABLE' in text:
+        code = text.split('GPU_AUDIO_UNAVAILABLE:', 1)[-1]
+        from notetaker.services.audio_engine import GPU_DIAGNOSTICS as reasons
+        return reasons.get(code, 'Le traitement GPU a échoué (diagnostic : '+code+').') + ' Les prises et corrections sont conservées. Vous pouvez relancer explicitement sur CPU.'
     from jsonschema import ValidationError
     if isinstance(error,ValidationError):
         path=' / '.join(str(p) for p in error.absolute_path) or 'document'

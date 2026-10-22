@@ -3,15 +3,17 @@ import copy
 from PySide6.QtCore import Qt,Signal
 from PySide6.QtWidgets import (QWidget,QVBoxLayout,QHBoxLayout,QSplitter,QLabel,QLineEdit,QComboBox,
     QPushButton,QTableWidget,QTableWidgetItem,QHeaderView,QAbstractItemView,QTextEdit,QFormLayout,
-    QTabWidget,QInputDialog,QDialog,QDialogButtonBox)
+    QTabWidget,QInputDialog,QDialog,QDialogButtonBox,QProgressBar,QScrollArea)
+from PySide6.QtGui import QColor
 from notetaker.domain.information_registry import TYPES,RELATIONS,admissible,coverage,ambiguous_origin
 from notetaker.services.information_registry import RegistryService
+from notetaker.services.registry_workflow import approval_blockers,preparation_report
 from notetaker.ui.evidence import SourcePicker,stamp
 
 STATUS={'supported':'Soutien IA provisoire','ambiguous':'Ambiguë','insufficient':'Sources insuffisantes',
         'rejected':'Refusée par les contrôles','pending':'À vérifier'}
 AUTHOR={'confirmed':'Attribution confirmée','automatic':'Voix automatique','uncertain':'Attribution incertaine','unknown':'Auteur inconnu'}
-REASONS={'not_analyzed':'Passage non analysé','no_candidate_citation':'Aucune information extraite de ce passage',
+REASONS={'not_analyzed':'Passage non encore analysé','no_candidate_citation':'Aucune citation exploitable rattachée à ce passage',
     'source_remainder_not_interpreted':'Texte source non représenté par une citation',
     'no_unique_exact_quote_for_speaker':'Citation non retrouvée pour cette voix',
     'contextual_entailment_rejected':'Sens, modalité, auteur ou relation non soutenu',
@@ -30,7 +32,17 @@ REASONS={'not_analyzed':'Passage non analysé','no_candidate_citation':'Aucune i
     'decision_not_explicit':'La décision n’est pas explicite dans la source',
     'vote_or_adoption_requires_operator':'Un résultat de vote ou une adoption exige une saisie humaine distincte',
     'greeting_not_substantive':'Formule de présentation sans information substantielle',
-    'verbatim_transcription_not_a_summary':'La note copie une longue transcription ; reformuler sans déformer le sens'}
+    'verbatim_transcription_not_a_summary':'La note copie une longue transcription ; reformuler sans déformer le sens',
+    'source_is_not_information':'Ce passage est une source conservée, pas une fiche à approuver. Ouvrez ses informations liées ou créez une fiche distincte.',
+    'missing_evidence':'Ajoutez une citation exacte depuis un passage source.',
+    'missing_source':'Le passage cité n’existe plus dans la transcription courante.',
+    'quote_not_in_source':'La citation n’est pas retrouvée mot pour mot dans le passage. Corrigez ou rattachez la citation.',
+    'mixed_or_wrong_speaker':'Les citations ne correspondent pas au même intervenant. Séparez les informations ou corrigez leurs sources.',
+    'source_time_changed':'Les horaires sources ont changé ; rattachez la citation à la transcription actuelle.',
+    'source_interval_empty':'Ce fragment n’a pas de durée audio exploitable. Choisissez une source correctement horodatée.',
+    'unknown_source_voice':'Attribuez d’abord cette voix dans la transcription, sans deviner son identité.',
+    'ambiguous_source_occurrence':'La citation se répète. Choisissez explicitement son passage source.',
+    'missing_content':'Rédigez une formulation fidèle avant de l’approuver.'}
 
 
 def push(text,slot):
@@ -46,15 +58,18 @@ class RegistryPage(QWidget):
         self.error=error;self.before_change=before_change;self.sid=None;self.current=None;self.entry=None
         self.play_snapshot=play_snapshot
         self.verify_callback=verify
+        self._loading_editor=False
         layout=QVBoxLayout(self)
-        layout.addWidget(QLabel('Préparer les informations → vérifier les sources → rédiger → relire le document final'))
+        self.guide=QLabel();self.guide.setWordWrap(True);layout.addWidget(self.guide)
+        self.workflow_progress=QProgressBar();self.workflow_progress.setRange(0,6);self.workflow_progress.setTextVisible(False);layout.addWidget(self.workflow_progress)
         actions=QHBoxLayout();actions.addWidget(push('Initialiser sans IA',self.initialize))
-        actions.addWidget(push('Préparer / reprendre le registre',prepare));actions.addWidget(push('Rédiger depuis ce registre',write))
-        actions.addWidget(push('Historique du registre',self.history));layout.addLayout(actions)
+        self.prepare_button=push('Préparer / reprendre le registre',prepare);actions.addWidget(self.prepare_button)
+        self.write_button=push('Rédiger depuis ce registre',write);actions.addWidget(self.write_button)
+        actions.addWidget(push('Historique du registre',self.history));actions.addWidget(push('Bilan de préparation',self.show_preparation_report));layout.addLayout(actions)
         self.banner=QLabel('Aucun registre. La transcription et les anciens documents sont conservés.');self.banner.setWordWrap(True);layout.addWidget(self.banner)
         filters=QHBoxLayout();self.search=QLineEdit();self.search.setPlaceholderText('Rechercher un sujet, une information, un intervenant…')
         self.filter=QComboBox()
-        for label,key in [('Tout','all'),('À vérifier','review'),('Admissibles à la rédaction','eligible'),('Approuvées','approved'),('Exclues','excluded'),('Sources intégrales','sources'),('Non rédigées','unwritten')]:self.filter.addItem(label,key)
+        for label,key in [('Toutes les informations','all'),('Propositions à vérifier','proposed'),('À corriger / rattacher','corrections'),('À vérifier — informations','review'),('Admissibles à la rédaction','eligible'),('Approuvées humainement','approved'),('Exclues','excluded'),('Passages sources uniquement','sources'),('Propositions antérieures conservées','previous'),('Non rédigées','unwritten')]:self.filter.addItem(label,key)
         filters.addWidget(self.search,1);filters.addWidget(self.filter);layout.addLayout(filters)
         split=QSplitter();self.rows=QTableWidget(0,4);self.rows.setHorizontalHeaderLabels(['Horaire','Sujet / type','Auteur / état','Information'])
         self.rows.setEditTriggers(QAbstractItemView.NoEditTriggers);self.rows.setSelectionBehavior(QAbstractItemView.SelectRows)
@@ -62,17 +77,27 @@ class RegistryPage(QWidget):
         self.rows.horizontalHeader().setSectionResizeMode(3,QHeaderView.Stretch)
         for col,width in [(0,75),(1,135),(2,160)]:self.rows.setColumnWidth(col,width)
         self.rows.verticalHeader().setDefaultSectionSize(70);split.addWidget(self.rows)
-        panel=QWidget();right=QVBoxLayout(panel);self.detail_tabs=QTabWidget();right.addWidget(self.detail_tabs,1)
+        panel=QWidget();right=QVBoxLayout(panel)
+        self.category=QLabel();self.category.setWordWrap(True);right.addWidget(self.category)
+        source_navigation=QHBoxLayout()
+        self.linked_button=push('Voir les informations liées',self.show_linked);source_navigation.addWidget(self.linked_button)
+        self.create_button=push('Créer une fiche depuis ce passage',self.start_information);source_navigation.addWidget(self.create_button)
+        right.addLayout(source_navigation)
+        right.addWidget(push('Écouter la citation sélectionnée',self.listen))
+        self.action_hint=QLabel();self.action_hint.setWordWrap(True);right.addWidget(self.action_hint)
+        self.detail_tabs=QTabWidget()
+        detail_scroll=QScrollArea();detail_scroll.setWidgetResizable(True);detail_scroll.setWidget(self.detail_tabs)
+        right.addWidget(detail_scroll,1)
         detail=QWidget();form=QFormLayout(detail)
         self.subject=QLineEdit();self.kind=QComboBox()
         for key,title in TYPES.items():self.kind.addItem(title,key)
         self.discourse=QComboBox()
         for label,key in [('Propos direct','own'),('Question','question'),('Avis cité ou critiqué','reported'),('Récit personnel','anecdote')]:self.discourse.addItem(label,key)
-        self.content=QTextEdit();self.author=QLabel();self.author.setWordWrap(True)
-        self.reason=QTextEdit();self.reason.setReadOnly(True);self.reason.setMaximumHeight(130)
+        self.content=QTextEdit();self.content.setMinimumHeight(110);self.author=QLabel();self.author.setWordWrap(True)
+        self.reason=QTextEdit();self.reason.setReadOnly(True);self.reason.setMinimumHeight(90);self.reason.setMaximumHeight(130)
         form.addRow('Sujet',self.subject);form.addRow('Type',self.kind);form.addRow('Nature',self.discourse)
         form.addRow(self.author);form.addRow('Contenu attribué',self.content);form.addRow('Diagnostic',self.reason)
-        form.addRow(push('Demander un contrôle Qwen de cette fiche',self.verify_selected))
+        self.verify_button=push('Demander un contrôle Qwen de cette fiche',self.verify_selected);form.addRow(self.verify_button)
         self.detail_tabs.addTab(detail,'Information')
         sources=QWidget();sl=QVBoxLayout(sources)
         sl.addWidget(QLabel('Les citations doivent rester exactes. Les horaires sont ceux des segments, pas des mots.'))
@@ -93,16 +118,20 @@ class RegistryPage(QWidget):
         identity=QFormLayout();self.actor=QLineEdit();self.actor.setPlaceholderText('Nom de la personne qui vérifie')
         self.justification=QLineEdit();self.justification.setPlaceholderText('Motif de cette modification ou de cette vérification')
         identity.addRow('Opérateur',self.actor);identity.addRow('Motif',self.justification);right.addLayout(identity)
-        edit_actions=QHBoxLayout();edit_actions.addWidget(push('Enregistrer la correction',lambda:self.apply('edit')))
-        edit_actions.addWidget(push('Approuver cette information',lambda:self.apply('approve')));right.addLayout(edit_actions)
+        edit_actions=QHBoxLayout();self.save_button=push('Enregistrer la correction',lambda:self.apply('edit'));edit_actions.addWidget(self.save_button)
+        self.approve_button=push('Approuver cette information',lambda:self.apply('approve'));edit_actions.addWidget(self.approve_button);right.addLayout(edit_actions)
         exclude_actions=QHBoxLayout();exclude_actions.addWidget(push('Exclure avec motif',lambda:self.apply('exclude')))
         exclude_actions.addWidget(push('Remettre à vérifier',lambda:self.apply('reopen')))
         exclude_actions.addWidget(push('Annuler la saisie',self.discard_changes));right.addLayout(exclude_actions)
         note=QLabel('Approuver une information ne valide pas le compte rendu. Les décisions et votes restent à saisir et vérifier séparément.');note.setWordWrap(True);right.addWidget(note)
-        split.addWidget(panel);split.setSizes([700,540]);layout.addWidget(split,1)
+        self.detail_tabs.setMinimumHeight(450)
+        split.addWidget(panel);split.setSizes([570,700]);layout.addWidget(split,1)
         self.search.textChanged.connect(self.populate);self.filter.currentIndexChanged.connect(self.populate)
         self.rows.itemSelectionChanged.connect(self.select);self.sources.itemSelectionChanged.connect(self.show_context)
         self.rows.cellDoubleClicked.connect(lambda *a:self.listen())
+        self.subject.textChanged.connect(self.update_actions);self.content.textChanged.connect(self.update_actions)
+        self.kind.currentIndexChanged.connect(self.update_actions);self.discourse.currentIndexChanged.connect(self.update_actions)
+        self.sources.itemChanged.connect(self.update_actions)
 
     def initialize(self):
         if not self.sid:return
@@ -124,12 +153,103 @@ class RegistryPage(QWidget):
                 'partial':'Analyse partielle','extracting':'Extraction partielle','extracted':'Extraction terminée, classement à reprendre',
                 'partial_extraction':'Certains lots sont extraits ; poursuivre la préparation',
                 'ready_for_review':'Préparation terminée, vérification humaine disponible'}.get(phase,phase)
-            self.banner.setText(('REGISTRE OBSOLÈTE : la transcription ou ses attributions ont changé. Préparer une nouvelle version.\n' if self.current['stale'] else '')+
-                f"Révision {self.current['revision']} · {c['source_segments']} passages conservés · {c['information_entries']} informations · "
-                f"{c['eligible_information_entries']} admissibles · {c['to_verify_information_entries']} à vérifier. "+
-                phase_label+'. La couverture des citations ne mesure pas la couverture des thèmes.')
+            report=preparation_report(self.current['content'],self.state)
+            self.banner.setText(('REGISTRE OBSOLÈTE : reprenez la préparation.\n' if self.current['stale'] else '')+
+                f"Révision {self.current['revision']} · {c['source_segments']} passages sources · {report['active_information_entries']} fiches actuelles · "
+                f"{report['previous_information_entries']} propositions antérieures conservées. "+phase_label+'.')
         else:self.banner.setText('Aucun registre. Préparez-le avant la rédaction ; les documents existants restent conservés.')
+        self.update_guide()
         self.populate()
+
+    def update_guide(self):
+        if not self.current:
+            self.guide.setText('3/6 — Transcription disponible : préparez le registre pour obtenir des fiches sourcées.');self.workflow_progress.setValue(2)
+            self.write_button.setEnabled(False);return
+        if self.current['stale']:
+            self.guide.setText('3/6 — La transcription ou les voix ont changé. Reprenez la préparation ; les fiches et révisions antérieures sont conservées.')
+            self.workflow_progress.setValue(2);self.write_button.setEnabled(False);return
+        report=preparation_report(self.current['content'],self.state)
+        ready=report['ready_to_write'] if not self.current['stale'] else 0
+        self.write_button.setEnabled(bool(ready))
+        self.write_button.setToolTip('Rédiger les informations admissibles ; le document restera à relire.' if ready else
+            'Vérifiez une information proposée et sa citation, corrigez les blocages, puis approuvez-la. Aucun contrôle de source n’est contourné.')
+        draft=self.state.get('draft')
+        final=bool(draft and draft['content'].get('information_registry',{}).get('revision_id')==self.current['id'])
+        step=6 if final else 5 if ready else 4 if report['proposed_information_entries'] or report['blocked_information_entries'] else 3
+        messages={3:'Préparer automatiquement les fiches ; les passages originaux restent séparés.',
+            4:'Écouter et vérifier les propositions. Corriger les fiches signalées, puis approuver explicitement celles qui sont fidèles.',
+            5:'Des informations sont admissibles. Vous pouvez rédiger ; les éléments non retenus resteront consultables.',
+            6:'Relire et corriger le projet, puis confirmer la relecture avant tout export.'}
+        self.guide.setText(f"{step}/6 — {messages[step]}\n{report['proposed_information_entries']} propositions à vérifier · "
+            f"{report['blocked_information_entries']} à corriger / rattacher · {report['approved_information_entries']} approuvées · {ready} admissibles.")
+        self.workflow_progress.setValue(step-1)
+
+    def preparation_complete(self,result):
+        self.entry=None;self.load(self.sid,force=True)
+        self.search.clear()
+        self.filter.setCurrentIndex(self.filter.findData('proposed' if result.get('proposed_information_entries',0) else 'corrections'))
+        self.populate()
+        self.banner.setText(self.banner.text()+f"\nCette préparation a créé {result.get('created_information_entries',0)} fiche(s) distincte(s). "
+            'Les sources et les anciennes propositions restent conservées. Aucun avis Qwen ne vaut validation humaine.')
+
+    def show_preparation_report(self):
+        if not self.current:return
+        report=preparation_report(self.current['content'],self.state)
+        last=self.current['content']['processing'].get('preparation_report',{})
+        lines=[f"Passages originaux conservés : {len(self.current['content']['sources'])}",
+            f"Fiches créées lors de la dernière préparation : {last.get('created_information_entries','non enregistré pour cette ancienne révision')}",
+            f"Unités examinées : {report['inspected_units']}/{report['total_units']}",
+            f"Propositions à vérifier : {report['proposed_information_entries']}",
+            f"Fiches à corriger / rattacher : {report['blocked_information_entries']}",
+            f"Passages sans citation exploitable rattachée : {report['sources_without_usable_citation']}",
+            '\nBlocages actuels :']
+        lines.extend(f"{n} — {REASONS.get(code,code)}" for code,n in report['approval_blockers'].items())
+        lines.append('\nMotifs des passages sources sans citation rattachée (avis du moteur, à examiner) :')
+        for e in self.current['content']['entries']:
+            if e['category']=='source' and not e.get('candidate_ids'):
+                lines.append(stamp(e['evidence'][0]['start_ms'])+' — '+e.get('inspection',{}).get('reason','Passage non examiné'))
+        lines.append('\nLes citations rattachées ne prouvent pas la fidélité du sens ni la couverture du débat. Aucune approbation humaine automatique.')
+        dialog=QDialog(self);dialog.setWindowTitle('Bilan de préparation du registre');dialog.resize(850,620)
+        layout=QVBoxLayout(dialog);view=QTextEdit();view.setReadOnly(True);view.setPlainText('\n'.join(lines));layout.addWidget(view)
+        close=QDialogButtonBox(QDialogButtonBox.Close);close.button(QDialogButtonBox.Close).setText('Fermer')
+        close.rejected.connect(dialog.reject);layout.addWidget(close);dialog.exec()
+
+    def update_actions(self,*args):
+        if self._loading_editor:return
+        e=self.entry
+        raw=bool(e and e['category']=='source')
+        self.linked_button.setVisible(raw);self.create_button.setVisible(raw)
+        blockers=approval_blockers(e,self.state) if e else []
+        dirty=self.editor_changed()
+        self.approve_button.setEnabled(bool(e and not raw and not blockers and not dirty and not self.current['stale']))
+        self.verify_button.setEnabled(bool(e and not raw and e['evidence'] and not dirty and not self.current['stale']))
+        self.save_button.setEnabled(bool(e and (not raw or dirty) and not self.current['stale']))
+        if raw:self.action_hint.setText(REASONS['source_is_not_information'])
+        elif not e:self.action_hint.setText('Sélectionnez une information proposée, ou un passage dans la vue Sources.')
+        elif dirty:self.action_hint.setText('Enregistrez la correction et ses citations avant le contrôle ou l’approbation.')
+        elif blockers:self.action_hint.setText('Approbation bloquée : '+ ' '.join(REASONS.get(v,v) for v in blockers))
+        else:self.action_hint.setText('Vérifiez le sens et l’auteur à l’écoute, renseignez votre nom et le motif, puis approuvez explicitement. Le projet final restera à relire.')
+
+    def start_information(self):
+        if not self.entry or self.entry['category']!='source':return
+        self.subject.clear();self.content.clear();self.discourse.setCurrentIndex(self.discourse.findData('own'))
+        self.detail_tabs.setCurrentIndex(0);self.content.setFocus()
+        self.action_hint.setText('Rédigez une information et son sujet. Ajustez la citation dans Sources et contexte, puis enregistrez : le passage original sera conservé séparément.')
+
+    def show_linked(self):
+        if not self.entry:return
+        uid=self.entry['evidence'][0]['id']
+        candidates=[e for e in self.current['content']['entries'] if e['category']=='information' and
+            (any(r['id']==uid for r in e['evidence']) or uid in e.get('origin',{}).get('unit_source_ids',[]))]
+        if not candidates:
+            self.action_hint.setText('Aucune fiche liée. Préparez le registre ou créez une information depuis ce passage.');return
+        if len(candidates)>1:
+            labels=[e['subject']+' — '+e['content'][:100]+' ['+e['id'][:8]+']' for e in candidates]
+            label,ok=QInputDialog.getItem(self,'Informations liées au passage','Choisir la fiche proposée :',labels,0,False)
+            if not ok:return
+            target=candidates[labels.index(label)]
+        else:target=candidates[0]
+        self.focus_entry(target['id'])
 
     def populate(self,*args):
         if self.editor_changed():
@@ -140,9 +260,14 @@ class RegistryPage(QWidget):
         unwritten=set(document['writing'].get('not_written_information_ids',[]));used=set(document['writing'].get('used_information_ids',[]))
         self.visible=[]
         for entry in document['entries']:
-            raw=entry['category']=='source';eligible=admissible(entry,self.state) and not self.current['stale']
+            raw=entry['category']=='source';blockers=approval_blockers(entry,self.state) if not raw else []
+            eligible=admissible(entry,self.state) and not blockers and not self.current['stale']
             if mode=='sources' and not raw:continue
-            if mode not in {'sources','review'} and raw:continue
+            if mode!='sources' and raw:continue
+            if mode=='previous' and not entry.get('previous_extraction'):continue
+            if mode not in {'all','previous','sources'} and entry.get('previous_extraction'):continue
+            if mode=='proposed' and (entry['human_status']!='pending' or blockers):continue
+            if mode=='corrections' and (entry['human_status']=='excluded' or not blockers):continue
             if mode=='review' and (entry['human_status']=='excluded' or (raw and not entry.get('unrepresented_text',entry['content'])) or (not raw and eligible and entry['id'] not in unwritten)):continue
             if mode=='eligible' and not eligible:continue
             if mode=='approved' and entry['human_status']!='approved':continue
@@ -153,14 +278,20 @@ class RegistryPage(QWidget):
             self.visible.append(entry);row=self.rows.rowCount();self.rows.insertRow(row)
             status='Exclue' if entry['human_status']=='excluded' else 'Approuvée — document à relire' if entry['human_status']=='approved' else STATUS[entry['verification']]
             if raw:status='Source intégrale — '+('exclue de l’examen' if entry['human_status']=='excluded' else 'texte à examiner' if entry['verification']=='pending' else 'citations repérées')
+            elif blockers:status='Correction nécessaire — '+status
+            elif entry['human_status']=='pending':status=('Proposée par l’IA' if entry.get('origin') else 'Fiche opérateur')+' — '+status
             if entry['id'] in unwritten:status+=' · non rédigée'
+            if entry.get('previous_extraction'):status='Proposition antérieure conservée — '+status
             start=min((r['start_ms'] for r in entry['evidence']),default=None)
-            for col,text in enumerate([stamp(start) if start is not None else 'À rattacher',entry['subject']+'\n'+('Source' if raw else TYPES[entry['type']]),name+'\n'+status,entry['content']]):
-                item=QTableWidgetItem(text);item.setToolTip(text);self.rows.setItem(row,col,item)
+            for col,text in enumerate([stamp(start) if start is not None else 'À rattacher',('Passage source conservé' if raw else entry['subject']+'\n'+TYPES[entry['type']]),name+'\n'+status,entry['content']]):
+                item=QTableWidgetItem(text);item.setToolTip(text)
+                item.setBackground(QColor('#eef1f5' if raw else '#e5f4eb' if entry['human_status']=='approved' else '#fff0df' if blockers else '#edf4ff'))
+                self.rows.setItem(row,col,item)
         if self.visible:self.rows.selectRow(0)
         else:
             self.subject.clear();self.content.clear();self.reason.clear();self.author.clear();self.context.clear()
             self.sources.setRowCount(0);self.relations.setRowCount(0);self.entry_history.clear()
+            self.category.setText('Aucune fiche dans cette vue');self.update_actions()
 
     def select(self):
         if self.editor_changed():
@@ -171,7 +302,11 @@ class RegistryPage(QWidget):
         row=self.rows.currentRow()
         if row<0 or row>=len(getattr(self,'visible',[])):return
         self.entry=self.visible[row];e=self.entry
+        self._loading_editor=True
+        self.category.setText('PASSAGE SOURCE CONSERVÉ — créez ou ouvrez une information distincte' if e['category']=='source' else
+            'INFORMATION VÉRIFIÉE PAR UN OPÉRATEUR' if e['human_status']=='approved' else 'INFORMATION PROPOSÉE — validation humaine requise')
         self.subject.setText(e['subject']);self.kind.setCurrentIndex(max(0,self.kind.findData(e['type'])))
+        self.subject.setCursorPosition(0)
         self.discourse.setCurrentIndex(max(0,self.discourse.findData(e.get('discourse','own'))));self.content.setPlainText(e['content'])
         self.author.setText(self.current['content']['speakers'].get(e['speaker'],'Intervenant inconnu')+' — '+AUTHOR[e['author_status']])
         details=[REASONS.get(r,r) for r in e['reasons']]
@@ -217,6 +352,7 @@ class RegistryPage(QWidget):
         else:
             ids=e.get('origin',{}).get('unit_source_ids',[])
             self.context.setPlainText('\n\n'.join(u['text'] for u in self.current['content']['sources'] if u['id'] in ids))
+        self._loading_editor=False;self.update_actions()
 
     def insert_source(self,ref):
         i=self.sources.rowCount();self.sources.insertRow(i);item=QTableWidgetItem(stamp(ref['start_ms']))
@@ -232,7 +368,7 @@ class RegistryPage(QWidget):
 
     def remove_source(self):
         row=self.sources.currentRow()
-        if row>=0:self.sources.removeRow(row)
+        if row>=0:self.sources.removeRow(row);self.update_actions()
 
     def show_context(self):
         row=self.sources.currentRow()
@@ -265,6 +401,7 @@ class RegistryPage(QWidget):
 
     def editor_changed(self):
         if not self.entry:return False
+        if any(self.sources.item(i,j) is None for i in range(self.sources.rowCount()) for j in (0,1)):return True
         plain=lambda value:value.replace('\r\n','\n').replace('\r','\n').replace('\u00a0',' ').replace('\u2028','\n').replace('\u2029','\n')
         return (self.subject.text()!=self.entry['subject'] or plain(self.content.toPlainText())!=plain(self.entry['content']) or
             self.kind.currentData()!=self.entry['type'] or self.discourse.currentData()!=self.entry.get('discourse','own') or

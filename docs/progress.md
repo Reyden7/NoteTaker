@@ -1,8 +1,300 @@
 # Avancement NoteTaker 0.2 — qualité en évaluation
 
+## Parcours simplifié et références vocales facultatives — 21 octobre 2026
+
+Guide : [automatic-report-guide.md](automatic-report-guide.md).
+Audit, architecture, licences, mesures et limites :
+[automatic-report-architecture.md](automatic-report-architecture.md).
+Preuves : `output/automatic-report-20261021/470f7221d5eb4cd0974963bf81f4e64d/`.
+
+### Fonctionnel dans les sources de recette
+
+- Page par défaut : import → **Générer le compte rendu** → brouillon modifiable,
+  sources audio et export PDF/DOCX explicitement **BROUILLON NON RELU**.
+  Aucun prérequis d’approbation des fiches. Le mode avancé conserve les outils
+  antérieurs et le parcours distinct de validation humaine/export relu.
+- Orchestration des moteurs CPU/GPU existants, sans modification des moteurs
+  audio ni réentraînement. Réemploi de la transcription si l’audio sélectionné
+  est identique ; garde contre les modifications concurrentes, annulation et
+  erreurs sans effacement des sources ou des anciens brouillons.
+- Format Qwen compact, citations exactes assemblées côté service, identifiants
+  et noms liés aux sources. Une réécriture ciblée au maximum puis contrôle ;
+  refus, variantes et omissions conservés dans un inventaire consultable.
+  La preuve de citation ne vaut pas preuve du sens : contrôles déterministes
+  des déformations effectivement observées, relecture toujours nécessaire.
+- Composants de références vocales : microphone/import, réécoute, contrôles,
+  embeddings WeSpeaker/sherpa CPU, plusieurs prises, seuil/marge/cohérence,
+  rejet des inconnus, suggestions sans écrasement des identités humaines.
+  Coffre séparé chiffré DPAPI du compte Windows, conservation et suppression,
+  compatibilité par hash modèle. Aucun changement du schéma des séances.
+
+**Cadre juridique non validé, aucun échantillon autorisé fourni** : collecte et
+identification nominative sont restées désactivées. Le formulaire d’autorisation
+consigne une décision externe ; il ne détermine pas la licéité. Aucune personne
+réellement enrôlée ; précision nominative et calibration non mesurées. L’annuaire
+civil, les noms déjà confirmés et la génération fonctionnent sans biométrie.
+
+### Tests et recette réellement exécutés
+
+**377 tests réussis en 12,25 s**, rapport `complete.xml`. Cela couvre notamment
+le parcours simple, sauvegarde/réouverture, brouillon sans registre approuvé,
+intégrité des sources/noms, export non relu et blocage de l’export officiel,
+annulation, reprise de transcription/cache, contrôles des erreurs municipales,
+chiffrement DPAPI réel de données fictives, capture simulée vers stockage
+chiffré réel, expiration, suppression, modèle incompatible et rejet mathématique
+des voix inconnues/proches. Les moteurs natifs dans les tests unitaires sont
+remplacés par des fixtures explicitement fictives ; les inférences réelles sont
+documentées séparément ci-dessous. `git diff --check` sans erreur de contenu.
+
+Sur copie du municipal réel de **336,039 s / 36 passages** : Qwen CPU exécuté,
+transcription déjà corrigée réutilisée, noms humains conservés, PDF/DOCX produits,
+aucune relecture créée, export officiel refusé. Recette finale `delivery-final/` :
+**4 reformulations et 3 citations de repli**, dont 2 reformulations avec source
+faible. **23 passages non repris**, inventoriés. Pas de gain de fidélité annoncé.
+
+Le format compact a nécessité **443,608 s** pour les deux appels initiaux neufs
+(189,077 + 250,155 s). La réécriture depuis les sources a pris 50,331 s et son
+premier contrôle 38,941 s. L’assemblage final de 43,795 s réutilise ces résultats
+et ne recalcule qu’un contrôle modifié de 40,609 s : **ce n’est pas un temps de
+génération à froid**. Pas de mesure finale du temps CPU cumulé de la chaîne.
+Essais insuffisants conservés : première version 919,109 s / zéro reformulation,
+chemin natif Windows trop long, puis JSON tronqué après 512,624 s. Ils ont conduit
+au cache court vérifié et au contrat compact, sans masquer les échecs.
+
+Contrôles de conservation SQL : transcription, annuaire, participants, décisions,
+votes, registre, historique et anciens brouillons identiques. WAV municipal et
+références BFMTV inchangés par SHA-256. L’ancienne empreinte physique de la base
+du lot audio précédent diffère ; aucune identité binaire avec cet ancien relevé
+n’est annoncée. Comparaison au premier instantané de ce lot et vérifications
+avant/après les recettes consignées. Voir `delivery-preservation.json`.
+Capture Qt de la page finale inspectée : `simple-page-final.png`.
+
+Essai CPU d’embeddings sur deux groupes anonymes du même enregistrement :
+1,336 s, cohérence interne uniquement, aucun vecteur stocké et aucune précision
+d’identité mesurée. Pas de test réel de microphone nominatif, de voix proches
+interséances ou de réunion longue avec référence humaine. Le test trois heures
+est une couverture de blocs textuels, pas un essai audio terrain.
+
+### Reste à qualifier
+
+La synthèse **reste partielle**, avec des déformations que le même Qwen avait
+initialement déclarées soutenues. Les protections ciblées ne constituent pas un
+vérificateur sémantique général. Couverture et fidélité à améliorer/évaluer
+humainement avant usage comme procès-verbal municipal. Authentification locale
+par compte Windows, sauvegarde/migration du coffre et annulation native de
+l’enrôlement à durcir ; voir limites techniques du rapport.
+Licences amont vérifiées/documentées ; redistribution commerciale globale,
+matériel supplémentaire et PC Windows vierge hors ligne toujours non validés.
+**Pas de nouveau bundle compilé dans ce lot**, aucun téléchargement de modèle.
+Lanceur fourni sur copie : `Ouvrir-la-recette-simple.cmd` dans les preuves.
+
+## Lecture audio des citations — 21 octobre 2026
+
+Rapport : [audio-playback-fix.md](audio-playback-fix.md).
+WAV municipal PCM16 mono 16 kHz valide ; 48 erreurs SWR en trois secondes
+avec Qt/FFmpeg et le casque Logitech 7.1, zéro avec Windows Media Foundation.
+Choix du backend Windows avant initialisation Qt, lecteur partagé et copies
+temporaires PCM limitées au début **et à la fin** des passages. Sources,
+horaires et instantanés inchangés. Erreurs françaises, arrêt et nettoyage,
+garde de cinq secondes et aucune nouvelle tentative automatique. Plugin natif
+exigé au packaging ; aucun moteur IA modifié ni téléchargement.
+
+**347 tests réussis en 11,41 s**, dont 17 nouveaux. Recette réelle Windows
+sur sauvegarde de la séance municipale : boutons registre et transcription,
+signal **Core Audio du processus non nul**, arrêt final et temporaire supprimé.
+Intervalles 0–2 240 ms et **55 240–59 340 ms** ; lecture de celui-ci en
+4,235 / 4,250 s avec chargement. Stéréo et quatre changements rapides vérifiés.
+Journaux stderr des recettes réussies vides ; base de recette, références
+humaines et WAV contrôlés identiques par empreintes.
+
+Preuves : `output/playback-fix-20261021/758d8f8a825a450996c9b9eaed7f23e3/`
+(`final.xml`, `real-windows-03/result.json`, journaux, captures, conservation).
+Répétition finale `real-windows-04/result.json`, onglets visibles : 4,265 /
+4,281 s, signal mesuré, arrêt et nettoyage confirmés, stderr vide.
+L’essai initial refusé pour la mesure Core Audio par le bac à sable est conservé
+comme échec ; recettes réussies ensuite autorisées hors bac à sable.
+**Écoute acoustique humaine, autres matériels et PC vierge non validés**.
+Pas de recompilation du bundle ; relancer la recette depuis ses sources.
+
 Dernier lot sources : **0.2.5.dev0, laboratoire de synthèse directe en qualification**.
 Plan préalable : `direct-summary-0.2.5-plan.md` ; utilisation et limites :
 `direct-summary-0.2.5.md`. Le parcours 0.2.4 et le schéma SQLite v5 sont conservés.
+
+## Parcours registre / rédaction — correctif du 21 octobre 2026
+
+Rapport et mode d'emploi : [registry-workflow-fix.md](registry-workflow-fix.md).
+Preuves neuves :
+`output/registry-workflow-20261021/4c9f7125b1934a5ab4c3939945cd8bfc/`.
+
+### Causes établies et corrections
+
+La table pouvait rester filtrée sur les sources intégrales après une préparation,
+alors que le compteur annonçait les propositions distinctes. « À vérifier »
+mélangeait aussi ces catégories. Le registre n'était pas simplement vide : dans
+la copie municipale disponible, **24 propositions dont 23 refusées** (alias V1,
+copie longue, confusion de nature/type, citation non retrouvée). La révision 8
+de 23 fiches signalée par l'utilisateur n'a pas été retrouvée comme base exacte ;
+le test reproduit les défauts avec les mêmes 36 passages.
+
+- Contrat d'extraction v4 : citation avant reformulation, types/natures expliqués,
+  absence d'alias de voix dans les entrées du modèle, auteur fixé depuis les
+  sources. Critiques et descriptions restent des informations sans décision ni
+  action future. Refus et citations introuvables conservés, jamais approuvés.
+- Mise à niveau et reprise fiables, sans confondre les unités d'un ancien contrat
+  avec celles du nouveau. Préparation partielle signalée. Réutilisation sans
+  nouvelle inférence lorsque le contrat courant est déjà terminé.
+- Sources, propositions actuelles, corrections et propositions antérieures dans
+  des vues séparées. Anciennes fiches machine conservées, hors rédaction automatique ;
+  toute intervention humaine reste protégée. Aucun schéma SQL modifié.
+- Guide en six étapes, progression par phases, bilan des créations et motifs de
+  non-extraction, actions contextuelles, accès direct à l'audio et fiches liées.
+  Approfondissement défilable et commandes d'approbation accessibles.
+- Approbation refusée sur les incohérences de références, occurrences ambiguës,
+  intervalles nuls, voix inconnues et formulations refusées par les contrôles
+  statiques existants. Aucun contrôle de rédaction/export supprimé.
+- Défaut Windows découvert en recette : les noms UUID longs des artefacts de
+  contrôle Qwen produisaient des chemins natifs trop longs. Noms de fichiers
+  raccourcis, identifiants de source/information conservés intégralement en base.
+
+### Résultats réels sur copies isolées
+
+- Premier essai v3 **non concluant** : une seule nouvelle proposition refusée,
+  201,560 s ; les réponses sont conservées. La consigne trop restrictive rejetait
+  à tort critiques et descriptions faute d'action future ; elle a été remplacée.
+- Préparation v4 : **385,658 s**, 14 unités sur 14, **36 passages conservés**,
+  **20 nouvelles fiches**, 13 avec citation retrouvée, **9 sans blocage structurel**,
+  **11 à corriger / rattacher**. **25 propositions antérieures** conservées séparément.
+  Aucun statut humain approuvé. Les neuf fiches ne sont pas neuf vérités certifiées.
+- Reprise finale : **2,491 s**, réutilisation explicite, aucune nouvelle inférence,
+  aucune nouvelle fiche. Ne pas comparer cette durée à une extraction à froid.
+- Contrôle Qwen d'une fiche sur les véhicules amortis : **34,061 s**, soutien
+  provisoire sur les quatre axes ; attribution incertaine, donc non admissible
+  sans intervention humaine. L'échec antérieur de chemin Windows est conservé.
+- Contrôle d'une autre fiche sur les associations : **50,045 s**, variante sourcée
+  conservée séparément, une information admissible selon les règles existantes.
+  Rédaction réelle : **un paragraphe partiel en 57,365 s**. Refus PDF **et** DOCX
+  sans relecture confirmée. Aucune information ni document municipal approuvé
+  automatiquement. Ceci ne vaut pas un PV complet ou une validation de fidélité.
+- Suite complète : **330 tests réussis en 11,35 s**, `final.xml` / `final-tests.log`,
+  dont 24 nouveaux cas. Tests des filtres/actions, données historiques, citations,
+  absence d'approbation implicite, refus avant rédaction/export, reprise, contrôle
+  des chemins natifs et progression. Les trois premières attentes UI adaptées
+  concernent des actions maintenant désactivées avec motif visible. Premier rapport
+  conservé ; les invariants de sécurité n'ont pas été relâchés.
+- Vues PySide6 rendues et inspectées sur la copie municipale, sans approbation.
+  Aucune réexécution Whisper/sherpa/Community, aucun nouveau modèle.
+- Conservation contrôlée sur **1 746 fichiers** : six changements du cœur dans
+  le périmètre autorisé registre/UI, aucun autre changement inattendu. Moteurs
+  audio et rédacteurs partagés inchangés ; trois révisions initiales du registre
+  et 36 interventions conservées identiquement dans la copie, MP3 original intact.
+  `preservation.json` contient la preuve. Un lanceur `Ouvrir-la-recette.cmd` ouvre
+  uniquement la copie municipale pour la vérification humaine.
+
+### Limites et suite opérateur
+
+Les 7 nouvelles fiches sans citation retrouvée restent bloquées ; les autres
+blocages incluent des horaires nuls, des voix inconnues et des erreurs de nature.
+Les 12 passages sans citation rattachée restent consultables. Ces comptes ne
+mesurent ni couverture du débat ni fidélité sémantique. Qwen 4B conserve des
+erreurs réelles : lire et écouter les propositions, corriger puis approuver
+uniquement celles effectivement vérifiées. Les décisions et votes restent saisis
+séparément, et la relecture du document est obligatoire.
+
+Le correctif est dans les sources, à lancer avec `scripts/run.ps1`. Aucun nouveau
+bundle ni installateur compilé ici. Les anciens exécutables restent inchangés.
+Recette complète avec validation humaine du registre et du PV toujours à effectuer ;
+Windows vierge déconnecté et commercialisation restent non validés.
+
+## Intégration ciblée Large-v3 + Community-1 — 21 octobre 2026
+
+### Fonctionnel dans l'application source
+
+- Paramètres persistants **Automatique / CPU / GPU NVIDIA**, sans migration SQL.
+  CPU : Small int8 + sherpa existants ; GPU : Large-v3 float16 + Community-1,
+  français, modèles et paramètres locaux du laboratoire, sans WhisperX.
+- Runtime GPU isolé du processus Qt et du worker CPU. Vérification des hashes
+  des modèles, versions des dépendances, calcul CUDA réel, support CTranslate2
+  float16 et mémoire libre (seuil prudent 8 Gio, pas une garantie de capacité).
+  L'admission automatique refusée sélectionne CPU ; une panne GPU en cours
+  propose une **relance CPU explicite**, sans remplacer la transcription active.
+- Phases, moteur utilisé et temps affichés. Annulation de l'arbre de processus,
+  originaux et résultats intermédiaires conservés. Même préparation audio,
+  alignement, sauvegarde transactionnelle, contrôle de montage et historique.
+- Tours Community standards simultanés conservés, sans nombre de voix imposé,
+  noms humains ni confiance inventés. Texte touchant un chevauchement laissé
+  incertain, sans imposer une voix ni dupliquer le texte. Voix candidates visibles.
+  Regroupement corrigé pour conserver aussi les tours GPU après une courte pause ;
+  identifiants de ces métadonnées remappés avec les identifiants stables existants.
+- Moteurs, prompts, registre et fonctions de rédaction **inchangés**. Références
+  humaines et résultats du comparateur **inchangés** : contrôle de 1 695 fichiers
+  protégés, des moteurs existants et des fonctions AST de rédaction / alignement.
+
+### Essais réellement exécutés
+
+Dossier de preuves neuf :
+`output/gpu-integration-20261021/e1434b50c08946f78e574f9056b6d11b/`.
+
+- **306 tests réussis en 12,90 s**, suite complète `tests/`, dont 38 nouveaux cas
+  CPU/GPU et UI : sélection, kernels et versions simulés, admission refusée,
+  mémoire insuffisante, chevauchements / changements de voix, formats invalides,
+  erreurs/OOM injectées, annulation, conservation des corrections humaines,
+  réglages, relance CPU explicite, cache neuf et variables d'authentification.
+  Preuves finales `delivery.xml` / `delivery-tests.log`. Les premiers échecs de
+  fixture (SHA d'import absent et statut `cancelled` attendu à tort `failed`)
+  sont conservés dans les rapports antérieurs, puis corrigés.
+- Inférence réelle dans deux nouvelles séances sur le MP3 municipal fourni,
+  **336,039 secondes**, original et WAV commun vérifiés par SHA-256. RTX 5070,
+  pilote **616.92** : GPU automatiquement sélectionné, **99,491 s**, 36
+  interventions, 2 groupes, 1 intervention avec tours simultanés. CPU explicite :
+  **133,217 s**, 68 interventions, 3 groupes. Ces comptes ne sont pas des scores
+  de précision ; une exécution, caches non purgés et activité du poste non neutralisée.
+- GPU : admission 10,637 s / CPU 10,281 s ; Large 53,805 s / CPU 51,953 s ;
+  Community 30,108 s / CPU 28,563 s. Pics privés hôte échantillonnés : respectivement
+  1 497 378 816, 7 594 459 136 et 5 310 222 336 octets. **Pic VRAM non mesuré**.
+  Tous les workers GPU terminés de cette recette indiquent zéro tentative réseau
+  Python. Ce garde n'est pas un pare-feu natif ni un test de PC déconnecté.
+- Transcription intégrale préparée, refus PDF/DOCX sans relecture, réouverture,
+  absence de votes/décisions inférés et intégrité des originaux vérifiés. PDF/DOCX
+  produits dans une **base de fixture distincte**, confirmation marquée « TEST
+  AUTOMATISÉ » ; aucune véritable séance approuvée automatiquement.
+- Annulation réelle d'un worker Large après 12 s ; processus arrêté/récolté,
+  requête conservée, aucun résultat validé. OOM matériel non provoqué ; les cas
+  d'échec/OOM sont aussi couverts par injection. UI rendue et inspectée, réglages
+  et passage simultané visibles. Import de l'interface sans torch/pyannote vérifié.
+- Runtime Windows transportable assemblé depuis le Python de base et la fermeture
+  installée : **95 distributions / 27 055 fichiers / 8 000 543 762 octets**, modèles
+  exclus, sans WhisperX. Hors virtualenv, admission CUDA puis ASR et Community sur
+  60 s municipaux réussis avec son propre worker, cache HF neuf et zéro tentative
+  réseau Python. **484 fichiers PE** inventoriés ; syntaxe PowerShell du build vérifiée.
+- Tours Community identiques au laboratoire. Large : mêmes 55 bornes de segments,
+  mais texte `s27` et certaines probabilités / bornes de mots différents de l'essai
+  précédent, consigné sans réécrire les résultats ni conclure à un gain de qualité.
+- Raccord réel vers le registre Qwen inchangé sur une autre copie : 14/14 unités,
+  24 informations à vérifier, **411,515 s**. La rédaction est refusée après 2,558 s
+  (`REGISTRY_NO_ELIGIBLE_INFORMATION`) : aucune information approuvée ou vérifiée
+  admissible. Checkpoints et refus conservés. **PV de cette séance non produit** ;
+  une intervention humaine sur le registre reste nécessaire, sans contourner la porte.
+
+### Packaging, droits et limites
+
+Guide : [audio-gpu-integration.md](audio-gpu-integration.md) ;
+audit : [audio-gpu-licenses.md](audio-gpu-licenses.md). Commande de build préparée
+avec `-Development -IncludeGpu`, mais **pas de nouveau bundle PyInstaller ni de
+Setup compilé ici**. Les anciens bundles restent inchangés ; utiliser
+`scripts/run.ps1` pour le code source actuel.
+
+Manifeste GPU épinglé, notices initiales et inventaire de staging disponibles.
+Commercialisation toujours non approuvée : obligations CC BY / MIT, DLL NVIDIA
+(cuDNN 9.10.2.21 observé), articulation installateur CPU/GPU, provenance/codecs et
+sources FFmpeg, Python et notices transitives à finaliser. FFmpeg du wheel GPU
+annonce LGPL v3 mais inclut x264/x265 dans sa configuration : analyse du lot exact
+indispensable. La limite Inno d'environ 4 Go pour un Setup.exe unique doit aussi
+être confrontée à la taille compressée finale, non mesurée. Aucun téléchargement
+ou fichier annexe n'est proposé comme satisfaction du fichier unique demandé.
+
+**Windows vierge physiquement déconnecté, avec et sans GPU : non validé.**
+Précision municipale et relecture du PV : non validées. Aucun nouveau choix de
+qualité déduit des temps ni remplacement de la référence de qualification.
 
 ## Diagnostic Parcoursup isolé — 20 octobre 2026
 

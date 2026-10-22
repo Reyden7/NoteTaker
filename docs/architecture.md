@@ -1,5 +1,29 @@
 # Architecture 0.2 en évaluation
 
+## Registre guidé — correctif du 21 octobre 2026
+
+`registry_summary.py` extrait les propositions sous contrat versionné v4 ; les
+citations sont résolues vers les mêmes instantanés de transcription. Les sources
+restent distinctes. Les propositions machine antérieures sont consultables et
+séparées de la rédaction automatique ; les fiches humaines sont protégées.
+`services/registry_workflow.py` expose les blocages et bilans communs à la
+persistance et à l'interface. JSON optionnel dans les révisions existantes,
+sans migration SQL. Contrôles de rédaction et d'export conservés.
+
+Voir [diagnostic et procédure](registry-workflow-fix.md).
+
+## Audio CPU / GPU — 21 octobre 2026
+
+La politique `services/audio_engine.py` et le worker CUDA isolé
+`workers/gpu_audio.py` ajoutent Large-v3 + Community-1 au pipeline audio partagé.
+Le mode CPU reste Small + sherpa. Réglage local atomique, contrôle CUDA réel,
+repli CPU à l'admission automatique et relance explicitement demandée après
+échec d'inférence GPU. Aucun moteur de rédaction modifié, aucune migration SQL.
+Les tours simultanés standards sont conservés dans les sources ; le texte de
+ces zones reste incertain et à attribuer à l'écoute.
+
+Détails, formats, runtime externe et recette : [audio-gpu-integration.md](audio-gpu-integration.md).
+
 ## Laboratoire 0.2.5 — synthèse directe par sujet
 
 Le parcours habituel reste celui du registre. Un service distinct

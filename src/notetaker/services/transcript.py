@@ -38,6 +38,12 @@ def compact_rows(rows, max_ms=20000):
             and metadata(previous).get('normalized_audio') == source.get('normalized_audio')):
             previous['source'].setdefault('merged_source_ids',[previous['id']]).append(u['id'])
             previous['source'].setdefault('word_spans',[]).extend(source.get('word_spans',[]))
+            if source.get('diarization_engine') == 'community-1':
+                # Compaction must not discard a later turn after a short pause.
+                turns = previous['source'].setdefault('diarization_turns', [])
+                for turn in source.get('diarization_turns', []):
+                    if turn not in turns:
+                        turns.append(copy.deepcopy(turn))
             previous['text'] = previous['text'].rstrip()+' '+u['text'].lstrip()
             previous['end_ms'] = u['end_ms']
         else:
@@ -81,6 +87,13 @@ def preserve_corrections(old, incoming, labels):
         if u['id'] in protected_ids:
             u['id']='auto-'+uuid.uuid4().hex
         u['speaker_id']=mapping.get(u.get('speaker_id'),u.get('speaker_id'))
+        source = u.setdefault('source', metadata(u))
+        if source.get('diarization_engine') == 'community-1':
+            source['candidates'] = [mapping.get(k, k) for k in source.get('candidates', [])]
+            for turn in source.get('diarization_turns', []):
+                turn['speaker'] = mapping.get(turn['speaker'], turn['speaker'])
+            for overlap in source.get('simultaneous_turns', []):
+                overlap['speakers'] = [mapping.get(k, k) for k in overlap['speakers']]
         overlaps=[(a,b) for a,b in spans if a<u['end_ms'] and b>u['start_ms']]
         if not overlaps:
             output.append(u);continue
