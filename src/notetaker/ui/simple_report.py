@@ -20,7 +20,7 @@ class SimpleReportPage(QWidget):
         self.warnings=QTextEdit();self.warnings.setReadOnly(True);self.warnings.setMaximumHeight(115);self.warnings.setPlaceholderText('À vérifier');layout.addWidget(self.warnings)
         actions=QHBoxLayout()
         for label,slot in [('Enregistrer mes corrections',self.save),('Écouter les sources',self.listen),
-            ('Détails / omissions…',window.show_automatic_diagnostics)]:
+            ('Rapport de vérification…',window.show_automatic_diagnostics)]:
             button=QPushButton(label);button.clicked.connect(slot);actions.addWidget(button)
         layout.addLayout(actions)
         exports=QHBoxLayout()

@@ -1,5 +1,100 @@
 # Avancement NoteTaker 0.2 — qualité en évaluation
 
+## Fidélité rédactionnelle ciblée — 22 octobre 2026
+
+Audit détaillé : [editorial-fidelity-audit.md](editorial-fidelity-audit.md).
+Livraison : `output/fidelity-20261022/retained-5d5d5b0e/a-relire/`.
+Le rapport de comparaison de chaque paragraphe, les anciennes versions et les
+essais intermédiaires sont conservés ; aucune annotation humaine n'a été modifiée.
+
+- Contrat éditorial v5 : inventaire avant rédaction par sujet/voix, séparation
+  des titres de classement et des preuves de rédaction, contrôles par clauses,
+  reprise des expressions explicites et rapport séparé. Parcours automatique
+  et validations officielles conservés. L'essai de sortie obligatoire phrase
+  par phrase a régressé en style et n'est pas activé dans le parcours principal.
+- Corrections ciblées : généralisation historique, changement de sens de
+  « gestion courante », omission de la comparaison avec Laurent Wauquiez,
+  absence de réponse et légitimité des élus, demande adressée au maire,
+  défense de gestion et choix associatifs séparés de la communication.
+  Civilités normalisées dans les nouveaux brouillons, sans réécrire les libellés
+  d'annuaire ni les anciennes révisions. Style JSON optionnel, pas de migration SQL.
+- **436 tests réussis en 14,17 s**, `tests-final-source.xml`. Recette réelle
+  Qwen CPU sur les mêmes 36 passages / 336,039 s ; transcription réutilisée.
+  **9 rubriques / 17 affirmations**, dont **11 reprises déterministes** d'expressions
+  sources et **6 propositions Qwen**. Aucun gain général du modèle n'est mesuré.
+- PDF et DOCX : **2 pages chacun**, rendus et inspectés. LibreOffice absent ;
+  contrôle du DOCX par Word local en lecture seule, sans ajouter Office au produit.
+  Dernière reprise : **251,294 s avec cache**, trois contrôles natifs neufs
+  (95,969 / 80,579 / 71,432 s), sans mesure complète à froid ni pic mémoire.
+- Données, historique, annuaire et registre vérifiés inchangés par comparaison
+  SQL ; anciens brouillons conservés, aucune nouvelle relecture. Export de travail
+  possible, export officiel refusé. Audio et fichiers de référence inchangés
+  par SHA-256. Aucun modèle téléchargé, moteur audio modifié ou biométrie activée.
+- Couverture partielle : 21 sources rattachées ne constituent pas 21 arguments
+  entièrement restitués. Les insinuations de gestion (04:27–04:46) et la critique
+  de communication/intelligence des citoyens (05:21–05:32) restent à reprendre
+  après écoute. Cette dernière était présente dans l'ancien document : l'omission
+  est signalée, sans la masquer par le nouveau paragraphe sur Laurent Wauquiez.
+
+L'audit de cette passe porte sur la transcription et les repères audio ; aucune
+nouvelle écoute humaine certifiée ou validation de fidélité générale. Le lanceur
+de la copie est fourni ; aucun nouveau bundle installable n'a été compilé.
+
+## Rédaction automatique par sujet — 22 octobre 2026
+
+Rapport : [editorial-report-results.md](editorial-report-results.md).
+Plan et audit : [editorial-report-plan.md](editorial-report-plan.md).
+Preuves : `output/editorial-report-20261022/8dff6d5d126847028ad24943e45f9ade/`.
+Livrables retenus dans `livrables-v4/` ; documents et essais précédents conservés.
+
+- Nouveau contrat éditorial : tours reconstruits sans modifier les segments,
+  plan par sujet, consolidation/reprise bornées, ancres de discours explicites,
+  rédaction attribuée, contrôle par phrases puis regroupement. Citations exactes,
+  horaires, refus et sources non reprises dans un rapport distinct. Aucun registre
+  à approuver pour obtenir le premier brouillon ; relecture officielle inchangée.
+- Annuaire, transcriptions, voix, votes, décisions, prises, registre et historique
+  vérifiés conservés par comparaison SQL. Anciens brouillons conservés ; aucune
+  nouvelle relecture créée. Export officiel refusé sans action humaine.
+  Audio municipal et références BFMTV inchangés par SHA-256. Moteurs audio,
+  modèle Qwen et dépendances inchangés, aucun téléchargement ou biométrie activée.
+- Erreur UI corrigée : le rapport utilisait le plus ancien job de la liste
+  pourtant triée du plus récent au plus ancien. Sélection du dernier succès,
+  avec test après une tentative échouée. Le nouveau rapport lisible remplace le
+  JSON brut dans ce parcours, les données techniques restent conservées.
+
+**409 tests réussis en 13,06 s**, `test-final-report-ui.xml`. Les tests unitaires
+utilisent des réponses IA fictives clairement identifiées ; recette réelle Qwen
+CPU sur les mêmes **36 passages / 336,039 secondes**, transcription réutilisée.
+PDF et DOCX générés puis rendus/inspectés : **deux pages chacun**. Le DOCX est
+vérifié dans Word local en lecture seule (LibreOffice absent), sans dépendance
+Office ajoutée au produit. Captures Qt du parcours et du rapport inspectées.
+
+Résultat : **9 rubriques, 13 phrases sourcées, zéro repli en citations brutes**,
+zéro « La personne » et zéro code de diagnostic dans le corps des documents.
+23 passages rattachés à au moins une phrase, 5 à reprendre, 3 formules de séance,
+5 non classés : ce classement ne mesure **ni la couverture sémantique ni la
+fidélité**. Les références complètes restent dans `verification-report.md`.
+
+Le dernier job a pris **210,650 s avec cache**, quatre inférences neuves
+(37,428 / 22,934 / 99,336 / 47,700 s). Aucun temps complet à froid ou gain de
+performance annoncé. La retouche de pagination ne déclenche aucune inférence.
+Échecs archivés : JSON tronqué/répétitions, mauvais classement secondaire,
+premier choix de séance ambigu, échos de consigne, contexte natif trop volumineux,
+annulations, tests intermédiaires refusés puis corrigés. Pas de simulation donnée
+comme résultat réel de Qwen.
+
+**Qualité encore partielle** : l’historique « souvent peu débattu » généralise
+le propos ; la comparaison avec Laurent Wauquiez reste absente de la prose ;
+la nuance « pas à chaque fois » et l’absence de réponse à l’adjointe sont à
+reprendre. Les titres restent nombreux/longs. Les libellés humains d’annuaire,
+y compris une faute de saisie, sont conservés. Nombre réel de corrections
+humaines et fidélité non mesurés ; pas de validation d’usage municipal annoncée.
+Les règles ciblées ne remplacent pas une évaluation indépendante du moteur.
+
+Aucune migration SQLite ni recompilation d’installateur. PC vierge hors ligne
+et commercialisation non validés. Lancement de la copie calculée :
+`Ouvrir-la-recette-redaction.cmd` dans le dossier de preuves.
+
 ## Parcours simplifié et références vocales facultatives — 21 octobre 2026
 
 Guide : [automatic-report-guide.md](automatic-report-guide.md).

@@ -65,7 +65,8 @@ def generate(pipeline, sid):
         pipeline.models.verify()
         from notetaker.domain.minutes import content_digest
         cache_key=content_digest({'session_id':sid,'context':context,'labels':labels,'templates':templates,
-            'engine':sha256_file(Path(__file__).parents[1]/'engines/automatic_report.py'),
+            'engine':{name:sha256_file(Path(__file__).parents[1]/'engines'/name) for name in
+                ('automatic_report.py','editorial_report.py','topic_summary.py','hierarchical_summary.py')},
             'model':str(pipeline.models.llm),'mtime':pipeline.models.llm.stat().st_mtime_ns if pipeline.models.llm.is_file() else None})
         # Keep native llama prompt paths below Windows MAX_PATH, even when the
         # session UUID and recipe workspace already make a deep directory tree.
@@ -80,7 +81,9 @@ def generate(pipeline, sid):
         # Resume exact, individually validated call_json identities from prior jobs.
         # The helper rechecks prompt/schema/model/binary before accepting any result.
         import shutil
-        for prior in (session_directory(pipeline.root,sid)/'jobs').glob('*/llm-cpu.request.json'):
+        previous_requests=sorted((session_directory(pipeline.root,sid)/'jobs').glob('*/llm-cpu.request.json'),
+            key=lambda p:p.stat().st_mtime_ns,reverse=True)
+        for prior in previous_requests:
             try: old=json.loads(prior.read_text(encoding='utf-8'))
             except (ValueError,OSError):continue
             if old.get('task')!='automatic_report' or any(old.get(k)!=v for k,v in {
@@ -91,15 +94,16 @@ def generate(pipeline, sid):
                 prior_cache=Path(old['cache_workspace']).resolve()
                 if prior_cache.is_relative_to(pipeline.root.resolve()):folders.append(prior_cache)
             for folder in folders:
-                for item in folder.glob('automatic-*.json'):
+                for item in list(folder.glob('automatic-*.json'))+list(folder.glob('editorial-*.json')):
                     if item.name.endswith(('.identity.json','.result.json')) and not (cache/item.name).exists():
                         shutil.copyfile(item,cache/item.name)
         preexisting_cache_results=sorted(p.name for p in cache.glob('*.result.json'))
         pipeline.progress('Qwen prépare le brouillon directement depuis la transcription — aucune fiche à préapprouver')
-        request = {'engine':'llm','task':'automatic_report','device':'cpu','binary':str(pipeline.models.llama),
-            'repair_rejected':True,
+        request = {'engine':'llm','task':'automatic_report','editorial_v4':True,'discourse_anchors':True,'device':'cpu','binary':str(pipeline.models.llama),
+            'repair_rejected':True,'sentence_evidence':True,
             'model':str(pipeline.models.llm),'workspace':str(workspace),'cache_workspace':str(cache),'utterances':state['utterances'],
             'agenda':state['metadata'].get('agenda',[]),'lexicon':state['metadata'].get('lexicon',[]),
+            'summary_length':state['metadata'].get('summary_length','standard'),
             'speaker_labels':{k:v['label'] for k,v in voices.items()},'speaker_templates':templates}
         result = pipeline._run(workspace, request, timeout=14400)
         draft = result.get('result',result)

@@ -1,9 +1,15 @@
 # Obtenir un premier compte rendu
 
-La dernière recette municipale et le lanceur `Ouvrir-la-recette-simple.cmd`
-sont dans `output/automatic-report-20261021/470f7221d5eb4cd0974963bf81f4e64d/`.
+La dernière recette rédactionnelle du 22 octobre et `Ouvrir-recette-fidelite.cmd`
+sont dans `output/fidelity-20261022/retained-5d5d5b0e/a-relire/`.
+Choisir la séance **RECETTE TECHNIQUE GPU VERS RÉDACTION EXISTANTE — À RELIRE**.
 Le lanceur utilise une copie des séances, avec le brouillon déjà calculé.
-Ne pas relancer la génération pour simplement le consulter.
+Ne pas relancer la génération pour simplement le consulter. Les nouveaux
+PDF et DOCX sont dans ce même dossier ; les anciens restent disponibles dans
+`output/editorial-report-20261022/8dff6d5d126847028ad24943e45f9ade/livrables-v4/`.
+Lire `Rapport-audit-et-comparaison.md` pour les différences et les passages encore
+omis. Le lanceur utilise les sources locales du dépôt ; il ne remplace pas le
+bundle installé. Aucun document n'est déclaré fidèle ou validé automatiquement.
 
 1. Ouvrir la recette depuis ses sources. Cliquer **Importer un enregistrement**.
    Sans séance ouverte, le nom du fichier crée la séance. Pour une autre réunion,
@@ -15,7 +21,7 @@ Ne pas relancer la génération pour simplement le consulter.
    d’approuver des fiches. Les voix sans identité connue restent non identifiées.
 4. Choisir un sujet dans la liste, corriger le texte puis **Enregistrer mes
    corrections**. **Écouter les sources** ouvre les citations et passages audio.
-   Lire **À vérifier** et, au besoin, **Détails / omissions**.
+   Lire **À vérifier** et, au besoin, **Rapport de vérification**.
 5. **Exporter le brouillon PDF/DOCX** produit une copie marquée non relue et non
    officielle, sans créer de relecture. Les références structurelles invalides
    restent bloquantes ; l’incertitude n’est pas une approbation.
@@ -26,9 +32,20 @@ Ne pas relancer la génération pour simplement le consulter.
 
 Le mode avancé conserve transcription, noms, scission/fusion, annuaire,
 participants, registres historiques, citations, décisions, votes et exports.
-Un refus de reformulation conserve sa citation exploitable ; les formulations
-sans source exacte et les passages non repris restent inventoriés. Un inventaire
+Un refus de reformulation conserve ses citations dans le rapport de vérification ;
+les formulations sans source exacte et les passages non repris restent inventoriés. Un inventaire
 de sources n’est pas une mesure de fidélité ou de couverture thématique.
+
+### Rédaction par sujet depuis le 22 octobre
+
+Le compte rendu présente des paragraphes attribués par sujet. Les citations
+complètes, heures de début/fin, refus, propositions de classement et passages
+non repris se trouvent dans **Rapport de vérification**, pas dans le corps du
+document. Aucun registre n’est à approuver pour obtenir le premier brouillon.
+Le rapport distingue le rattachement technique d’une source de la couverture
+réelle de ses arguments : relire le sens, pas seulement les identifiants.
+Voir [le rapport du lot rédactionnel](editorial-report-results.md) pour la
+comparaison avec la recette précédente et les limites de Qwen.
 
 ## Références vocales facultatives
 
@@ -68,10 +85,15 @@ corrections ne réentraînent aucun modèle et ne modifient aucune référence.
 que des prises autorisées et des références humaines indépendantes n’ont pas
 été testées. Le produit et son installateur commercial restent en qualification.
 
-## Limite du brouillon municipal livré
+## Archive du brouillon municipal du 21 octobre
 
 La recette contient quatre reformulations et trois citations conservées
 « À vérifier ». Vingt-trois passages ne sont pas repris : consulter leur
 inventaire et la transcription avant de compléter le document. La couverture
 et la fidélité ne sont pas validées. Les noms affichés sont ceux déjà confirmés
 manuellement ; aucune empreinte nominative n’a été créée pour cette recette.
+
+Le lot du **22 octobre** remplace ce résultat dans la nouvelle copie : neuf
+rubriques et treize phrases, sans citations brutes dans le document. Sa fidélité
+et son exhaustivité ne sont toujours pas validées ; les limites détaillées
+figurent dans [le rapport comparatif](editorial-report-results.md).

@@ -29,6 +29,7 @@ def test_direct_draft_without_registry_reuses_transcript_and_keeps_official_gate
     monkeypatch.setattr(pipeline,'analyse',lambda *a:pytest.fail('ASR must be reused'))
     def run(workspace,request,**kwargs):
         assert request['task']=='automatic_report' and 'registry' not in request
+        assert request['editorial_v4'] and request['discourse_anchors']
         return {'document_mode':'summary','points':[{'title':'Consultation','summary':'Une consultation est proposée.','sources':['s0'],'vote_id':None}],
             'to_verify':['Brouillon non relu.']}
     monkeypatch.setattr(pipeline,'_run',run)
@@ -222,6 +223,29 @@ def test_cache_is_short_context_bound_and_explicitly_reported(tmp_path,monkeypat
     assert first['cache_results_available_before_run']==[]
     assert second['cache_results_available_before_run']==['fixture.result.json']
     assert seen[0]==seen[1]
+    store.close()
+
+
+def test_cache_resume_prefers_newer_results_to_obsolete_seed_files(tmp_path,monkeypatch):
+    import os
+    from notetaker.infrastructure.paths import session_directory
+    store,sid,audio=fixture_state(tmp_path);state=store.get(sid);pipeline=Pipeline(store.root)
+    monkeypatch.setattr(pipeline.models,'verify',lambda:None)
+    for index,label in enumerate(('obsolete','newer'),1):
+        jid=store.start_job(sid,'automatic-report')
+        folder=session_directory(store.root,sid)/'jobs'/jid;folder.mkdir(parents=True)
+        (folder/'editorial-fixture.result.json').write_text(json.dumps({'from':label}))
+        request=folder/'llm-cpu.request.json'
+        request.write_text(json.dumps({'task':'automatic_report','utterances':state['utterances'],'agenda':[],'lexicon':[]}))
+        os.utime(request,ns=(index*1_000_000_000,index*1_000_000_000))
+        store.finish_job(jid,True)
+    def run(workspace,request,**kwargs):
+        # The inference helper still checks the full identity. This service test
+        # catches the earlier first-file-wins loss before that helper is called.
+        assert json.loads((Path(request['cache_workspace'])/'editorial-fixture.result.json').read_text())=={'from':'newer'}
+        return {'points':[{'title':'Consultation','summary':'Une consultation est proposée.','sources':['s0'],'vote_id':None}],'to_verify':[]}
+    monkeypatch.setattr(pipeline,'_run',run)
+    pipeline.automatic_report(sid)
     store.close()
 
 

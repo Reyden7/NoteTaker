@@ -74,6 +74,7 @@ def _docx(content, metadata, path, votes, decisions, details=None):
     from docx.oxml import OxmlElement
     from docx.oxml.ns import qn
     details = details or {}
+    editorial = content.get('generation_diagnostics',{}).get('strategy') in ('municipal-editorial-v4','municipal-editorial-v5')
     sections = list(document_sections(content, votes, decisions, details))
     validate_glyphs([TITLES[content.get("document_mode", "summary")], metadata,
                      details.get("title", "Séance"), DISCLAIMER, *(h + t for h, t in sections)])
@@ -106,7 +107,8 @@ def _docx(content, metadata, path, votes, decisions, details=None):
     if details.get("preview"):
         doc.add_paragraph('BROUILLON NON RELU — aucune validation officielle' if details.get('working_draft') else
             "APERÇU TECHNIQUE NON VALIDÉ — aucune relecture humaine enregistrée")
-    doc.add_page_break()
+    if not editorial:
+        doc.add_page_break()
     for heading, text in sections:
         if content.get("document_mode") == "transcript" and heading != "Points de contrôle avant utilisation":
             paragraph = doc.add_paragraph()
@@ -148,6 +150,7 @@ def _pdf(content, metadata, path, votes, decisions, details=None):
     from reportlab.lib.styles import ParagraphStyle
     from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
     details = details or {}
+    editorial = content.get('generation_diagnostics',{}).get('strategy') in ('municipal-editorial-v4','municipal-editorial-v5')
     title = TITLES[content.get("document_mode", "summary")]
     sections = list(document_sections(content, votes, decisions, details))
     texts = [title, metadata, details.get("title", "Séance"), DISCLAIMER, *(h + t for h, t in sections)]
@@ -158,19 +161,21 @@ def _pdf(content, metadata, path, votes, decisions, details=None):
     small = ParagraphStyle("Small", parent=body, fontSize=9, leading=13)
     def para(text, style=body):
         return Paragraph(escape(text).replace("\n", "<br/>"), style)
-    flow = [Spacer(1, 70), para("NOTETAKER", small), Spacer(1, 20), para(title, cover),
+    flow = [Spacer(1, 8 if editorial else 70), para("NOTETAKER", small), Spacer(1, 12 if editorial else 20), para(title, cover),
             para(details.get("title", "Séance"), heading), para(metadata), Spacer(1, 28), para(DISCLAIMER, small),
             para("Document de travail. La relecture ne vaut pas adoption officielle.", small)]
     if details.get("preview"):
         flow += [Spacer(1, 20), para('BROUILLON NON RELU — aucune validation officielle' if details.get('working_draft') else
             "APERÇU TECHNIQUE NON VALIDÉ — aucune relecture humaine enregistrée", heading)]
-    flow.append(PageBreak())
+    if not editorial:
+        flow.append(PageBreak())
     for h, text in sections:
         if content.get("document_mode") == "transcript" and h != "Points de contrôle avant utilisation":
             flow.append(Paragraph("<b>" + escape(h) + "</b><br/>" + escape(text).replace("\n", "<br/>"), body))
         else:
             flow.append(para(h, heading))
-            flow += [para(p) for p in text.split("\n\n")]
+            section_style=small if editorial and h=='Points de contrôle avant utilisation' else body
+            flow += [para(p,section_style) for p in text.split("\n\n")]
     def page(canvas, doc):
         canvas.saveState()
         canvas.setFont("NoteTakerNoto", 8)

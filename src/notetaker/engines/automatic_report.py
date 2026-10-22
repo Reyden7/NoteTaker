@@ -42,6 +42,9 @@ def assess(claim,rows,lexicon=()):
 
 
 def summarize(request):
+    if request.get('editorial_v4'):
+        from .editorial_report import summarize as editorial_summary
+        return editorial_summary(request)
     from pathlib import Path
     workspace = Path(request['workspace'])
     model_request={**request,'workspace':request.get('cache_workspace',str(workspace))}

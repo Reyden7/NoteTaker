@@ -60,12 +60,24 @@ def voice_registry(state):
     return result
 
 
-def render_template(template,bindings,state):
+def municipal_name(label):
+    """Presentation only: never infer a first name, identity or acronym expansion."""
+    match=re.fullmatch(r'(madame|monsieur|moniseur)\s+(.+)',label.strip(),re.I)
+    if not match:return label
+    # Preserve internal capitals, particles and user spelling. Only capitalise
+    # the first letter of each whitespace-delimited name component.
+    name=' '.join(p[0].upper()+p[1:] if p.islower() and p not in ('de','du','des','van','von','le','la') else p for p in match[2].split())
+    return ('Madame' if match[1].casefold()=='madame' else 'Monsieur')+' '+name
+
+
+def render_template(template,bindings,state,name_style=None):
+    if name_style not in (None,'municipal-civilities-v1'):raise ValueError('NARRATIVE_UNKNOWN_NAME_STYLE')
     registry=voice_registry(state)
     def substitute(match):
         key=bindings.get(match[1])
         if key not in registry:raise ValueError('NARRATIVE_UNKNOWN_VOICE')
-        return registry[key]['label']
+        label=registry[key]['label']
+        return municipal_name(label) if name_style else label
     rendered=TOKEN.sub(substitute,template)
     if '{{' in rendered or '}}' in rendered:raise ValueError('NARRATIVE_UNKNOWN_VOICE')
     return rendered
@@ -89,7 +101,7 @@ def narrative_problems(point,state):
                 implicit=row.get('implicit_speaker')
                 if not implicit or voices!={implicit} or previous_voices!={implicit} or not anaphoric_prose(row['template']):problems.append('narrative_voice_changed')
             try:
-                if render_template(row['template'],bindings,state)!=row['text']:problems.append('narrative_voice_changed')
+                if render_template(row['template'],bindings,state,row.get('name_style'))!=row['text']:problems.append('narrative_voice_changed')
             except ValueError:problems.append('narrative_voice_changed')
         previous_voices=voices
     if used!=set(claims):problems.append('narrative_missing_claim')
@@ -118,7 +130,7 @@ def refresh_narrative(point,old,state):
         implicit=row.get('implicit_speaker')
         if implicit and len(moves.get(implicit,{implicit}))!=1:continue
         bindings={a:next(iter(moves.get(key,{key}))) for a,key in bindings.items()}
-        try:text=render_template(row['template'],bindings,state)
+        try:text=render_template(row['template'],bindings,state,row.get('name_style'))
         except ValueError:continue
         updated_implicit=next(iter(moves.get(implicit,{implicit}))) if implicit else None
         if text!=row['text'] or bindings!=row['voice_bindings'] or implicit!=updated_implicit:

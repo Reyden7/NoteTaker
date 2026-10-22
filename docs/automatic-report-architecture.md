@@ -1,5 +1,13 @@
 # Compte rendu automatique — architecture et qualification
 
+**Depuis le 22 octobre**, le parcours par défaut utilise le contrat éditorial v5 :
+[audit de fidélité](editorial-fidelity-audit.md). Le
+[plan v4](editorial-report-plan.md) et ses [résultats](editorial-report-results.md)
+restent archivés. La matrice par sujet/voix est produite avant rédaction ;
+les reprises contrôlées restent sourcées et requièrent une relecture humaine.
+L’orchestration et les protections décrites ici restent partagées ; les mesures
+et le contrat de rédaction ci-dessous décrivent l’archive v3 du 21 octobre.
+
 ## Audit et choix
 
 L’annuaire civil et les sélections de participants existent. Aucun système

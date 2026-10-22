@@ -12,13 +12,14 @@ from notetaker.services.working_export import export_working_copy
 from notetaker.services.session_export import export_session
 
 parser=argparse.ArgumentParser();parser.add_argument('--recipe',type=Path,required=True);parser.add_argument('--output',type=Path,required=True)
+parser.add_argument('--session-id',help='Explicit session; never depend on history ordering during comparison.')
 args=parser.parse_args();args.output.mkdir(parents=True,exist_ok=False)
 enforce_offline()
 original=args.recipe/'notetaker.sqlite3';before=hashlib.sha256(original.read_bytes()).hexdigest()
 root=args.output/'session-copy';root.mkdir()
 with sqlite3.connect(original.resolve().as_uri()+'?mode=ro',uri=True) as src:
     with sqlite3.connect(root/'notetaker.sqlite3') as dst: src.backup(dst)
-store=SessionStore(root);sid=store.list_sessions()[0]['id']; state=store.get(sid)
+store=SessionStore(root);sid=args.session_id or store.list_sessions()[0]['id']; state=store.get(sid)
 preserved={k:state[k] for k in ('utterances','speakers','votes','decisions','participants')};store.close()
 started=time.perf_counter()
 result=Pipeline(root,progress=lambda text:print(text,flush=True)).automatic_report(sid)

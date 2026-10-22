@@ -595,11 +595,16 @@ class MainWindow(QMainWindow):
         jobs=[j for j in self.store.jobs(self.sid) if j['kind']=='automatic-report']
         if not jobs:
             self.status.setText('Aucun dossier de génération automatique pour cette séance.');return
-        directory=session_directory(self.store.root,self.sid)/'jobs'/jobs[-1]['id']
+        # SessionStore.jobs is newest first. Prefer the last successful report;
+        # a failed retry must not make an older, unrelated inventory look current.
+        completed=[j for j in jobs if j['status']=='completed']
+        directory=session_directory(self.store.root,self.sid)/'jobs'/(completed or jobs)[0]['id']
         path=directory/'automatic-inventory.json'
         dialog=QDialog(self);dialog.setWindowTitle('Génération — formulations, refus et sources non reprises');dialog.resize(850,650)
         layout=QVBoxLayout(dialog);text=QTextEdit();text.setReadOnly(True)
-        if path.exists():text.setPlainText(json.dumps(json.loads(path.read_text(encoding='utf-8')),ensure_ascii=False,indent=2))
+        report=directory/'verification-report.md'
+        if report.exists():text.setPlainText(report.read_text(encoding='utf-8'))
+        elif path.exists():text.setPlainText(json.dumps(json.loads(path.read_text(encoding='utf-8')),ensure_ascii=False,indent=2))
         else:text.setPlainText('Le traitement est interrompu ou n’a pas encore produit son inventaire. Les sources et anciens brouillons sont conservés.\nDossier : '+str(directory))
         layout.addWidget(text);close=QDialogButtonBox(QDialogButtonBox.Close);close.rejected.connect(dialog.reject);layout.addWidget(close);dialog.exec()
 

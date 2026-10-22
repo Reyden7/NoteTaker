@@ -1,5 +1,22 @@
 # Architecture 0.2 en évaluation
 
+## Compte rendu par sujet — 22 octobre 2026
+
+Le parcours par défaut est désormais `Pipeline.automatic_report()` : audio
+existant réutilisé, `engines/editorial_report.py` pour le contrat éditorial v5,
+paragraphes attribués et rapport de vérification séparé. Le registre et son
+parcours de rédaction restent disponibles en mode avancé. Les sections plus
+anciennes ci-dessous conservent l'historique des choix ; le registre n'est plus
+un prérequis du premier brouillon. Aucune migration SQLite ni modification des
+moteurs audio. Les contrôles d'export officiel et de relecture demeurent communs.
+
+Voir [plan et audit](editorial-report-plan.md),
+[recette initiale](editorial-report-results.md),
+[passe de fidélité v5](editorial-fidelity-audit.md). La fidélité n'est pas validée.
+Le contrôle de couverture par sujet/voix et les reprises de formulations
+explicites ne créent aucune approbation. Les noms de présentation sont liés
+aux mêmes voix par un style versionné ; les anciennes révisions restent lisibles.
+
 ## Registre guidé — correctif du 21 octobre 2026
 
 `registry_summary.py` extrait les propositions sous contrat versionné v4 ; les
